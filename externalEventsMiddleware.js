@@ -1,14 +1,8 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.externalEventsMiddleware = exports.externalEventAction = void 0;
-var _toolkit = require("@reduxjs/toolkit");
-var _tooltipSelectors = require("./selectors/tooltipSelectors");
-var _createEventProxy = require("../util/createEventProxy");
-var externalEventAction = exports.externalEventAction = (0, _toolkit.createAction)('externalEvent');
-var externalEventsMiddleware = exports.externalEventsMiddleware = (0, _toolkit.createListenerMiddleware)();
+import { createAction, createListenerMiddleware } from '@reduxjs/toolkit';
+import { selectActiveLabel, selectActiveTooltipCoordinate, selectActiveTooltipDataKey, selectActiveTooltipIndex, selectIsTooltipActive } from './selectors/tooltipSelectors';
+import { createEventProxy } from '../util/createEventProxy';
+export var externalEventAction = createAction('externalEvent');
+export var externalEventsMiddleware = createListenerMiddleware();
 
 /*
  * We need a Map keyed by event type because this middleware handles MULTIPLE different event types
@@ -31,7 +25,7 @@ externalEventsMiddleware.startListening({
       return;
     }
     var eventType = reactEvent.type;
-    var eventProxy = (0, _createEventProxy.createEventProxy)(reactEvent);
+    var eventProxy = createEventProxy(reactEvent);
     latestEventMap.set(eventType, {
       handler,
       reactEvent: eventProxy
@@ -81,12 +75,12 @@ externalEventsMiddleware.startListening({
         } = latestAction;
         var currentState = listenerApi.getState();
         var nextState = {
-          activeCoordinate: (0, _tooltipSelectors.selectActiveTooltipCoordinate)(currentState),
-          activeDataKey: (0, _tooltipSelectors.selectActiveTooltipDataKey)(currentState),
-          activeIndex: (0, _tooltipSelectors.selectActiveTooltipIndex)(currentState),
-          activeLabel: (0, _tooltipSelectors.selectActiveLabel)(currentState),
-          activeTooltipIndex: (0, _tooltipSelectors.selectActiveTooltipIndex)(currentState),
-          isTooltipActive: (0, _tooltipSelectors.selectIsTooltipActive)(currentState)
+          activeCoordinate: selectActiveTooltipCoordinate(currentState),
+          activeDataKey: selectActiveTooltipDataKey(currentState),
+          activeIndex: selectActiveTooltipIndex(currentState),
+          activeLabel: selectActiveLabel(currentState),
+          activeTooltipIndex: selectActiveTooltipIndex(currentState),
+          isTooltipActive: selectIsTooltipActive(currentState)
         };
         if (latestHandler) {
           latestHandler(nextState, latestEvent);

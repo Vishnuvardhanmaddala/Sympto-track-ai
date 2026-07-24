@@ -1,32 +1,25 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.AllZIndexPortals = AllZIndexPortals;
-var _react = _interopRequireWildcard(require("react"));
-var React = _react;
-var _hooks = require("../state/hooks");
-var _zIndexSlice = require("../state/zIndexSlice");
-var _zIndexSelectors = require("./zIndexSelectors");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
+import * as React from 'react';
+import { useLayoutEffect, useRef } from 'react';
+import { useAppDispatch, useAppSelector } from '../state/hooks';
+import { registerZIndexPortalElement, unregisterZIndexPortalElement } from '../state/zIndexSlice';
+import { selectAllRegisteredZIndexes } from './zIndexSelectors';
 function ZIndexSvgPortal(_ref) {
   var {
     zIndex,
     isPanorama
   } = _ref;
-  var ref = (0, _react.useRef)(null);
-  var dispatch = (0, _hooks.useAppDispatch)();
-  (0, _react.useLayoutEffect)(() => {
+  var ref = useRef(null);
+  var dispatch = useAppDispatch();
+  useLayoutEffect(() => {
     if (ref.current) {
-      dispatch((0, _zIndexSlice.registerZIndexPortalElement)({
+      dispatch(registerZIndexPortalElement({
         zIndex,
         element: ref.current,
         isPanorama
       }));
     }
     return () => {
-      dispatch((0, _zIndexSlice.unregisterZIndexPortalElement)({
+      dispatch(unregisterZIndexPortalElement({
         zIndex,
         isPanorama
       }));
@@ -39,12 +32,12 @@ function ZIndexSvgPortal(_ref) {
     className: "recharts-zIndex-layer_".concat(zIndex)
   });
 }
-function AllZIndexPortals(_ref2) {
+export function AllZIndexPortals(_ref2) {
   var {
     children,
     isPanorama
   } = _ref2;
-  var allRegisteredZIndexes = (0, _hooks.useAppSelector)(_zIndexSelectors.selectAllRegisteredZIndexes);
+  var allRegisteredZIndexes = useAppSelector(selectAllRegisteredZIndexes);
   if (!allRegisteredZIndexes || allRegisteredZIndexes.length === 0) {
     return children;
   }

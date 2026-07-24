@@ -1,17 +1,9 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getDigitCount = getDigitCount;
-exports.rangeStep = rangeStep;
-var _decimal = _interopRequireDefault(require("decimal.js-light"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 /**
  * @fileOverview Some common arithmetic methods
  * @author xile611
  * @date 2015-09-17
  */
+import Decimal from 'decimal.js-light';
 
 /**
  * Get the digit count of a number.
@@ -27,7 +19,7 @@ function getDigitCount(value) {
   if (value === 0) {
     result = 1;
   } else {
-    result = Math.floor(new _decimal.default(value).abs().log(10).toNumber()) + 1;
+    result = Math.floor(new Decimal(value).abs().log(10).toNumber()) + 1;
   }
   return result;
 }
@@ -42,7 +34,7 @@ function getDigitCount(value) {
  * @return {Array}         Array of numbers
  */
 function rangeStep(start, end, step) {
-  var num = new _decimal.default(start);
+  var num = new Decimal(start);
   var i = 0;
   var result = [];
 
@@ -54,3 +46,4 @@ function rangeStep(start, end, step) {
   }
   return result;
 }
+export { rangeStep, getDigitCount };

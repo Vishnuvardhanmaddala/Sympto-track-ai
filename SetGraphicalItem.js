@@ -1,30 +1,24 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.SetPolarGraphicalItem = exports.SetCartesianGraphicalItem = void 0;
-var _react = require("react");
-var _hooks = require("./hooks");
-var _graphicalItemsSlice = require("./graphicalItemsSlice");
+import { memo, useLayoutEffect, useRef } from 'react';
+import { useAppDispatch } from './hooks';
+import { addCartesianGraphicalItem, addPolarGraphicalItem, removeCartesianGraphicalItem, removePolarGraphicalItem, replaceCartesianGraphicalItem, replacePolarGraphicalItem } from './graphicalItemsSlice';
 var SetCartesianGraphicalItemImpl = props => {
-  var dispatch = (0, _hooks.useAppDispatch)();
-  var prevPropsRef = (0, _react.useRef)(null);
-  (0, _react.useLayoutEffect)(() => {
+  var dispatch = useAppDispatch();
+  var prevPropsRef = useRef(null);
+  useLayoutEffect(() => {
     if (prevPropsRef.current === null) {
-      dispatch((0, _graphicalItemsSlice.addCartesianGraphicalItem)(props));
+      dispatch(addCartesianGraphicalItem(props));
     } else if (prevPropsRef.current !== props) {
-      dispatch((0, _graphicalItemsSlice.replaceCartesianGraphicalItem)({
+      dispatch(replaceCartesianGraphicalItem({
         prev: prevPropsRef.current,
         next: props
       }));
     }
     prevPropsRef.current = props;
   }, [dispatch, props]);
-  (0, _react.useLayoutEffect)(() => {
+  useLayoutEffect(() => {
     return () => {
       if (prevPropsRef.current) {
-        dispatch((0, _graphicalItemsSlice.removeCartesianGraphicalItem)(prevPropsRef.current));
+        dispatch(removeCartesianGraphicalItem(prevPropsRef.current));
         /*
          * Here we have to reset the ref to null because in StrictMode, the effect will run twice,
          * but it will keep the same ref value from the first render.
@@ -44,29 +38,29 @@ var SetCartesianGraphicalItemImpl = props => {
   }, [dispatch]);
   return null;
 };
-var SetCartesianGraphicalItem = exports.SetCartesianGraphicalItem = /*#__PURE__*/(0, _react.memo)(SetCartesianGraphicalItemImpl);
+export var SetCartesianGraphicalItem = /*#__PURE__*/memo(SetCartesianGraphicalItemImpl);
 var SetPolarGraphicalItemImpl = props => {
-  var dispatch = (0, _hooks.useAppDispatch)();
-  var prevPropsRef = (0, _react.useRef)(null);
-  (0, _react.useLayoutEffect)(() => {
+  var dispatch = useAppDispatch();
+  var prevPropsRef = useRef(null);
+  useLayoutEffect(() => {
     if (prevPropsRef.current === null) {
-      dispatch((0, _graphicalItemsSlice.addPolarGraphicalItem)(props));
+      dispatch(addPolarGraphicalItem(props));
     } else if (prevPropsRef.current !== props) {
-      dispatch((0, _graphicalItemsSlice.replacePolarGraphicalItem)({
+      dispatch(replacePolarGraphicalItem({
         prev: prevPropsRef.current,
         next: props
       }));
     }
     prevPropsRef.current = props;
   }, [dispatch, props]);
-  (0, _react.useLayoutEffect)(() => {
+  useLayoutEffect(() => {
     return () => {
       if (prevPropsRef.current) {
-        dispatch((0, _graphicalItemsSlice.removePolarGraphicalItem)(prevPropsRef.current));
+        dispatch(removePolarGraphicalItem(prevPropsRef.current));
         prevPropsRef.current = null;
       }
     };
   }, [dispatch]);
   return null;
 };
-var SetPolarGraphicalItem = exports.SetPolarGraphicalItem = /*#__PURE__*/(0, _react.memo)(SetPolarGraphicalItemImpl);
+export var SetPolarGraphicalItem = /*#__PURE__*/memo(SetPolarGraphicalItemImpl);

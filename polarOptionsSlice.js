@@ -1,10 +1,4 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.updatePolarOptions = exports.polarOptionsReducer = void 0;
-var _toolkit = require("@reduxjs/toolkit");
+import { createSlice } from '@reduxjs/toolkit';
 var initialState = null;
 var reducers = {
   updatePolarOptions: (state, action) => {
@@ -20,13 +14,12 @@ var reducers = {
     return state;
   }
 };
-var polarOptionsSlice = (0, _toolkit.createSlice)({
+var polarOptionsSlice = createSlice({
   name: 'polarOptions',
   initialState,
   reducers
 });
-var {
+export var {
   updatePolarOptions
 } = polarOptionsSlice.actions;
-exports.updatePolarOptions = updatePolarOptions;
-var polarOptionsReducer = exports.polarOptionsReducer = polarOptionsSlice.reducer;
+export var polarOptionsReducer = polarOptionsSlice.reducer;

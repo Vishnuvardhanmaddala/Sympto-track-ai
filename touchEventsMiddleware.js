@@ -1,20 +1,14 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.touchEventMiddleware = exports.touchEventAction = void 0;
-var _toolkit = require("@reduxjs/toolkit");
-var _tooltipSlice = require("./tooltipSlice");
-var _selectActivePropsFromChartPointer = require("./selectors/selectActivePropsFromChartPointer");
-var _getRelativeCoordinate = require("../util/getRelativeCoordinate");
-var _selectTooltipEventType = require("./selectors/selectTooltipEventType");
-var _Constants = require("../util/Constants");
-var _touchSelectors = require("./selectors/touchSelectors");
-var _tooltipSelectors = require("./selectors/tooltipSelectors");
-var _createEventProxy = require("../util/createEventProxy");
-var touchEventAction = exports.touchEventAction = (0, _toolkit.createAction)('touchMove');
-var touchEventMiddleware = exports.touchEventMiddleware = (0, _toolkit.createListenerMiddleware)();
+import { createAction, createListenerMiddleware } from '@reduxjs/toolkit';
+import { setActiveMouseOverItemIndex, setMouseOverAxisIndex } from './tooltipSlice';
+import { selectActivePropsFromChartPointer } from './selectors/selectActivePropsFromChartPointer';
+import { getRelativeCoordinate } from '../util/getRelativeCoordinate';
+import { selectTooltipEventType } from './selectors/selectTooltipEventType';
+import { DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME, DATA_ITEM_INDEX_ATTRIBUTE_NAME } from '../util/Constants';
+import { selectTooltipCoordinate } from './selectors/touchSelectors';
+import { selectAllGraphicalItemsSettings } from './selectors/tooltipSelectors';
+import { createEventProxy } from '../util/createEventProxy';
+export var touchEventAction = createAction('touchMove');
+export var touchEventMiddleware = createListenerMiddleware();
 var rafId = null;
 var timeoutId = null;
 var latestChartPointers = null;
@@ -26,7 +20,7 @@ touchEventMiddleware.startListening({
     if (touchEvent.touches == null || touchEvent.touches.length === 0) {
       return;
     }
-    latestTouchEvent = (0, _createEventProxy.createEventProxy)(touchEvent);
+    latestTouchEvent = createEventProxy(touchEvent);
     var state = listenerApi.getState();
     var {
       throttleDelay,
@@ -41,7 +35,7 @@ touchEventMiddleware.startListening({
       clearTimeout(timeoutId);
       timeoutId = null;
     }
-    latestChartPointers = Array.from(touchEvent.touches).map(touch => (0, _getRelativeCoordinate.getRelativeCoordinate)({
+    latestChartPointers = Array.from(touchEvent.touches).map(touch => getRelativeCoordinate({
       clientX: touch.clientX,
       clientY: touch.clientY,
       currentTarget: touchEvent.currentTarget
@@ -51,7 +45,7 @@ touchEventMiddleware.startListening({
         return;
       }
       var currentState = listenerApi.getState();
-      var tooltipEventType = (0, _selectTooltipEventType.selectTooltipEventType)(currentState, currentState.tooltip.settings.shared);
+      var tooltipEventType = selectTooltipEventType(currentState, currentState.tooltip.settings.shared);
       if (tooltipEventType === 'axis') {
         var _latestChartPointers;
         var latestTouchPointer = (_latestChartPointers = latestChartPointers) === null || _latestChartPointers === void 0 ? void 0 : _latestChartPointers[0];
@@ -60,9 +54,9 @@ touchEventMiddleware.startListening({
           timeoutId = null;
           return;
         }
-        var activeProps = (0, _selectActivePropsFromChartPointer.selectActivePropsFromChartPointer)(currentState, latestTouchPointer);
+        var activeProps = selectActivePropsFromChartPointer(currentState, latestTouchPointer);
         if ((activeProps === null || activeProps === void 0 ? void 0 : activeProps.activeIndex) != null) {
-          listenerApi.dispatch((0, _tooltipSlice.setMouseOverAxisIndex)({
+          listenerApi.dispatch(setMouseOverAxisIndex({
             activeIndex: activeProps.activeIndex,
             activeDataKey: undefined,
             activeCoordinate: activeProps.activeCoordinate
@@ -78,17 +72,17 @@ touchEventMiddleware.startListening({
         if (!target || !target.getAttribute) {
           return;
         }
-        var itemIndex = target.getAttribute(_Constants.DATA_ITEM_INDEX_ATTRIBUTE_NAME);
-        var graphicalItemId = (_target$getAttribute = target.getAttribute(_Constants.DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME)) !== null && _target$getAttribute !== void 0 ? _target$getAttribute : undefined;
-        var settings = (0, _tooltipSelectors.selectAllGraphicalItemsSettings)(currentState).find(item => item.id === graphicalItemId);
+        var itemIndex = target.getAttribute(DATA_ITEM_INDEX_ATTRIBUTE_NAME);
+        var graphicalItemId = (_target$getAttribute = target.getAttribute(DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME)) !== null && _target$getAttribute !== void 0 ? _target$getAttribute : undefined;
+        var settings = selectAllGraphicalItemsSettings(currentState).find(item => item.id === graphicalItemId);
         if (itemIndex == null || settings == null || graphicalItemId == null) {
           return;
         }
         var {
           dataKey
         } = settings;
-        var coordinate = (0, _touchSelectors.selectTooltipCoordinate)(currentState, itemIndex, graphicalItemId);
-        listenerApi.dispatch((0, _tooltipSlice.setActiveMouseOverItemIndex)({
+        var coordinate = selectTooltipCoordinate(currentState, itemIndex, graphicalItemId);
+        listenerApi.dispatch(setActiveMouseOverItemIndex({
           activeDataKey: dataKey,
           activeIndex: itemIndex,
           activeCoordinate: coordinate,

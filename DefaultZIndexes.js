@@ -1,15 +1,9 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.DefaultZIndexes = void 0;
 /**
  * A collection of all default zIndex values used by Recharts.
  *
  * You can reuse these, or you can define your own.
  */
-var DefaultZIndexes = exports.DefaultZIndexes = {
+export var DefaultZIndexes = {
   /**
    * CartesianGrid and PolarGrid
    */

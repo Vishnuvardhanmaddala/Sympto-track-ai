@@ -1,16 +1,11 @@
-"use strict";
+import { createSlice } from '@reduxjs/toolkit';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.updateOptions = exports.rootPropsReducer = exports.initialState = void 0;
-var _toolkit = require("@reduxjs/toolkit");
 /**
  * These are chart options that users can choose - which means they can also
  * choose to change them which should trigger a re-render.
  */
 
-var initialState = exports.initialState = {
+export var initialState = {
   accessibilityLayer: true,
   barCategoryGap: '10%',
   barGap: 4,
@@ -23,7 +18,7 @@ var initialState = exports.initialState = {
   baseValue: undefined,
   reverseStackOrder: false
 };
-var rootPropsSlice = (0, _toolkit.createSlice)({
+var rootPropsSlice = createSlice({
   name: 'rootProps',
   initialState,
   reducers: {
@@ -43,8 +38,7 @@ var rootPropsSlice = (0, _toolkit.createSlice)({
     }
   }
 });
-var rootPropsReducer = exports.rootPropsReducer = rootPropsSlice.reducer;
-var {
+export var rootPropsReducer = rootPropsSlice.reducer;
+export var {
   updateOptions
 } = rootPropsSlice.actions;
-exports.updateOptions = updateOptions;

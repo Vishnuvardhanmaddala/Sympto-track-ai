@@ -1,10 +1,4 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.setScale = exports.setMargin = exports.setLayout = exports.setChartSize = exports.chartLayoutReducer = void 0;
-var _toolkit = require("@reduxjs/toolkit");
+import { createSlice } from '@reduxjs/toolkit';
 var initialState = {
   layoutType: 'horizontal',
   width: 0,
@@ -17,7 +11,7 @@ var initialState = {
   },
   scale: 1
 };
-var chartLayoutSlice = (0, _toolkit.createSlice)({
+var chartLayoutSlice = createSlice({
   name: 'chartLayout',
   initialState,
   reducers: {
@@ -40,14 +34,10 @@ var chartLayoutSlice = (0, _toolkit.createSlice)({
     }
   }
 });
-var {
+export var {
   setMargin,
   setLayout,
   setChartSize,
   setScale
 } = chartLayoutSlice.actions;
-exports.setScale = setScale;
-exports.setChartSize = setChartSize;
-exports.setLayout = setLayout;
-exports.setMargin = setMargin;
-var chartLayoutReducer = exports.chartLayoutReducer = chartLayoutSlice.reducer;
+export var chartLayoutReducer = chartLayoutSlice.reducer;

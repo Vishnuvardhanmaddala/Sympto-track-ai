@@ -1,32 +1,23 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getTooltipCSSClassName = getTooltipCSSClassName;
-exports.getTooltipTranslate = getTooltipTranslate;
-exports.getTooltipTranslateXY = getTooltipTranslateXY;
-exports.getTransformStyle = getTransformStyle;
-var _clsx = require("clsx");
-var _DataUtils = require("../DataUtils");
+import { clsx } from 'clsx';
+import { isNumber } from '../DataUtils';
 var CSS_CLASS_PREFIX = 'recharts-tooltip-wrapper';
 var TOOLTIP_HIDDEN = {
   visibility: 'hidden'
 };
-function getTooltipCSSClassName(_ref) {
+export function getTooltipCSSClassName(_ref) {
   var {
     coordinate,
     translateX,
     translateY
   } = _ref;
-  return (0, _clsx.clsx)(CSS_CLASS_PREFIX, {
-    ["".concat(CSS_CLASS_PREFIX, "-right")]: (0, _DataUtils.isNumber)(translateX) && coordinate && (0, _DataUtils.isNumber)(coordinate.x) && translateX >= coordinate.x,
-    ["".concat(CSS_CLASS_PREFIX, "-left")]: (0, _DataUtils.isNumber)(translateX) && coordinate && (0, _DataUtils.isNumber)(coordinate.x) && translateX < coordinate.x,
-    ["".concat(CSS_CLASS_PREFIX, "-bottom")]: (0, _DataUtils.isNumber)(translateY) && coordinate && (0, _DataUtils.isNumber)(coordinate.y) && translateY >= coordinate.y,
-    ["".concat(CSS_CLASS_PREFIX, "-top")]: (0, _DataUtils.isNumber)(translateY) && coordinate && (0, _DataUtils.isNumber)(coordinate.y) && translateY < coordinate.y
+  return clsx(CSS_CLASS_PREFIX, {
+    ["".concat(CSS_CLASS_PREFIX, "-right")]: isNumber(translateX) && coordinate && isNumber(coordinate.x) && translateX >= coordinate.x,
+    ["".concat(CSS_CLASS_PREFIX, "-left")]: isNumber(translateX) && coordinate && isNumber(coordinate.x) && translateX < coordinate.x,
+    ["".concat(CSS_CLASS_PREFIX, "-bottom")]: isNumber(translateY) && coordinate && isNumber(coordinate.y) && translateY >= coordinate.y,
+    ["".concat(CSS_CLASS_PREFIX, "-top")]: isNumber(translateY) && coordinate && isNumber(coordinate.y) && translateY < coordinate.y
   });
 }
-function getTooltipTranslateXY(_ref2) {
+export function getTooltipTranslateXY(_ref2) {
   var {
     allowEscapeViewBox,
     coordinate,
@@ -38,7 +29,7 @@ function getTooltipTranslateXY(_ref2) {
     viewBox,
     viewBoxDimension
   } = _ref2;
-  if (position && (0, _DataUtils.isNumber)(position[key])) {
+  if (position && isNumber(position[key])) {
     return position[key];
   }
   var negative = coordinate[key] - tooltipDimension - (offset > 0 ? offset : 0);
@@ -68,7 +59,7 @@ function getTooltipTranslateXY(_ref2) {
   }
   return Math.max(positive, viewBoxKey);
 }
-function getTransformStyle(_ref3) {
+export function getTransformStyle(_ref3) {
   var {
     translateX,
     translateY,
@@ -78,7 +69,7 @@ function getTransformStyle(_ref3) {
     transform: useTranslate3d ? "translate3d(".concat(translateX, "px, ").concat(translateY, "px, 0)") : "translate(".concat(translateX, "px, ").concat(translateY, "px)")
   };
 }
-function getTooltipTranslate(_ref4) {
+export function getTooltipTranslate(_ref4) {
   var {
     allowEscapeViewBox,
     coordinate,

@@ -1,10 +1,5 @@
-"use strict";
+import { createSlice } from '@reduxjs/toolkit';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.setBrushSettings = exports.brushSlice = exports.brushReducer = void 0;
-var _toolkit = require("@reduxjs/toolkit");
 /**
  * From all Brush properties, only height has a default value and will always be defined.
  * Other properties are nullable and will be computed from offsets and margins if they are not set.
@@ -22,7 +17,7 @@ var initialState = {
     left: 0
   }
 };
-var brushSlice = exports.brushSlice = (0, _toolkit.createSlice)({
+export var brushSlice = createSlice({
   name: 'brush',
   initialState,
   reducers: {
@@ -34,8 +29,7 @@ var brushSlice = exports.brushSlice = (0, _toolkit.createSlice)({
     }
   }
 });
-var {
+export var {
   setBrushSettings
 } = brushSlice.actions;
-exports.setBrushSettings = setBrushSettings;
-var brushReducer = exports.brushReducer = brushSlice.reducer;
+export var brushReducer = brushSlice.reducer;

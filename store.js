@@ -1,53 +1,47 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+import { autoBatchEnhancer, combineReducers, configureStore } from '@reduxjs/toolkit';
+import { optionsReducer } from './optionsSlice';
+import { tooltipReducer } from './tooltipSlice';
+import { chartDataReducer } from './chartDataSlice';
+import { chartLayoutReducer } from './layoutSlice';
+import { mouseClickMiddleware, mouseMoveMiddleware } from './mouseEventsMiddleware';
+import { reduxDevtoolsJsonStringifyReplacer } from './reduxDevtoolsJsonStringifyReplacer';
+import { cartesianAxisReducer } from './cartesianAxisSlice';
+import { graphicalItemsReducer } from './graphicalItemsSlice';
+import { referenceElementsReducer } from './referenceElementsSlice';
+import { brushReducer } from './brushSlice';
+import { legendReducer } from './legendSlice';
+import { rootPropsReducer } from './rootPropsSlice';
+import { polarAxisReducer } from './polarAxisSlice';
+import { polarOptionsReducer } from './polarOptionsSlice';
+import { keyboardEventsMiddleware } from './keyboardEventsMiddleware';
+import { externalEventsMiddleware } from './externalEventsMiddleware';
+import { touchEventMiddleware } from './touchEventsMiddleware';
+import { errorBarReducer } from './errorBarSlice';
+import { Global } from '../util/Global';
+import { zIndexReducer } from './zIndexSlice';
+import { eventSettingsReducer } from './eventSettingsSlice';
+import { renderedTicksReducer } from './renderedTicksSlice';
+var rootReducer = combineReducers({
+  brush: brushReducer,
+  cartesianAxis: cartesianAxisReducer,
+  chartData: chartDataReducer,
+  errorBars: errorBarReducer,
+  eventSettings: eventSettingsReducer,
+  graphicalItems: graphicalItemsReducer,
+  layout: chartLayoutReducer,
+  legend: legendReducer,
+  options: optionsReducer,
+  polarAxis: polarAxisReducer,
+  polarOptions: polarOptionsReducer,
+  referenceElements: referenceElementsReducer,
+  renderedTicks: renderedTicksReducer,
+  rootProps: rootPropsReducer,
+  tooltip: tooltipReducer,
+  zIndex: zIndexReducer
 });
-exports.createRechartsStore = void 0;
-var _toolkit = require("@reduxjs/toolkit");
-var _optionsSlice = require("./optionsSlice");
-var _tooltipSlice = require("./tooltipSlice");
-var _chartDataSlice = require("./chartDataSlice");
-var _layoutSlice = require("./layoutSlice");
-var _mouseEventsMiddleware = require("./mouseEventsMiddleware");
-var _reduxDevtoolsJsonStringifyReplacer = require("./reduxDevtoolsJsonStringifyReplacer");
-var _cartesianAxisSlice = require("./cartesianAxisSlice");
-var _graphicalItemsSlice = require("./graphicalItemsSlice");
-var _referenceElementsSlice = require("./referenceElementsSlice");
-var _brushSlice = require("./brushSlice");
-var _legendSlice = require("./legendSlice");
-var _rootPropsSlice = require("./rootPropsSlice");
-var _polarAxisSlice = require("./polarAxisSlice");
-var _polarOptionsSlice = require("./polarOptionsSlice");
-var _keyboardEventsMiddleware = require("./keyboardEventsMiddleware");
-var _externalEventsMiddleware = require("./externalEventsMiddleware");
-var _touchEventsMiddleware = require("./touchEventsMiddleware");
-var _errorBarSlice = require("./errorBarSlice");
-var _Global = require("../util/Global");
-var _zIndexSlice = require("./zIndexSlice");
-var _eventSettingsSlice = require("./eventSettingsSlice");
-var _renderedTicksSlice = require("./renderedTicksSlice");
-var rootReducer = (0, _toolkit.combineReducers)({
-  brush: _brushSlice.brushReducer,
-  cartesianAxis: _cartesianAxisSlice.cartesianAxisReducer,
-  chartData: _chartDataSlice.chartDataReducer,
-  errorBars: _errorBarSlice.errorBarReducer,
-  eventSettings: _eventSettingsSlice.eventSettingsReducer,
-  graphicalItems: _graphicalItemsSlice.graphicalItemsReducer,
-  layout: _layoutSlice.chartLayoutReducer,
-  legend: _legendSlice.legendReducer,
-  options: _optionsSlice.optionsReducer,
-  polarAxis: _polarAxisSlice.polarAxisReducer,
-  polarOptions: _polarOptionsSlice.polarOptionsReducer,
-  referenceElements: _referenceElementsSlice.referenceElementsReducer,
-  renderedTicks: _renderedTicksSlice.renderedTicksReducer,
-  rootProps: _rootPropsSlice.rootPropsReducer,
-  tooltip: _tooltipSlice.tooltipReducer,
-  zIndex: _zIndexSlice.zIndexReducer
-});
-var createRechartsStore = exports.createRechartsStore = function createRechartsStore(preloadedState) {
+export var createRechartsStore = function createRechartsStore(preloadedState) {
   var chartName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'Chart';
-  return (0, _toolkit.configureStore)({
+  return configureStore({
     reducer: rootReducer,
     // redux-toolkit v1 types are unhappy with the preloadedState type. Remove the `as any` when bumping to v2
     preloadedState: preloadedState,
@@ -56,8 +50,8 @@ var createRechartsStore = exports.createRechartsStore = function createRechartsS
       var _process$env$NODE_ENV;
       return getDefaultMiddleware({
         serializableCheck: false,
-        immutableCheck: !['commonjs', 'es6', 'production'].includes((_process$env$NODE_ENV = "commonjs") !== null && _process$env$NODE_ENV !== void 0 ? _process$env$NODE_ENV : '')
-      }).concat([_mouseEventsMiddleware.mouseClickMiddleware.middleware, _mouseEventsMiddleware.mouseMoveMiddleware.middleware, _keyboardEventsMiddleware.keyboardEventsMiddleware.middleware, _externalEventsMiddleware.externalEventsMiddleware.middleware, _touchEventsMiddleware.touchEventMiddleware.middleware]);
+        immutableCheck: !['commonjs', 'es6', 'production'].includes((_process$env$NODE_ENV = "es6") !== null && _process$env$NODE_ENV !== void 0 ? _process$env$NODE_ENV : '')
+      }).concat([mouseClickMiddleware.middleware, mouseMoveMiddleware.middleware, keyboardEventsMiddleware.middleware, externalEventsMiddleware.middleware, touchEventMiddleware.middleware]);
     },
     /*
      * I can't find out how to satisfy typescript here.
@@ -79,13 +73,13 @@ var createRechartsStore = exports.createRechartsStore = function createRechartsS
         // @ts-expect-error RTK v2 behaviour on RTK v1 types
         enhancers = getDefaultEnhancers();
       }
-      return enhancers.concat((0, _toolkit.autoBatchEnhancer)({
+      return enhancers.concat(autoBatchEnhancer({
         type: 'raf'
       }));
     },
-    devTools: _Global.Global.devToolsEnabled && {
+    devTools: Global.devToolsEnabled && {
       serialize: {
-        replacer: _reduxDevtoolsJsonStringifyReplacer.reduxDevtoolsJsonStringifyReplacer
+        replacer: reduxDevtoolsJsonStringifyReplacer
       },
       name: "recharts-".concat(chartName)
     }

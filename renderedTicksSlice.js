@@ -1,11 +1,3 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.setRenderedTicks = exports.renderedTicksSlice = exports.renderedTicksReducer = exports.removeRenderedTicks = void 0;
-var _toolkit = require("@reduxjs/toolkit");
-var _immer = require("immer");
 /**
  * @fileOverview this stores actually rendered ticks.
  *
@@ -15,12 +7,13 @@ var _immer = require("immer");
  *
  * This renderedTickSlice stores those actually rendered ticks so that we can return them from a hook later.
  */
-
+import { createSlice } from '@reduxjs/toolkit';
+import { castDraft } from 'immer';
 var initialState = {
   xAxis: {},
   yAxis: {}
 };
-var renderedTicksSlice = exports.renderedTicksSlice = (0, _toolkit.createSlice)({
+export var renderedTicksSlice = createSlice({
   name: 'renderedTicks',
   initialState,
   reducers: {
@@ -30,7 +23,7 @@ var renderedTicksSlice = exports.renderedTicksSlice = (0, _toolkit.createSlice)(
         axisId,
         ticks
       } = action.payload;
-      state[axisType][axisId] = (0, _immer.castDraft)(ticks);
+      state[axisType][axisId] = castDraft(ticks);
     },
     removeRenderedTicks: (state, action) => {
       var {
@@ -41,10 +34,8 @@ var renderedTicksSlice = exports.renderedTicksSlice = (0, _toolkit.createSlice)(
     }
   }
 });
-var {
+export var {
   setRenderedTicks,
   removeRenderedTicks
 } = renderedTicksSlice.actions;
-exports.removeRenderedTicks = removeRenderedTicks;
-exports.setRenderedTicks = setRenderedTicks;
-var renderedTicksReducer = exports.renderedTicksReducer = renderedTicksSlice.reducer;
+export var renderedTicksReducer = renderedTicksSlice.reducer;

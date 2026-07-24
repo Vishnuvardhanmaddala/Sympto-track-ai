@@ -1,11 +1,6 @@
-"use strict";
+import { createSlice, current, prepareAutoBatched } from '@reduxjs/toolkit';
+import { castDraft } from 'immer';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.tooltipReducer = exports.setTooltipSettingsState = exports.setSyncInteraction = exports.setMouseOverAxisIndex = exports.setMouseClickAxisIndex = exports.setKeyboardInteraction = exports.setActiveMouseOverItemIndex = exports.setActiveClickItemIndex = exports.replaceTooltipEntrySettings = exports.removeTooltipEntrySettings = exports.noInteraction = exports.mouseLeaveItem = exports.mouseLeaveChart = exports.initialState = exports.addTooltipEntrySettings = void 0;
-var _toolkit = require("@reduxjs/toolkit");
-var _immer = require("immer");
 /**
  * One Tooltip can display multiple TooltipPayloadEntries at a time.
  */
@@ -59,7 +54,7 @@ var _immer = require("immer");
  * and then the selectors and Tooltip will decide which of the interaction states to use.
  */
 
-var noInteraction = exports.noInteraction = {
+export var noInteraction = {
   active: false,
   index: null,
   dataKey: undefined,
@@ -75,7 +70,7 @@ var noInteraction = exports.noInteraction = {
  * - The data that individual graphical items wish to be displayed in case the tooltip gets activated
  */
 
-var initialState = exports.initialState = {
+export var initialState = {
   itemInteraction: {
     click: noInteraction,
     hover: noInteraction
@@ -114,15 +109,15 @@ var initialState = exports.initialState = {
  * with the whole chart, not with a specific graphical item.
  */
 
-var tooltipSlice = (0, _toolkit.createSlice)({
+var tooltipSlice = createSlice({
   name: 'tooltip',
   initialState,
   reducers: {
     addTooltipEntrySettings: {
       reducer(state, action) {
-        state.tooltipItemPayloads.push((0, _immer.castDraft)(action.payload));
+        state.tooltipItemPayloads.push(castDraft(action.payload));
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     replaceTooltipEntrySettings: {
       reducer(state, action) {
@@ -130,21 +125,21 @@ var tooltipSlice = (0, _toolkit.createSlice)({
           prev,
           next
         } = action.payload;
-        var index = (0, _toolkit.current)(state).tooltipItemPayloads.indexOf((0, _immer.castDraft)(prev));
+        var index = current(state).tooltipItemPayloads.indexOf(castDraft(prev));
         if (index > -1) {
-          state.tooltipItemPayloads[index] = (0, _immer.castDraft)(next);
+          state.tooltipItemPayloads[index] = castDraft(next);
         }
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     removeTooltipEntrySettings: {
       reducer(state, action) {
-        var index = (0, _toolkit.current)(state).tooltipItemPayloads.indexOf((0, _immer.castDraft)(action.payload));
+        var index = current(state).tooltipItemPayloads.indexOf(castDraft(action.payload));
         if (index > -1) {
           state.tooltipItemPayloads.splice(index, 1);
         }
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     setTooltipSettingsState(state, action) {
       state.settings = action.payload;
@@ -207,7 +202,7 @@ var tooltipSlice = (0, _toolkit.createSlice)({
     }
   }
 });
-var {
+export var {
   addTooltipEntrySettings,
   replaceTooltipEntrySettings,
   removeTooltipEntrySettings,
@@ -221,16 +216,4 @@ var {
   setSyncInteraction,
   setKeyboardInteraction
 } = tooltipSlice.actions;
-exports.setKeyboardInteraction = setKeyboardInteraction;
-exports.setSyncInteraction = setSyncInteraction;
-exports.setMouseClickAxisIndex = setMouseClickAxisIndex;
-exports.setMouseOverAxisIndex = setMouseOverAxisIndex;
-exports.setActiveClickItemIndex = setActiveClickItemIndex;
-exports.mouseLeaveChart = mouseLeaveChart;
-exports.mouseLeaveItem = mouseLeaveItem;
-exports.setActiveMouseOverItemIndex = setActiveMouseOverItemIndex;
-exports.setTooltipSettingsState = setTooltipSettingsState;
-exports.removeTooltipEntrySettings = removeTooltipEntrySettings;
-exports.replaceTooltipEntrySettings = replaceTooltipEntrySettings;
-exports.addTooltipEntrySettings = addTooltipEntrySettings;
-var tooltipReducer = exports.tooltipReducer = tooltipSlice.reducer;
+export var tooltipReducer = tooltipSlice.reducer;

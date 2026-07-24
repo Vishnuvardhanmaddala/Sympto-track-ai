@@ -1,10 +1,5 @@
-"use strict";
+import { createSlice } from '@reduxjs/toolkit';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.replaceErrorBar = exports.removeErrorBar = exports.errorBarReducer = exports.addErrorBar = void 0;
-var _toolkit = require("@reduxjs/toolkit");
 /**
  * ErrorBars have lot more settings but all the others are scoped to the component itself.
  * Only some of them required to be reported to the global store because XAxis and YAxis need to know
@@ -12,7 +7,7 @@ var _toolkit = require("@reduxjs/toolkit");
  */
 
 var initialState = {};
-var errorBarSlice = (0, _toolkit.createSlice)({
+var errorBarSlice = createSlice({
   name: 'errorBars',
   initialState,
   reducers: {
@@ -47,12 +42,9 @@ var errorBarSlice = (0, _toolkit.createSlice)({
     }
   }
 });
-var {
+export var {
   addErrorBar,
   replaceErrorBar,
   removeErrorBar
 } = errorBarSlice.actions;
-exports.removeErrorBar = removeErrorBar;
-exports.replaceErrorBar = replaceErrorBar;
-exports.addErrorBar = addErrorBar;
-var errorBarReducer = exports.errorBarReducer = errorBarSlice.reducer;
+export var errorBarReducer = errorBarSlice.reducer;

@@ -1,21 +1,16 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.updateYAxisWidth = exports.replaceZAxis = exports.replaceYAxis = exports.replaceXAxis = exports.removeZAxis = exports.removeYAxis = exports.removeXAxis = exports.defaultAxisId = exports.cartesianAxisReducer = exports.addZAxis = exports.addYAxis = exports.addXAxis = void 0;
-var _toolkit = require("@reduxjs/toolkit");
-var _immer = require("immer");
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+import { createSlice, prepareAutoBatched } from '@reduxjs/toolkit';
+import { castDraft } from 'immer';
+
 /**
  * @inline
  */
 
-var defaultAxisId = exports.defaultAxisId = 0;
+export var defaultAxisId = 0;
 
 /**
  * Properties shared in X, Y, and Z axes.
@@ -73,15 +68,15 @@ var initialState = {
  * This is the slice where each individual Axis element pushes its own configuration.
  * Prefer to use this one instead of axisSlice.
  */
-var cartesianAxisSlice = (0, _toolkit.createSlice)({
+var cartesianAxisSlice = createSlice({
   name: 'cartesianAxis',
   initialState,
   reducers: {
     addXAxis: {
       reducer(state, action) {
-        state.xAxis[action.payload.id] = (0, _immer.castDraft)(action.payload);
+        state.xAxis[action.payload.id] = castDraft(action.payload);
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     replaceXAxis: {
       reducer(state, action) {
@@ -93,22 +88,22 @@ var cartesianAxisSlice = (0, _toolkit.createSlice)({
           if (prev.id !== next.id) {
             delete state.xAxis[prev.id];
           }
-          state.xAxis[next.id] = (0, _immer.castDraft)(next);
+          state.xAxis[next.id] = castDraft(next);
         }
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     removeXAxis: {
       reducer(state, action) {
         delete state.xAxis[action.payload.id];
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     addYAxis: {
       reducer(state, action) {
-        state.yAxis[action.payload.id] = (0, _immer.castDraft)(action.payload);
+        state.yAxis[action.payload.id] = castDraft(action.payload);
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     replaceYAxis: {
       reducer(state, action) {
@@ -120,22 +115,22 @@ var cartesianAxisSlice = (0, _toolkit.createSlice)({
           if (prev.id !== next.id) {
             delete state.yAxis[prev.id];
           }
-          state.yAxis[next.id] = (0, _immer.castDraft)(next);
+          state.yAxis[next.id] = castDraft(next);
         }
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     removeYAxis: {
       reducer(state, action) {
         delete state.yAxis[action.payload.id];
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     addZAxis: {
       reducer(state, action) {
-        state.zAxis[action.payload.id] = (0, _immer.castDraft)(action.payload);
+        state.zAxis[action.payload.id] = castDraft(action.payload);
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     replaceZAxis: {
       reducer(state, action) {
@@ -147,16 +142,16 @@ var cartesianAxisSlice = (0, _toolkit.createSlice)({
           if (prev.id !== next.id) {
             delete state.zAxis[prev.id];
           }
-          state.zAxis[next.id] = (0, _immer.castDraft)(next);
+          state.zAxis[next.id] = castDraft(next);
         }
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     removeZAxis: {
       reducer(state, action) {
         delete state.zAxis[action.payload.id];
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     updateYAxisWidth(state, action) {
       var {
@@ -181,7 +176,7 @@ var cartesianAxisSlice = (0, _toolkit.createSlice)({
     }
   }
 });
-var {
+export var {
   addXAxis,
   replaceXAxis,
   removeXAxis,
@@ -193,14 +188,4 @@ var {
   removeZAxis,
   updateYAxisWidth
 } = cartesianAxisSlice.actions;
-exports.updateYAxisWidth = updateYAxisWidth;
-exports.removeZAxis = removeZAxis;
-exports.replaceZAxis = replaceZAxis;
-exports.addZAxis = addZAxis;
-exports.removeYAxis = removeYAxis;
-exports.replaceYAxis = replaceYAxis;
-exports.addYAxis = addYAxis;
-exports.removeXAxis = removeXAxis;
-exports.replaceXAxis = replaceXAxis;
-exports.addXAxis = addXAxis;
-var cartesianAxisReducer = exports.cartesianAxisReducer = cartesianAxisSlice.reducer;
+export var cartesianAxisReducer = cartesianAxisSlice.reducer;

@@ -1,25 +1,19 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.mouseMoveMiddleware = exports.mouseMoveAction = exports.mouseClickMiddleware = exports.mouseClickAction = void 0;
-var _toolkit = require("@reduxjs/toolkit");
-var _tooltipSlice = require("./tooltipSlice");
-var _selectActivePropsFromChartPointer = require("./selectors/selectActivePropsFromChartPointer");
-var _selectTooltipEventType = require("./selectors/selectTooltipEventType");
-var _getRelativeCoordinate = require("../util/getRelativeCoordinate");
-var mouseClickAction = exports.mouseClickAction = (0, _toolkit.createAction)('mouseClick');
-var mouseClickMiddleware = exports.mouseClickMiddleware = (0, _toolkit.createListenerMiddleware)();
+import { createAction, createListenerMiddleware } from '@reduxjs/toolkit';
+import { mouseLeaveChart, setMouseClickAxisIndex, setMouseOverAxisIndex } from './tooltipSlice';
+import { selectActivePropsFromChartPointer } from './selectors/selectActivePropsFromChartPointer';
+import { selectTooltipEventType } from './selectors/selectTooltipEventType';
+import { getRelativeCoordinate } from '../util/getRelativeCoordinate';
+export var mouseClickAction = createAction('mouseClick');
+export var mouseClickMiddleware = createListenerMiddleware();
 
 // TODO: there's a bug here when you click the chart the activeIndex resets to zero
 mouseClickMiddleware.startListening({
   actionCreator: mouseClickAction,
   effect: (action, listenerApi) => {
     var mousePointer = action.payload;
-    var activeProps = (0, _selectActivePropsFromChartPointer.selectActivePropsFromChartPointer)(listenerApi.getState(), (0, _getRelativeCoordinate.getRelativeCoordinate)(mousePointer));
+    var activeProps = selectActivePropsFromChartPointer(listenerApi.getState(), getRelativeCoordinate(mousePointer));
     if ((activeProps === null || activeProps === void 0 ? void 0 : activeProps.activeIndex) != null) {
-      listenerApi.dispatch((0, _tooltipSlice.setMouseClickAxisIndex)({
+      listenerApi.dispatch(setMouseClickAxisIndex({
         activeIndex: activeProps.activeIndex,
         activeDataKey: undefined,
         activeCoordinate: activeProps.activeCoordinate
@@ -27,8 +21,8 @@ mouseClickMiddleware.startListening({
     }
   }
 });
-var mouseMoveAction = exports.mouseMoveAction = (0, _toolkit.createAction)('mouseMove');
-var mouseMoveMiddleware = exports.mouseMoveMiddleware = (0, _toolkit.createListenerMiddleware)();
+export var mouseMoveAction = createAction('mouseMove');
+export var mouseMoveMiddleware = createListenerMiddleware();
 
 /*
  * This single rafId is safe because:
@@ -67,14 +61,14 @@ mouseMoveMiddleware.startListening({
      * because once we leave the current event loop, the mousePointer event object will lose
      * reference to currentTarget which getRelativeCoordinate uses.
      */
-    latestChartPointer = (0, _getRelativeCoordinate.getRelativeCoordinate)(mousePointer);
+    latestChartPointer = getRelativeCoordinate(mousePointer);
     var callback = () => {
       /*
        * Here we read a fresh state again inside the callback to ensure we have the latest state values
        * after any potential actions that may have been dispatched between the original event and this callback.
        */
       var currentState = listenerApi.getState();
-      var tooltipEventType = (0, _selectTooltipEventType.selectTooltipEventType)(currentState, currentState.tooltip.settings.shared);
+      var tooltipEventType = selectTooltipEventType(currentState, currentState.tooltip.settings.shared);
       if (!latestChartPointer) {
         rafId = null;
         timeoutId = null;
@@ -86,16 +80,16 @@ mouseMoveMiddleware.startListening({
        * Graphical items have its own mouse events handling mechanism where they attach events directly to the items.
        */
       if (tooltipEventType === 'axis') {
-        var activeProps = (0, _selectActivePropsFromChartPointer.selectActivePropsFromChartPointer)(currentState, latestChartPointer);
+        var activeProps = selectActivePropsFromChartPointer(currentState, latestChartPointer);
         if ((activeProps === null || activeProps === void 0 ? void 0 : activeProps.activeIndex) != null) {
-          listenerApi.dispatch((0, _tooltipSlice.setMouseOverAxisIndex)({
+          listenerApi.dispatch(setMouseOverAxisIndex({
             activeIndex: activeProps.activeIndex,
             activeDataKey: undefined,
             activeCoordinate: activeProps.activeCoordinate
           }));
         } else {
           // this is needed to clear tooltip state when the mouse moves out of the inRange (svg - offset) function, but not yet out of the svg
-          listenerApi.dispatch((0, _tooltipSlice.mouseLeaveChart)());
+          listenerApi.dispatch(mouseLeaveChart());
         }
       }
       rafId = null;

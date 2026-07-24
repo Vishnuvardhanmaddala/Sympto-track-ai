@@ -1,16 +1,10 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.setEventSettings = exports.initialEventSettingsState = exports.eventSettingsReducer = void 0;
-var _toolkit = require("@reduxjs/toolkit");
-var _immer = require("immer");
-var initialEventSettingsState = exports.initialEventSettingsState = {
+import { createSlice } from '@reduxjs/toolkit';
+import { castDraft } from 'immer';
+export var initialEventSettingsState = {
   throttleDelay: 'raf',
   throttledEvents: ['mousemove', 'touchmove', 'pointermove', 'scroll', 'wheel']
 };
-var eventSettingsSlice = (0, _toolkit.createSlice)({
+var eventSettingsSlice = createSlice({
   name: 'eventSettings',
   initialState: initialEventSettingsState,
   reducers: {
@@ -19,13 +13,12 @@ var eventSettingsSlice = (0, _toolkit.createSlice)({
         state.throttleDelay = action.payload.throttleDelay;
       }
       if (action.payload.throttledEvents != null) {
-        state.throttledEvents = (0, _immer.castDraft)(action.payload.throttledEvents);
+        state.throttledEvents = castDraft(action.payload.throttledEvents);
       }
     }
   }
 });
-var {
+export var {
   setEventSettings
 } = eventSettingsSlice.actions;
-exports.setEventSettings = setEventSettings;
-var eventSettingsReducer = exports.eventSettingsReducer = eventSettingsSlice.reducer;
+export var eventSettingsReducer = eventSettingsSlice.reducer;

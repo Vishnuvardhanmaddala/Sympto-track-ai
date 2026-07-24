@@ -1,11 +1,6 @@
-"use strict";
+import { createSlice } from '@reduxjs/toolkit';
+import { castDraft } from 'immer';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.setDataStartEndIndexes = exports.setComputedData = exports.setChartData = exports.initialChartDataState = exports.chartDataReducer = void 0;
-var _toolkit = require("@reduxjs/toolkit");
-var _immer = require("immer");
 /**
  * This is the data that's coming through main chart `data` prop
  * Recharts is very flexible in what it accepts so the type is very flexible too.
@@ -25,18 +20,18 @@ var _immer = require("immer");
  * TL;DR: ChartData after dataKey.
  */
 
-var initialChartDataState = exports.initialChartDataState = {
+export var initialChartDataState = {
   chartData: undefined,
   computedData: undefined,
   dataStartIndex: 0,
   dataEndIndex: 0
 };
-var chartDataSlice = (0, _toolkit.createSlice)({
+var chartDataSlice = createSlice({
   name: 'chartData',
   initialState: initialChartDataState,
   reducers: {
     setChartData(state, action) {
-      state.chartData = (0, _immer.castDraft)(action.payload);
+      state.chartData = castDraft(action.payload);
       if (action.payload == null) {
         state.dataStartIndex = 0;
         state.dataEndIndex = 0;
@@ -63,12 +58,9 @@ var chartDataSlice = (0, _toolkit.createSlice)({
     }
   }
 });
-var {
+export var {
   setChartData,
   setDataStartEndIndexes,
   setComputedData
 } = chartDataSlice.actions;
-exports.setComputedData = setComputedData;
-exports.setDataStartEndIndexes = setDataStartEndIndexes;
-exports.setChartData = setChartData;
-var chartDataReducer = exports.chartDataReducer = chartDataSlice.reducer;
+export var chartDataReducer = chartDataSlice.reducer;

@@ -1,11 +1,6 @@
-"use strict";
+import { createSlice, current, prepareAutoBatched } from '@reduxjs/toolkit';
+import { castDraft } from 'immer';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.replacePolarGraphicalItem = exports.replaceCartesianGraphicalItem = exports.removePolarGraphicalItem = exports.removeCartesianGraphicalItem = exports.graphicalItemsReducer = exports.addPolarGraphicalItem = exports.addCartesianGraphicalItem = void 0;
-var _toolkit = require("@reduxjs/toolkit");
-var _immer = require("immer");
 /**
  * Unique ID of the graphical item.
  * This is used to identify the graphical item in the state and in the React tree.
@@ -16,15 +11,15 @@ var initialState = {
   cartesianItems: [],
   polarItems: []
 };
-var graphicalItemsSlice = (0, _toolkit.createSlice)({
+var graphicalItemsSlice = createSlice({
   name: 'graphicalItems',
   initialState,
   reducers: {
     addCartesianGraphicalItem: {
       reducer(state, action) {
-        state.cartesianItems.push((0, _immer.castDraft)(action.payload));
+        state.cartesianItems.push(castDraft(action.payload));
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     replaceCartesianGraphicalItem: {
       reducer(state, action) {
@@ -32,36 +27,36 @@ var graphicalItemsSlice = (0, _toolkit.createSlice)({
           prev,
           next
         } = action.payload;
-        var index = (0, _toolkit.current)(state).cartesianItems.indexOf((0, _immer.castDraft)(prev));
+        var index = current(state).cartesianItems.indexOf(castDraft(prev));
         if (index > -1) {
-          state.cartesianItems[index] = (0, _immer.castDraft)(next);
+          state.cartesianItems[index] = castDraft(next);
         }
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     removeCartesianGraphicalItem: {
       reducer(state, action) {
-        var index = (0, _toolkit.current)(state).cartesianItems.indexOf((0, _immer.castDraft)(action.payload));
+        var index = current(state).cartesianItems.indexOf(castDraft(action.payload));
         if (index > -1) {
           state.cartesianItems.splice(index, 1);
         }
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     addPolarGraphicalItem: {
       reducer(state, action) {
-        state.polarItems.push((0, _immer.castDraft)(action.payload));
+        state.polarItems.push(castDraft(action.payload));
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     removePolarGraphicalItem: {
       reducer(state, action) {
-        var index = (0, _toolkit.current)(state).polarItems.indexOf((0, _immer.castDraft)(action.payload));
+        var index = current(state).polarItems.indexOf(castDraft(action.payload));
         if (index > -1) {
           state.polarItems.splice(index, 1);
         }
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     replacePolarGraphicalItem: {
       reducer(state, action) {
@@ -69,16 +64,16 @@ var graphicalItemsSlice = (0, _toolkit.createSlice)({
           prev,
           next
         } = action.payload;
-        var index = (0, _toolkit.current)(state).polarItems.indexOf((0, _immer.castDraft)(prev));
+        var index = current(state).polarItems.indexOf(castDraft(prev));
         if (index > -1) {
-          state.polarItems[index] = (0, _immer.castDraft)(next);
+          state.polarItems[index] = castDraft(next);
         }
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     }
   }
 });
-var {
+export var {
   addCartesianGraphicalItem,
   replaceCartesianGraphicalItem,
   removeCartesianGraphicalItem,
@@ -86,10 +81,4 @@ var {
   removePolarGraphicalItem,
   replacePolarGraphicalItem
 } = graphicalItemsSlice.actions;
-exports.replacePolarGraphicalItem = replacePolarGraphicalItem;
-exports.removePolarGraphicalItem = removePolarGraphicalItem;
-exports.addPolarGraphicalItem = addPolarGraphicalItem;
-exports.removeCartesianGraphicalItem = removeCartesianGraphicalItem;
-exports.replaceCartesianGraphicalItem = replaceCartesianGraphicalItem;
-exports.addCartesianGraphicalItem = addCartesianGraphicalItem;
-var graphicalItemsReducer = exports.graphicalItemsReducer = graphicalItemsSlice.reducer;
+export var graphicalItemsReducer = graphicalItemsSlice.reducer;

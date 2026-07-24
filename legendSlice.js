@@ -1,11 +1,6 @@
-"use strict";
+import { createSlice, current, prepareAutoBatched } from '@reduxjs/toolkit';
+import { castDraft } from 'immer';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.setLegendSize = exports.setLegendSettings = exports.replaceLegendPayload = exports.removeLegendPayload = exports.legendReducer = exports.addLegendPayload = void 0;
-var _toolkit = require("@reduxjs/toolkit");
-var _immer = require("immer");
 /**
  * The properties inside this state update independently of each other and quite often.
  * When selecting, never select the whole state because you are going to get
@@ -27,7 +22,7 @@ var initialState = {
   },
   payload: []
 };
-var legendSlice = (0, _toolkit.createSlice)({
+var legendSlice = createSlice({
   name: 'legend',
   initialState,
   reducers: {
@@ -43,9 +38,9 @@ var legendSlice = (0, _toolkit.createSlice)({
     },
     addLegendPayload: {
       reducer(state, action) {
-        state.payload.push((0, _immer.castDraft)(action.payload));
+        state.payload.push(castDraft(action.payload));
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     replaceLegendPayload: {
       reducer(state, action) {
@@ -53,34 +48,29 @@ var legendSlice = (0, _toolkit.createSlice)({
           prev,
           next
         } = action.payload;
-        var index = (0, _toolkit.current)(state).payload.indexOf((0, _immer.castDraft)(prev));
+        var index = current(state).payload.indexOf(castDraft(prev));
         if (index > -1) {
-          state.payload[index] = (0, _immer.castDraft)(next);
+          state.payload[index] = castDraft(next);
         }
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     },
     removeLegendPayload: {
       reducer(state, action) {
-        var index = (0, _toolkit.current)(state).payload.indexOf((0, _immer.castDraft)(action.payload));
+        var index = current(state).payload.indexOf(castDraft(action.payload));
         if (index > -1) {
           state.payload.splice(index, 1);
         }
       },
-      prepare: (0, _toolkit.prepareAutoBatched)()
+      prepare: prepareAutoBatched()
     }
   }
 });
-var {
+export var {
   setLegendSize,
   setLegendSettings,
   addLegendPayload,
   replaceLegendPayload,
   removeLegendPayload
 } = legendSlice.actions;
-exports.removeLegendPayload = removeLegendPayload;
-exports.replaceLegendPayload = replaceLegendPayload;
-exports.addLegendPayload = addLegendPayload;
-exports.setLegendSettings = setLegendSettings;
-exports.setLegendSize = setLegendSize;
-var legendReducer = exports.legendReducer = legendSlice.reducer;
+export var legendReducer = legendSlice.reducer;

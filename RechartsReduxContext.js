@@ -1,10 +1,5 @@
-"use strict";
+import { createContext } from 'react';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.RechartsReduxContext = void 0;
-var _react = require("react");
 /*
  * This is a copy of the React-Redux context type, but with our own store type.
  * We could import directly from react-redux like this:
@@ -19,4 +14,4 @@ var _react = require("react");
  *
  * https://react-redux.js.org/using-react-redux/accessing-store#providing-custom-context
  */
-var RechartsReduxContext = exports.RechartsReduxContext = /*#__PURE__*/(0, _react.createContext)(null);
+export var RechartsReduxContext = /*#__PURE__*/createContext(null);

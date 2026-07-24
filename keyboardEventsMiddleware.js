@@ -1,19 +1,13 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.keyboardEventsMiddleware = exports.keyDownAction = exports.focusAction = exports.blurAction = void 0;
-var _toolkit = require("@reduxjs/toolkit");
-var _tooltipSlice = require("./tooltipSlice");
-var _tooltipSelectors = require("./selectors/tooltipSelectors");
-var _selectors = require("./selectors/selectors");
-var _axisSelectors = require("./selectors/axisSelectors");
-var _combineActiveTooltipIndex = require("./selectors/combiners/combineActiveTooltipIndex");
-var keyDownAction = exports.keyDownAction = (0, _toolkit.createAction)('keyDown');
-var focusAction = exports.focusAction = (0, _toolkit.createAction)('focus');
-var blurAction = exports.blurAction = (0, _toolkit.createAction)('blur');
-var keyboardEventsMiddleware = exports.keyboardEventsMiddleware = (0, _toolkit.createListenerMiddleware)();
+import { createAction, createListenerMiddleware } from '@reduxjs/toolkit';
+import { setKeyboardInteraction } from './tooltipSlice';
+import { selectTooltipAxisDomain, selectTooltipAxisTicks, selectTooltipDisplayedData } from './selectors/tooltipSelectors';
+import { selectCoordinateForDefaultIndex } from './selectors/selectors';
+import { selectChartDirection, selectTooltipAxisDataKey } from './selectors/axisSelectors';
+import { combineActiveTooltipIndex } from './selectors/combiners/combineActiveTooltipIndex';
+export var keyDownAction = createAction('keyDown');
+export var focusAction = createAction('focus');
+export var blurAction = createAction('blur');
+export var keyboardEventsMiddleware = createListenerMiddleware();
 var rafId = null;
 var timeoutId = null;
 var latestKeyboardActionPayload = null;
@@ -51,30 +45,30 @@ keyboardEventsMiddleware.startListening({
         }
 
         // TODO this is lacking index for charts that do not support numeric indexes
-        var resolvedIndex = (0, _combineActiveTooltipIndex.combineActiveTooltipIndex)(keyboardInteraction, (0, _tooltipSelectors.selectTooltipDisplayedData)(currentState), (0, _axisSelectors.selectTooltipAxisDataKey)(currentState), (0, _tooltipSelectors.selectTooltipAxisDomain)(currentState));
+        var resolvedIndex = combineActiveTooltipIndex(keyboardInteraction, selectTooltipDisplayedData(currentState), selectTooltipAxisDataKey(currentState), selectTooltipAxisDomain(currentState));
         var currentIndex = resolvedIndex == null ? -1 : Number(resolvedIndex);
         if (!Number.isFinite(currentIndex) || currentIndex < 0) {
           return;
         }
-        var tooltipTicks = (0, _tooltipSelectors.selectTooltipAxisTicks)(currentState);
+        var tooltipTicks = selectTooltipAxisTicks(currentState);
         if (key === 'Enter') {
-          var _coordinate = (0, _selectors.selectCoordinateForDefaultIndex)(currentState, 'axis', 'hover', String(keyboardInteraction.index));
-          listenerApi.dispatch((0, _tooltipSlice.setKeyboardInteraction)({
+          var _coordinate = selectCoordinateForDefaultIndex(currentState, 'axis', 'hover', String(keyboardInteraction.index));
+          listenerApi.dispatch(setKeyboardInteraction({
             active: !keyboardInteraction.active,
             activeIndex: keyboardInteraction.index,
             activeCoordinate: _coordinate
           }));
           return;
         }
-        var direction = (0, _axisSelectors.selectChartDirection)(currentState);
+        var direction = selectChartDirection(currentState);
         var directionMultiplier = direction === 'left-to-right' ? 1 : -1;
         var movement = key === 'ArrowRight' ? 1 : -1;
         var nextIndex = currentIndex + movement * directionMultiplier;
         if (tooltipTicks == null || nextIndex >= tooltipTicks.length || nextIndex < 0) {
           return;
         }
-        var coordinate = (0, _selectors.selectCoordinateForDefaultIndex)(currentState, 'axis', 'hover', String(nextIndex));
-        listenerApi.dispatch((0, _tooltipSlice.setKeyboardInteraction)({
+        var coordinate = selectCoordinateForDefaultIndex(currentState, 'axis', 'hover', String(nextIndex));
+        listenerApi.dispatch(setKeyboardInteraction({
           active: true,
           activeIndex: nextIndex.toString(),
           activeCoordinate: coordinate
@@ -122,8 +116,8 @@ keyboardEventsMiddleware.startListening({
     }
     if (keyboardInteraction.index == null) {
       var nextIndex = '0';
-      var coordinate = (0, _selectors.selectCoordinateForDefaultIndex)(state, 'axis', 'hover', String(nextIndex));
-      listenerApi.dispatch((0, _tooltipSlice.setKeyboardInteraction)({
+      var coordinate = selectCoordinateForDefaultIndex(state, 'axis', 'hover', String(nextIndex));
+      listenerApi.dispatch(setKeyboardInteraction({
         active: true,
         activeIndex: nextIndex,
         activeCoordinate: coordinate
@@ -143,7 +137,7 @@ keyboardEventsMiddleware.startListening({
       keyboardInteraction
     } = state.tooltip;
     if (keyboardInteraction.active) {
-      listenerApi.dispatch((0, _tooltipSlice.setKeyboardInteraction)({
+      listenerApi.dispatch(setKeyboardInteraction({
         active: false,
         activeIndex: keyboardInteraction.index,
         activeCoordinate: keyboardInteraction.coordinate

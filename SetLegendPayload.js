@@ -1,71 +1,64 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.SetLegendPayload = SetLegendPayload;
-exports.SetPolarLegendPayload = SetPolarLegendPayload;
-var _react = require("react");
-var _PanoramaContext = require("../context/PanoramaContext");
-var _chartLayoutContext = require("../context/chartLayoutContext");
-var _hooks = require("./hooks");
-var _legendSlice = require("./legendSlice");
-function SetLegendPayload(_ref) {
+import { useLayoutEffect, useRef } from 'react';
+import { useIsPanorama } from '../context/PanoramaContext';
+import { selectChartLayout } from '../context/chartLayoutContext';
+import { useAppDispatch, useAppSelector } from './hooks';
+import { addLegendPayload, replaceLegendPayload, removeLegendPayload } from './legendSlice';
+export function SetLegendPayload(_ref) {
   var {
     legendPayload
   } = _ref;
-  var dispatch = (0, _hooks.useAppDispatch)();
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  var prevPayloadRef = (0, _react.useRef)(null);
-  (0, _react.useLayoutEffect)(() => {
+  var dispatch = useAppDispatch();
+  var isPanorama = useIsPanorama();
+  var prevPayloadRef = useRef(null);
+  useLayoutEffect(() => {
     if (isPanorama) {
       return;
     }
     if (prevPayloadRef.current === null) {
-      dispatch((0, _legendSlice.addLegendPayload)(legendPayload));
+      dispatch(addLegendPayload(legendPayload));
     } else if (prevPayloadRef.current !== legendPayload) {
-      dispatch((0, _legendSlice.replaceLegendPayload)({
+      dispatch(replaceLegendPayload({
         prev: prevPayloadRef.current,
         next: legendPayload
       }));
     }
     prevPayloadRef.current = legendPayload;
   }, [dispatch, isPanorama, legendPayload]);
-  (0, _react.useLayoutEffect)(() => {
+  useLayoutEffect(() => {
     return () => {
       if (prevPayloadRef.current) {
-        dispatch((0, _legendSlice.removeLegendPayload)(prevPayloadRef.current));
+        dispatch(removeLegendPayload(prevPayloadRef.current));
         prevPayloadRef.current = null;
       }
     };
   }, [dispatch]);
   return null;
 }
-function SetPolarLegendPayload(_ref2) {
+export function SetPolarLegendPayload(_ref2) {
   var {
     legendPayload
   } = _ref2;
-  var dispatch = (0, _hooks.useAppDispatch)();
-  var layout = (0, _hooks.useAppSelector)(_chartLayoutContext.selectChartLayout);
-  var prevPayloadRef = (0, _react.useRef)(null);
-  (0, _react.useLayoutEffect)(() => {
+  var dispatch = useAppDispatch();
+  var layout = useAppSelector(selectChartLayout);
+  var prevPayloadRef = useRef(null);
+  useLayoutEffect(() => {
     if (layout !== 'centric' && layout !== 'radial') {
       return;
     }
     if (prevPayloadRef.current === null) {
-      dispatch((0, _legendSlice.addLegendPayload)(legendPayload));
+      dispatch(addLegendPayload(legendPayload));
     } else if (prevPayloadRef.current !== legendPayload) {
-      dispatch((0, _legendSlice.replaceLegendPayload)({
+      dispatch(replaceLegendPayload({
         prev: prevPayloadRef.current,
         next: legendPayload
       }));
     }
     prevPayloadRef.current = legendPayload;
   }, [dispatch, layout, legendPayload]);
-  (0, _react.useLayoutEffect)(() => {
+  useLayoutEffect(() => {
     return () => {
       if (prevPayloadRef.current) {
-        dispatch((0, _legendSlice.removeLegendPayload)(prevPayloadRef.current));
+        dispatch(removeLegendPayload(prevPayloadRef.current));
         prevPayloadRef.current = null;
       }
     };

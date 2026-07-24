@@ -1,17 +1,12 @@
-"use strict";
+import { useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { noop } from '../util/DataUtils';
+import { useAppDispatch, useAppSelector } from '../state/hooks';
+import { selectZIndexPortalElement } from './zIndexSelectors';
+import { registerZIndexPortal, unregisterZIndexPortal } from '../state/zIndexSlice';
+import { useIsInChartContext } from '../context/chartLayoutContext';
+import { useIsPanorama } from '../context/PanoramaContext';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ZIndexLayer = ZIndexLayer;
-var _react = require("react");
-var _reactDom = require("react-dom");
-var _DataUtils = require("../util/DataUtils");
-var _hooks = require("../state/hooks");
-var _zIndexSelectors = require("./zIndexSelectors");
-var _zIndexSlice = require("../state/zIndexSlice");
-var _chartLayoutContext = require("../context/chartLayoutContext");
-var _PanoramaContext = require("../context/PanoramaContext");
 /**
  * @since 3.4
  */
@@ -29,7 +24,7 @@ var _PanoramaContext = require("../context/PanoramaContext");
  *
  * @since 3.4
  */
-function ZIndexLayer(_ref) {
+export function ZIndexLayer(_ref) {
   var {
     zIndex,
     children
@@ -38,19 +33,19 @@ function ZIndexLayer(_ref) {
    * If we are outside of chart, then we can't rely on the zIndex portal state,
    * so we just render normally.
    */
-  var isInChartContext = (0, _chartLayoutContext.useIsInChartContext)();
+  var isInChartContext = useIsInChartContext();
   /*
    * If zIndex is undefined then we render normally without portals.
    * Also, if zIndex is 0, we render normally without portals,
    * because 0 is the default layer that does not need a portal.
    */
   var shouldRenderInPortal = isInChartContext && zIndex !== undefined && zIndex !== 0;
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  var dispatch = (0, _hooks.useAppDispatch)();
-  (0, _react.useLayoutEffect)(() => {
+  var isPanorama = useIsPanorama();
+  var dispatch = useAppDispatch();
+  useLayoutEffect(() => {
     if (!shouldRenderInPortal) {
       // Nothing to do. We have to call the hook because of the rules of hooks.
-      return _DataUtils.noop;
+      return noop;
     }
     /*
      * Because zIndexes are dynamic (meaning, we're not working with a predefined set of layers,
@@ -58,16 +53,16 @@ function ZIndexLayer(_ref) {
      * the requested zIndex in the global store. This way, the ZIndexPortals component
      * can render the corresponding portals and only the requested ones.
      */
-    dispatch((0, _zIndexSlice.registerZIndexPortal)({
+    dispatch(registerZIndexPortal({
       zIndex
     }));
     return () => {
-      dispatch((0, _zIndexSlice.unregisterZIndexPortal)({
+      dispatch(unregisterZIndexPortal({
         zIndex
       }));
     };
   }, [dispatch, zIndex, shouldRenderInPortal]);
-  var portalElement = (0, _hooks.useAppSelector)(state => (0, _zIndexSelectors.selectZIndexPortalElement)(state, zIndex, isPanorama));
+  var portalElement = useAppSelector(state => selectZIndexPortalElement(state, zIndex, isPanorama));
   if (!shouldRenderInPortal) {
     // If no zIndex is provided or zIndex is 0, render normally without portals
     return children;
@@ -80,5 +75,5 @@ function ZIndexLayer(_ref) {
      */
     return null;
   }
-  return /*#__PURE__*/(0, _reactDom.createPortal)(children, portalElement);
+  return /*#__PURE__*/createPortal(children, portalElement);
 }
