@@ -1,38 +1,36 @@
-// Note: named reexports are used instead of `export *` because
-// TypeScript itself doesn't resolve the `export *` when checking
-// if a particular helper exists.
-export {
-  __extends,
-  __assign,
-  __rest,
-  __decorate,
-  __param,
-  __esDecorate,
-  __runInitializers,
-  __propKey,
-  __setFunctionName,
-  __metadata,
-  __awaiter,
-  __generator,
-  __exportStar,
-  __values,
-  __read,
-  __spread,
-  __spreadArrays,
-  __spreadArray,
-  __await,
-  __asyncGenerator,
-  __asyncDelegator,
-  __asyncValues,
-  __makeTemplateObject,
-  __importStar,
-  __importDefault,
-  __classPrivateFieldGet,
-  __classPrivateFieldSet,
-  __classPrivateFieldIn,
-  __createBinding,
-  __addDisposableResource,
-  __disposeResources,
-  __rewriteRelativeImportExtension,
-} from '../tslib.js';
-export * as default from '../tslib.js';
+declare namespace stripJsonComments {
+	interface Options {
+		/**
+		Replace comments with whitespace instead of stripping them entirely.
+
+		@default true
+		*/
+		readonly whitespace?: boolean;
+	}
+}
+
+/**
+Strip comments from JSON. Lets you use comments in your JSON files!
+
+It will replace single-line comments `//` and multi-line comments `/**\/` with whitespace. This allows JSON error positions to remain as close as possible to the original source.
+
+@param jsonString - Accepts a string with JSON.
+@returns A JSON string without comments.
+
+@example
+```
+const json = `{
+	// Rainbows
+	"unicorn": "cake"
+}`;
+
+JSON.parse(stripJsonComments(json));
+//=> {unicorn: 'cake'}
+```
+*/
+declare function stripJsonComments(
+	jsonString: string,
+	options?: stripJsonComments.Options
+): string;
+
+export = stripJsonComments;

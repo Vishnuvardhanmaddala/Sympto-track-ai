@@ -1,76 +1,72 @@
-# supports-color [![Build Status](https://travis-ci.org/chalk/supports-color.svg?branch=master)](https://travis-ci.org/chalk/supports-color)
+# resolve-from [![Build Status](https://travis-ci.org/sindresorhus/resolve-from.svg?branch=master)](https://travis-ci.org/sindresorhus/resolve-from)
 
-> Detect whether a terminal supports color
+> Resolve the path of a module like [`require.resolve()`](https://nodejs.org/api/globals.html#globals_require_resolve) but from a given path
 
 
 ## Install
 
 ```
-$ npm install supports-color
+$ npm install resolve-from
 ```
 
 
 ## Usage
 
 ```js
-const supportsColor = require('supports-color');
+const resolveFrom = require('resolve-from');
 
-if (supportsColor.stdout) {
-	console.log('Terminal stdout supports color');
-}
+// There is a file at `./foo/bar.js`
 
-if (supportsColor.stdout.has256) {
-	console.log('Terminal stdout supports 256 colors');
-}
-
-if (supportsColor.stderr.has16m) {
-	console.log('Terminal stderr supports 16 million colors (truecolor)');
-}
+resolveFrom('foo', './bar');
+//=> '/Users/sindresorhus/dev/test/foo/bar.js'
 ```
 
 
 ## API
 
-Returns an `Object` with a `stdout` and `stderr` property for testing either streams. Each property is an `Object`, or `false` if color is not supported.
+### resolveFrom(fromDir, moduleId)
 
-The `stdout`/`stderr` objects specifies a level of support for color through a `.level` property and a corresponding flag:
+Like `require()`, throws when the module can't be found.
 
-- `.level = 1` and `.hasBasic = true`: Basic color support (16 colors)
-- `.level = 2` and `.has256 = true`: 256 color support
-- `.level = 3` and `.has16m = true`: Truecolor support (16 million colors)
+### resolveFrom.silent(fromDir, moduleId)
+
+Returns `null` instead of throwing when the module can't be found.
+
+#### fromDir
+
+Type: `string`
+
+Directory to resolve from.
+
+#### moduleId
+
+Type: `string`
+
+What you would use in `require()`.
 
 
-## Info
+## Tip
 
-It obeys the `--color` and `--no-color` CLI flags.
+Create a partial using a bound function if you want to resolve from the same `fromDir` multiple times:
 
-For situations where using `--color` is not possible, use the environment variable `FORCE_COLOR=1` (level 1), `FORCE_COLOR=2` (level 2), or `FORCE_COLOR=3` (level 3) to forcefully enable color, or `FORCE_COLOR=0` to forcefully disable. The use of `FORCE_COLOR` overrides all other color support checks.
+```js
+const resolveFromFoo = resolveFrom.bind(null, 'foo');
 
-Explicit 256/Truecolor mode can be enabled using the `--color=256` and `--color=16m` flags, respectively.
+resolveFromFoo('./bar');
+resolveFromFoo('./baz');
+```
 
 
 ## Related
 
-- [supports-color-cli](https://github.com/chalk/supports-color-cli) - CLI for this module
-- [chalk](https://github.com/chalk/chalk) - Terminal string styling done right
+- [resolve-cwd](https://github.com/sindresorhus/resolve-cwd) - Resolve the path of a module from the current working directory
+- [import-from](https://github.com/sindresorhus/import-from) - Import a module from a given path
+- [import-cwd](https://github.com/sindresorhus/import-cwd) - Import a module from the current working directory
+- [resolve-pkg](https://github.com/sindresorhus/resolve-pkg) - Resolve the path of a package regardless of it having an entry point
+- [import-lazy](https://github.com/sindresorhus/import-lazy) - Import a module lazily
+- [resolve-global](https://github.com/sindresorhus/resolve-global) - Resolve the path of a globally installed module
 
 
-## Maintainers
+## License
 
-- [Sindre Sorhus](https://github.com/sindresorhus)
-- [Josh Junon](https://github.com/qix-)
-
-
----
-
-<div align="center">
-	<b>
-		<a href="https://tidelift.com/subscription/pkg/npm-supports-color?utm_source=npm-supports-color&utm_medium=referral&utm_campaign=readme">Get professional support for this package with a Tidelift subscription</a>
-	</b>
-	<br>
-	<sub>
-		Tidelift helps make open source sustainable for maintainers while giving companies<br>assurances about security, maintenance, and licensing for their dependencies.
-	</sub>
-</div>
-
----
+MIT © [Sindre Sorhus](https://sindresorhus.com)
