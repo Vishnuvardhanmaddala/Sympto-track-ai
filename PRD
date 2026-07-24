@@ -1,0 +1,411 @@
+Project Requirement Document (PRD)
+
+Project Title: SymptoTrack AI – Hybrid RAG Chatbot for Symptom Monitoring 
+
+1. Overview
+SymptoTrack AI is an intelligent healthcare assistant that uses a Hybrid Retrieval-Augmented Generation (RAG) chatbot to help users monitor their symptoms and receive health-related guidance. The system allows users to input their symptoms and receive AI-generated responses based on medical knowledge retrieved from trusted healthcare databases.
+
+The chatbot combines AI language models with medical knowledge retrieval systems to provide reliable and contextual health information. It also enables users to track symptom history, monitor patterns, and receive preventive suggestions.
+
+This system aims to support early health awareness and encourage users to seek medical consultation when necessary.
+
+2. Problem Statement
+Many individuals ignore or misinterpret early symptoms due to lack of medical knowledge or access to immediate healthcare advice. Searching symptoms online often results in misleading, unverified, or confusing information.
+
+Existing symptom-checker tools often lack personalization and historical tracking. There is a need for a smart, interactive system that can monitor symptoms, provide relevant information, and track health patterns over time.
+
+SymptoTrack AI addresses this problem by providing a reliable AI-driven symptom monitoring chatbot that retrieves verified medical information and assists users in understanding their symptoms.
+
+3. Goals and Objectives
+Goals:-
+Provide an AI-based platform for symptom monitoring and health awareness.
+Deliver accurate health information using a hybrid RAG model.
+Encourage early detection of potential health issues.
+
+Objectives:-
+Develop an AI chatbot capable of understanding symptom queries.
+Integrate medical knowledge retrieval with AI responses.
+Enable symptom history tracking for users.
+Provide basic recommendations and guidance.
+Create a user-friendly interface for easy interaction.
+
+4. Target Audience
+The system is designed for:
+General users who want quick information about symptoms.
+Patients who want to track their symptoms over time.
+Healthcare learners or students studying symptom analysis.
+People in remote areas with limited access to immediate healthcare advice.
+
+5. Features and Functional Requirements
+Key Features :-
+AI Chatbot Interface
+Users can interact with the chatbot by typing symptoms.
+Symptom Analysis
+The system analyzes user inputs and identifies possible health conditions.
+Hybrid RAG System
+Combines AI-generated responses with information retrieved from medical databases.
+Symptom Tracking
+Users can log symptoms and view past records.
+Health Suggestions
+The chatbot provides general guidance and lifestyle recommendations.
+Medical Knowledge Retrieval
+Retrieves information from trusted medical sources.
+User Authentication
+Secure login and profile management.
+Alert Recommendations
+Suggests when users should consult a doctor.
+
+1. Hybrid RAG + Machine Learning Disease Prediction 🤖
+
+Most symptom checker systems only use machine learning models.
+
+Your project combines:
+
+Machine Learning algorithms
+
+Retrieval-Augmented Generation (RAG) chatbot
+
+Working:
+
+ML models predict diseases
+
+RAG chatbot retrieves medical knowledge
+
+AI explains results to users
+
+Innovation:
+Prediction + explanation in one system.
+
+2. Explainable AI for Disease Prediction 🧠
+
+The system does not just show the disease result.
+
+It also explains:
+
+Why the disease is predicted
+
+Which symptoms caused the prediction
+
+Example output:
+
+Predicted Disease → Flu
+
+Reason:
+
+Fever
+
+Cough
+
+Fatigue
+
+This improves trust and transparency.
+
+3. Multi-Algorithm Medical Intelligence Engine ⚙️
+
+Instead of using a single model, the system uses:
+
+Decision Tree
+
+Random Forest
+
+KNN
+
+Naive Bayes
+
+The system compares model performance and selects the best prediction.
+
+Innovation:
+Dynamic algorithm comparison for better accuracy.
+
+4. Multi-Disease Prediction Engine 🧠
+
+Instead of predicting only one disease, the system predicts:
+
+Top 3 possible diseases
+
+Probability score for each
+
+Example output:
+
+Disease	Probability
+Flu	          72%
+COVID	      18%
+Viral Fever	  10%
+
+This improves diagnostic support.
+
+5. AI-Based Symptom Severity Detection ⚠️
+
+The system identifies whether symptoms are:
+
+Mild
+
+Moderate
+
+Severe
+
+Example:
+
+Severe symptoms detected → System suggests immediate hospital visit.
+
+This acts as an AI health alert system
+
+6. Smart Hospital Recommendation System 🏥
+
+The system not only predicts diseases but also helps users find nearby hospitals.
+
+Features:
+
+Location access
+
+Hospital suggestions
+
+Specialty-based recommendation
+
+Example:
+
+Predicted disease → Heart problem
+System shows → Nearby cardiology hospitals.
+
+7. Voice-Based Symptom Input 🎤
+
+Users can speak symptoms instead of typing.
+
+Example:
+
+User says
+"I have fever and headache"
+
+System converts speech → text → prediction.
+
+Technology:
+
+Speech Recognition
+
+NLP processing
+
+8. Medical Knowledge Graph Integration 🧬
+
+Create relationships between:
+
+Symptoms
+
+Diseases
+
+Treatments
+
+Example:
+
+Fever → Infection → Viral disease → Flu.
+
+Benefits:
+Better AI reasoning.
+
+9. Real-Time Health Alerts 🚨
+
+The system can trigger alerts when serious symptoms appear.
+
+Example:
+
+Symptoms:
+
+Chest pain
+
+Shortness of breath
+
+Alert message:
+
+"Possible heart condition detected. Please consult a doctor immediately."
+
+10. Wearable Device Integration ⌚
+
+Connect with health devices like:
+
+Smart watches
+
+Fitness trackers
+
+Monitor:
+
+Heart rate
+
+Body temperature
+
+Oxygen level
+
+This enables real-time health monitoring.
+
+11. Doctor Consultation Portal 👨‍⚕️
+
+Users can connect with doctors directly.
+
+Features:
+
+Online appointment booking
+
+Share symptom reports
+
+Chat with doctors
+
+Interactive AI Medical Chatbot 💬
+
+Users can interact with the system using natural language.
+
+Example:
+
+User:
+"What causes fever and headache?"
+
+Chatbot:
+Explains possible diseases and treatments.
+
+This improves user engagement and accessibility.
+
+12. AI-Based Health Monitoring Framework 📊
+
+The system can track:
+
+Previous symptoms
+
+Prediction history
+
+Health trends
+
+This helps users monitor long-term health patterns.
+
+13. Integrated Healthcare Assistance Platform 🌐
+
+Instead of a simple symptom predictor, your system integrates:
+
+Symptom analysis
+
+Disease prediction
+
+Medical knowledge chatbot
+
+Hospital locator
+
+User feedback system
+
+Innovation:
+A complete AI healthcare assistant in one platform.
+Functional Requirements :-
+The system must allow users to enter symptoms through chat.
+The chatbot must process natural language queries.
+The system must retrieve relevant medical data from a knowledge base.
+The system must store symptom history for registered users.
+The chatbot must generate AI-based responses using RAG architecture.
+The system must display health recommendations and precautionary advice.
+
+6. Non-Functional Requirements
+Performance :-
+
+Chatbot responses should be generated within 2–5 seconds.
+
+Security :-
+
+User health data must be stored securely.
+
+Authentication should protect user accounts.
+
+Reliability :-
+
+The system should maintain high availability with minimal downtime.
+
+Scalability :-
+
+The platform should support multiple users simultaneously.
+
+Usability :-
+
+The interface must be simple and user-friendly.
+
+7. User Stories
+As a user, I want to enter my symptoms so that I can get possible health suggestions.
+As a user, I want to track my symptom history so that I can monitor changes in my health.
+As a user, I want the chatbot to provide reliable health information so that I can understand my symptoms better.
+As a user, I want to receive recommendations on whether I should consult a doctor.
+As a user, I want a simple interface so that I can easily interact with the chatbot.
+
+8. Use Cases
+Use Case Description
+User Registration User creates an account
+Login User logs into the system
+Enter Symptoms	User types symptoms in the chatbot
+Symptom Analysis	AI analyzes symptoms
+Retrieve Medical Data	System retrieves knowledge from database
+Generate Response	AI generates answer
+Track History	System stores symptom data
+View Recommendations	User receives health advice
+9. System Requirements
+
+Hardware Requirements :-
+
+Computer or smartphone
+Internet connection
+Minimum 4GB RAM
+
+Software Requirements :-
+
+Frontend: HTML, CSS, JavaScript
+Frame work: React.js
+styling: Boot strap
+Backend: Python / Node.js
+Frame work:flask
+Database: MongoDB / MySQL
+AI Frameworks: LangChain / OpenAI API
+RAG Tools: Vector Database (FAISS / Pinecone)
+
+10. UI / UX Design
+
+The system interface should include:
+
+1. Home Page
+
+Introduction to SymptoTrack AI
+Start chatbot option
+
+2. Login / Signup Page
+
+User authentication
+
+3. Chatbot Interface
+
+Chat window
+Symptom input box
+AI responses
+
+4. Symptom History Dashboard
+
+List of past symptoms
+Health trends
+UI/UX Principles
+Simple navigation
+Minimal design
+Mobile-friendly layout
+Fast interaction
+
+11. Success Metrics
+
+The project will be considered successful if:
+Users can successfully interact with the chatbot.
+The chatbot provides accurate and relevant responses.
+Users can track their symptom history effectively.
+System response time remains below 5 seconds.
+Positive user feedback and usability scores.
+
+12. Constraints
+Technical Constraints :-
+
+Limited access to medical datasets.
+AI models may sometimes generate inaccurate responses.
+
+Ethical Constraints :-
+
+The system should not replace professional medical advice.
+Time Constraints
+Limited development time for building and testing the system.
+
+Data Privacy :-
+
+Must comply with health data privacy practices.
