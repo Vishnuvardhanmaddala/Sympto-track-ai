@@ -1,9 +1,10 @@
 /**
  * Prints a warning in the console if it exists.
  *
- * @param message The warning message.
+ * @param {String} message The warning message.
+ * @returns {void}
  */
-export default function warning(message: string): void {
+export default function warning(message: string) {
   /* eslint-disable no-console */
   if (typeof console !== 'undefined' && typeof console.error === 'function') {
     console.error(message)
@@ -14,5 +15,7 @@ export default function warning(message: string): void {
     // "break on all exceptions" in your console,
     // it would pause the execution at this line.
     throw new Error(message)
-  } catch (e) {} // eslint-disable-line no-empty
+    /* eslint-disable no-empty */
+  } catch (e) {}
+  /* eslint-enable no-empty */
 }
