@@ -1,117 +1,134 @@
-# victory-vendor
+# [7.2.0](https://github.com/jquense/uncontrollable/compare/v7.1.1...v7.2.0) (2021-01-25)
 
-## 37.3.6
 
-## 37.3.5
+### Features
 
-## 37.3.4
+* Allow React 17 types ([#50](https://github.com/jquense/uncontrollable/issues/50)) ([d1f5274](https://github.com/jquense/uncontrollable/commit/d1f527437b93af5baf4c1c038ee1d0afd4ce0d73))
 
-## 37.3.3
 
-## 37.3.2
 
-## 37.3.1
 
-## 37.3.0
 
-## 37.2.0
+## [7.1.1](https://github.com/jquense/uncontrollable/compare/v7.1.0...v7.1.1) (2019-10-31)
 
-## 37.1.2
 
-### Patch Changes
+### Bug Fixes
 
-- Fix victory-native container styles ([`eae3fe5dd`](https://github.com/FormidableLabs/victory/commit/eae3fe5dde175e68e146576655cb2e8054ad6456))
+* bump fstream from 1.0.11 to 1.0.12 ([#45](https://github.com/jquense/uncontrollable/issues/45)) ([97b1287](https://github.com/jquense/uncontrollable/commit/97b1287))
+* bump sshpk from 1.11.0 to 1.16.1 ([#46](https://github.com/jquense/uncontrollable/issues/46)) ([80e19d5](https://github.com/jquense/uncontrollable/commit/80e19d5))
+* clean up types ([bd29932](https://github.com/jquense/uncontrollable/commit/bd29932))
 
-## 37.1.1
 
-## 37.1.0
 
-## 37.0.2
 
-## 37.0.1
 
-## 37.0.0
+# [7.1.0](https://github.com/jquense/uncontrollable/compare/v7.0.2...v7.1.0) (2019-10-30)
 
-### Major Changes
 
-- Upgrade babel dependencies and build target to modern browsers ([#2804](https://github.com/FormidableLabs/victory/pull/2804))
+### Features
 
-## 36.9.2
+* add useUncontrolledProp and types ([6e0837d](https://github.com/jquense/uncontrollable/commit/6e0837d))
 
-## 36.9.1
 
-## 36.9.0
 
-## 36.8.6
 
-## 36.8.5
 
-### Patch Changes
+## [7.0.2](https://github.com/jquense/uncontrollable/compare/v7.0.1...v7.0.2) (2019-10-03)
 
-- Replace instances of lodash.assign with Object.assign ([#2757](https://github.com/FormidableLabs/victory/pull/2757))
 
-## 36.8.4
+### Bug Fixes
 
-## 36.8.3
+*  migrate unsafe lifecycle ([#40](https://github.com/jquense/uncontrollable/issues/40)) ([1607fff](https://github.com/jquense/uncontrollable/commit/1607fff))
 
-## 36.8.2
+## [7.0.1](https://github.com/jquense/uncontrollable/compare/v7.0.0...v7.0.1) (2019-09-06)
 
-## 36.8.1
 
-## 36.8.0
+### Bug Fixes
 
-## 36.7.0
+* rename License.txt to LICENSE ([#39](https://github.com/jquense/uncontrollable/issues/39)) ([171e821](https://github.com/jquense/uncontrollable/commit/171e821))
 
-## 36.6.12
+# [7.0.0](https://github.com/jquense/uncontrollable/compare/v6.2.3...v7.0.0) (2019-06-18)
 
-## 36.6.11
 
-## 36.6.10
+### Features
 
-### Patch Changes
+* consistent exports ([#37](https://github.com/jquense/uncontrollable/issues/37)) ([6b51ec6](https://github.com/jquense/uncontrollable/commit/6b51ec6))
 
-- Setup NPM Provenance ([#2590](https://github.com/FormidableLabs/victory/pull/2590))
 
-## 36.6.9
+### BREAKING CHANGES
 
-### Patch Changes
+* no more default export
 
-- Setup NPM Provenance ([#2587](https://github.com/FormidableLabs/victory/pull/2587))
+- removed default export
+- name files properly
 
-## 36.6.8
+* Use default exports
 
-## 36.6.7
+## [6.2.3](https://github.com/jquense/uncontrollable/compare/v6.2.2...v6.2.3) (2019-06-17)
 
-## 36.6.6
 
-## 36.6.5
+### Bug Fixes
 
-### Patch Changes
+* republish again to fix build lol ([38f3bf8](https://github.com/jquense/uncontrollable/commit/38f3bf8))
 
-- Export types directly from d3-\* (fixes [#2439](https://github.com/FormidableLabs/victory/issues/2439)) ([#2440](https://github.com/FormidableLabs/victory/pull/2440))
 
-## 36.6.4
 
-### Patch Changes
 
-- Allow data accessors to accept any data types (fixes [#2360](https://github.com/FormidableLabs/victory/issues/2360)) ([#2436](https://github.com/FormidableLabs/victory/pull/2436))
 
-## 36.6.3
+## [6.2.2](https://github.com/jquense/uncontrollable/compare/v6.2.1...v6.2.2) (2019-06-17)
 
-### Patch Changes
 
-- Do not generate \*.js.map sourcemaps (fixes [#2346](https://github.com/FormidableLabs/victory/issues/2346)) ([#2432](https://github.com/FormidableLabs/victory/pull/2432))
+### Bug Fixes
 
-## 36.6.2
+* make default import ([e7ff375](https://github.com/jquense/uncontrollable/commit/e7ff375))
 
-## 36.6.1
 
-## 36.6.0
 
-### Patch Changes
 
-- Update source code with minor lint-based improvements (see [#2236](https://github.com/FormidableLabs/victory/issues/2236)). ([#2403](https://github.com/FormidableLabs/victory/pull/2403))
 
-## 36.5.3 and earlier
+## [6.2.1](https://github.com/jquense/uncontrollable/compare/v6.2.0...v6.2.1) (2019-06-17)
 
-Change history for version 36.5.3 and earlier can be found in our root [CHANGELOG.md](https://github.com/FormidableLabs/victory/blob/main/CHANGELOG.md).
+
+### Bug Fixes
+
+* bad publish ([82ef3fc](https://github.com/jquense/uncontrollable/commit/82ef3fc))
+
+# [6.2.0](https://github.com/jquense/uncontrollable/compare/v6.1.0...v6.2.0) (2019-06-17)
+
+
+### Features
+
+* add esm support ([2457bf3](https://github.com/jquense/uncontrollable/commit/2457bf3))
+
+# [6.1.0](https://github.com/jquense/uncontrollable/compare/v6.0.0...v6.1.0) (2019-02-12)
+
+
+### Features
+
+* add hook ([35c194d](https://github.com/jquense/uncontrollable/commit/35c194d))
+
+
+
+<a name="6.0.0"></a>
+# [6.0.0](https://github.com/jquense/uncontrollable/compare/v5.1.0...v6.0.0) (2018-05-02)
+
+
+### Features
+
+* Support forwardRef() ([a558754](https://github.com/jquense/uncontrollable/commit/a558754))
+
+
+### BREAKING CHANGES
+
+* attached refs are now the original components, and not
+the uncontrolled component instance
+* removed getControlledInstance so there are no special
+methods on the uncontrolled component
+
+<a name="5.1.0"></a>
+# [5.1.0](https://github.com/jquense/uncontrollable/compare/v5.0.0...v5.1.0) (2018-03-31)
+
+
+### Features
+
+* better release tooling ([41bfc32](https://github.com/jquense/uncontrollable/commit/41bfc32))
