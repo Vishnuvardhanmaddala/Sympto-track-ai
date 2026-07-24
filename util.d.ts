@@ -1,6 +1,16 @@
-export declare function merge(...sets: Array<string>): string;
-export declare function subexp(str: string): string;
-export declare function typeOf(o: any): string;
-export declare function toUpperCase(str: string): string;
-export declare function toArray(obj: any): Array<any>;
-export declare function assign(target: object, source: any): any;
+export declare const getDashCase: (name: string) => string;
+export declare const getTransitionVal: (props: ReadonlyArray<string>, duration: string | number, easing: string) => string;
+/**
+ * Finds the intersection of keys between two objects
+ * @param {object} preObj previous object
+ * @param {object} nextObj next object
+ * @returns an array of keys that exist in both objects
+ */
+export declare const getIntersectionKeys: (preObj: Record<string, unknown>, nextObj: Record<string, unknown>) => string[];
+/**
+ * Maps an object to another object
+ * @param {function} fn function to map
+ * @param {object} obj object to map
+ * @returns mapped object
+ */
+export declare const mapObject: <T extends Record<string, any>, R>(fn: (key: keyof T, value: T[keyof T]) => R, obj: T) => { [K in keyof T]: R; };
