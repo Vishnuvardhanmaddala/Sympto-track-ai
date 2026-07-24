@@ -1,21 +1,13 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ReportChartSize = exports.ReportChartMargin = void 0;
-exports.cartesianViewBoxToTrapezoid = cartesianViewBoxToTrapezoid;
-exports.useViewBox = exports.usePolarChartLayout = exports.useOffsetInternal = exports.useMargin = exports.useIsInChartContext = exports.useChartWidth = exports.useChartLayout = exports.useChartHeight = exports.useCartesianChartLayout = exports.selectPolarChartLayout = exports.selectChartLayout = void 0;
-var _react = require("react");
-var _hooks = require("../state/hooks");
-var _layoutSlice = require("../state/layoutSlice");
-var _selectChartOffsetInternal = require("../state/selectors/selectChartOffsetInternal");
-var _containerSelectors = require("../state/selectors/containerSelectors");
-var _PanoramaContext = require("./PanoramaContext");
-var _brushSelectors = require("../state/selectors/brushSelectors");
-var _ResponsiveContainer = require("../component/ResponsiveContainer");
-var _isWellBehavedNumber = require("../util/isWellBehavedNumber");
-function cartesianViewBoxToTrapezoid(box) {
+import { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '../state/hooks';
+import { setChartSize, setMargin } from '../state/layoutSlice';
+import { selectChartOffsetInternal, selectChartViewBox } from '../state/selectors/selectChartOffsetInternal';
+import { selectChartHeight, selectChartWidth } from '../state/selectors/containerSelectors';
+import { useIsPanorama } from './PanoramaContext';
+import { selectBrushDimensions, selectBrushSettings } from '../state/selectors/brushSelectors';
+import { useResponsiveContainerContext } from '../component/ResponsiveContainer';
+import { isPositiveNumber } from '../util/isWellBehavedNumber';
+export function cartesianViewBoxToTrapezoid(box) {
   if (!box) {
     return undefined;
   }
@@ -28,12 +20,12 @@ function cartesianViewBoxToTrapezoid(box) {
     height: box.height
   };
 }
-var useViewBox = () => {
+export var useViewBox = () => {
   var _useAppSelector;
-  var panorama = (0, _PanoramaContext.useIsPanorama)();
-  var rootViewBox = (0, _hooks.useAppSelector)(_selectChartOffsetInternal.selectChartViewBox);
-  var brushDimensions = (0, _hooks.useAppSelector)(_brushSelectors.selectBrushDimensions);
-  var brushPadding = (_useAppSelector = (0, _hooks.useAppSelector)(_brushSelectors.selectBrushSettings)) === null || _useAppSelector === void 0 ? void 0 : _useAppSelector.padding;
+  var panorama = useIsPanorama();
+  var rootViewBox = useAppSelector(selectChartViewBox);
+  var brushDimensions = useAppSelector(selectBrushDimensions);
+  var brushPadding = (_useAppSelector = useAppSelector(selectBrushSettings)) === null || _useAppSelector === void 0 ? void 0 : _useAppSelector.padding;
   if (!panorama || !brushDimensions || !brushPadding) {
     return rootViewBox;
   }
@@ -44,7 +36,6 @@ var useViewBox = () => {
     y: brushPadding.top
   };
 };
-exports.useViewBox = useViewBox;
 var manyComponentsThrowErrorsIfOffsetIsUndefined = {
   top: 0,
   bottom: 0,
@@ -61,9 +52,9 @@ var manyComponentsThrowErrorsIfOffsetIsUndefined = {
  *
  * @returns {ChartOffsetInternal} The offset of the chart in pixels, or a default value if not in a chart context.
  */
-var useOffsetInternal = () => {
+export var useOffsetInternal = () => {
   var _useAppSelector2;
-  return (_useAppSelector2 = (0, _hooks.useAppSelector)(_selectChartOffsetInternal.selectChartOffsetInternal)) !== null && _useAppSelector2 !== void 0 ? _useAppSelector2 : manyComponentsThrowErrorsIfOffsetIsUndefined;
+  return (_useAppSelector2 = useAppSelector(selectChartOffsetInternal)) !== null && _useAppSelector2 !== void 0 ? _useAppSelector2 : manyComponentsThrowErrorsIfOffsetIsUndefined;
 };
 
 /**
@@ -85,9 +76,8 @@ var useOffsetInternal = () => {
  *
  * @returns {number | undefined} The width of the chart in pixels, or `undefined` if not in a chart context.
  */
-exports.useOffsetInternal = useOffsetInternal;
-var useChartWidth = () => {
-  return (0, _hooks.useAppSelector)(_containerSelectors.selectChartWidth);
+export var useChartWidth = () => {
+  return useAppSelector(selectChartWidth);
 };
 
 /**
@@ -109,9 +99,8 @@ var useChartWidth = () => {
  *
  * @returns {number | undefined} The height of the chart in pixels, or `undefined` if not in a chart context.
  */
-exports.useChartWidth = useChartWidth;
-var useChartHeight = () => {
-  return (0, _hooks.useAppSelector)(_containerSelectors.selectChartHeight);
+export var useChartHeight = () => {
+  return useAppSelector(selectChartHeight);
 };
 
 /**
@@ -124,33 +113,27 @@ var useChartHeight = () => {
  *
  * @returns {Margin | undefined} The margin of the chart in pixels, or `undefined` if not in a chart context.
  */
-exports.useChartHeight = useChartHeight;
-var useMargin = () => {
-  return (0, _hooks.useAppSelector)(state => state.layout.margin);
+export var useMargin = () => {
+  return useAppSelector(state => state.layout.margin);
 };
-exports.useMargin = useMargin;
-var selectChartLayout = state => state.layout.layoutType;
-exports.selectChartLayout = selectChartLayout;
-var useChartLayout = () => (0, _hooks.useAppSelector)(selectChartLayout);
-exports.useChartLayout = useChartLayout;
-var useCartesianChartLayout = () => {
+export var selectChartLayout = state => state.layout.layoutType;
+export var useChartLayout = () => useAppSelector(selectChartLayout);
+export var useCartesianChartLayout = () => {
   var layout = useChartLayout();
   if (layout === 'horizontal' || layout === 'vertical') {
     return layout;
   }
   return undefined;
 };
-exports.useCartesianChartLayout = useCartesianChartLayout;
-var selectPolarChartLayout = state => {
+export var selectPolarChartLayout = state => {
   var layout = state.layout.layoutType;
   if (layout === 'centric' || layout === 'radial') {
     return layout;
   }
   return undefined;
 };
-exports.selectPolarChartLayout = selectPolarChartLayout;
-var usePolarChartLayout = () => {
-  return (0, _hooks.useAppSelector)(selectPolarChartLayout);
+export var usePolarChartLayout = () => {
+  return useAppSelector(selectPolarChartLayout);
 };
 
 /**
@@ -164,8 +147,7 @@ var usePolarChartLayout = () => {
  *
  * @returns {boolean} True if in chart context, false otherwise.
  */
-exports.usePolarChartLayout = usePolarChartLayout;
-var useIsInChartContext = () => {
+export var useIsInChartContext = () => {
   /*
    * All charts provide a layout type in the chart context.
    * If we have a layout type, we are in a chart context.
@@ -173,9 +155,8 @@ var useIsInChartContext = () => {
   var layout = useChartLayout();
   return layout !== undefined;
 };
-exports.useIsInChartContext = useIsInChartContext;
-var ReportChartSize = props => {
-  var dispatch = (0, _hooks.useAppDispatch)();
+export var ReportChartSize = props => {
+  var dispatch = useAppDispatch();
 
   /*
    * Skip dispatching properties in panorama chart for two reasons:
@@ -183,12 +164,12 @@ var ReportChartSize = props => {
    * 2. Brush reads these properties from redux store, and so they must remain stable
    *      to avoid circular dependency and infinite re-rendering.
    */
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
+  var isPanorama = useIsPanorama();
   var {
     width: widthFromProps,
     height: heightFromProps
   } = props;
-  var responsiveContainerCalculations = (0, _ResponsiveContainer.useResponsiveContainerContext)();
+  var responsiveContainerCalculations = useResponsiveContainerContext();
   var width = widthFromProps;
   var height = heightFromProps;
   if (responsiveContainerCalculations) {
@@ -206,9 +187,9 @@ var ReportChartSize = props => {
     width = responsiveContainerCalculations.width > 0 ? responsiveContainerCalculations.width : widthFromProps;
     height = responsiveContainerCalculations.height > 0 ? responsiveContainerCalculations.height : heightFromProps;
   }
-  (0, _react.useEffect)(() => {
-    if (!isPanorama && (0, _isWellBehavedNumber.isPositiveNumber)(width) && (0, _isWellBehavedNumber.isPositiveNumber)(height)) {
-      dispatch((0, _layoutSlice.setChartSize)({
+  useEffect(() => {
+    if (!isPanorama && isPositiveNumber(width) && isPositiveNumber(height)) {
+      dispatch(setChartSize({
         width,
         height
       }));
@@ -216,15 +197,13 @@ var ReportChartSize = props => {
   }, [dispatch, isPanorama, width, height]);
   return null;
 };
-exports.ReportChartSize = ReportChartSize;
-var ReportChartMargin = _ref => {
+export var ReportChartMargin = _ref => {
   var {
     margin
   } = _ref;
-  var dispatch = (0, _hooks.useAppDispatch)();
-  (0, _react.useEffect)(() => {
-    dispatch((0, _layoutSlice.setMargin)(margin));
+  var dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(setMargin(margin));
   }, [dispatch, margin]);
   return null;
 };
-exports.ReportChartMargin = ReportChartMargin;

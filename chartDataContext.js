@@ -1,48 +1,40 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.useDataIndex = exports.useChartData = exports.SetComputedData = exports.ChartDataContextProvider = void 0;
-var _react = require("react");
-var _chartDataSlice = require("../state/chartDataSlice");
-var _hooks = require("../state/hooks");
-var _PanoramaContext = require("./PanoramaContext");
-var ChartDataContextProvider = props => {
+import { useEffect } from 'react';
+import { setChartData, setComputedData } from '../state/chartDataSlice';
+import { useAppDispatch, useAppSelector } from '../state/hooks';
+import { useIsPanorama } from './PanoramaContext';
+export var ChartDataContextProvider = props => {
   var {
     chartData
   } = props;
-  var dispatch = (0, _hooks.useAppDispatch)();
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  (0, _react.useEffect)(() => {
+  var dispatch = useAppDispatch();
+  var isPanorama = useIsPanorama();
+  useEffect(() => {
     if (isPanorama) {
       // Panorama mode reuses data from the main chart, so we must not overwrite it here.
       return () => {
         // there is nothing to clean up
       };
     }
-    dispatch((0, _chartDataSlice.setChartData)(chartData));
+    dispatch(setChartData(chartData));
     return () => {
-      dispatch((0, _chartDataSlice.setChartData)(undefined));
+      dispatch(setChartData(undefined));
     };
   }, [chartData, dispatch, isPanorama]);
   return null;
 };
-exports.ChartDataContextProvider = ChartDataContextProvider;
-var SetComputedData = props => {
+export var SetComputedData = props => {
   var {
     computedData
   } = props;
-  var dispatch = (0, _hooks.useAppDispatch)();
-  (0, _react.useEffect)(() => {
-    dispatch((0, _chartDataSlice.setComputedData)(computedData));
+  var dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(setComputedData(computedData));
     return () => {
-      dispatch((0, _chartDataSlice.setChartData)(undefined));
+      dispatch(setChartData(undefined));
     };
   }, [computedData, dispatch]);
   return null;
 };
-exports.SetComputedData = SetComputedData;
 var selectChartData = state => state.chartData.chartData;
 
 /**
@@ -64,8 +56,7 @@ var selectChartData = state => state.chartData.chartData;
  *
  * @return data array for some charts and undefined for other
  */
-var useChartData = () => (0, _hooks.useAppSelector)(selectChartData);
-exports.useChartData = useChartData;
+export var useChartData = () => useAppSelector(selectChartData);
 var selectDataIndex = state => {
   var {
     dataStartIndex,
@@ -82,7 +73,6 @@ var selectDataIndex = state => {
  *
  * @return object with startIndex and endIndex
  */
-var useDataIndex = () => {
-  return (0, _hooks.useAppSelector)(selectDataIndex);
+export var useDataIndex = () => {
+  return useAppSelector(selectDataIndex);
 };
-exports.useDataIndex = useDataIndex;

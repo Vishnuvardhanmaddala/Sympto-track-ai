@@ -1,18 +1,11 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.JavascriptAnimate = JavascriptAnimate;
-var _react = require("react");
-var _DataUtils = require("../util/DataUtils");
-var _resolveDefaultProps = require("../util/resolveDefaultProps");
-var _configUpdate = _interopRequireDefault(require("./configUpdate"));
-var _easing = require("./easing");
-var _useAnimationManager = require("./useAnimationManager");
-var _Global = require("../util/Global");
-var _usePrefersReducedMotion = require("../util/usePrefersReducedMotion");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+import { useEffect, useRef, useState } from 'react';
+import { noop } from '../util/DataUtils';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import configUpdate from './configUpdate';
+import { configEasing } from './easing';
+import { useAnimationManager } from './useAnimationManager';
+import { Global } from '../util/Global';
+import { usePrefersReducedMotion } from '../util/usePrefersReducedMotion';
 var defaultJavascriptAnimateProps = {
   begin: 0,
   duration: 1000,
@@ -28,8 +21,8 @@ var from = {
 var to = {
   t: 1
 };
-function JavascriptAnimate(outsideProps) {
-  var props = (0, _resolveDefaultProps.resolveDefaultProps)(outsideProps, defaultJavascriptAnimateProps);
+export function JavascriptAnimate(outsideProps) {
+  var props = resolveDefaultProps(outsideProps, defaultJavascriptAnimateProps);
   var {
     isActive: isActiveProp,
     canBegin,
@@ -40,21 +33,21 @@ function JavascriptAnimate(outsideProps) {
     onAnimationStart,
     children
   } = props;
-  var prefersReducedMotion = (0, _usePrefersReducedMotion.usePrefersReducedMotion)();
-  var isActive = isActiveProp === 'auto' ? !_Global.Global.isSsr && !prefersReducedMotion : isActiveProp;
-  var animationManager = (0, _useAnimationManager.useAnimationManager)(props.animationId, props.animationManager);
-  var [style, setStyle] = (0, _react.useState)(isActive ? from : to);
-  var stopJSAnimation = (0, _react.useRef)(null);
-  (0, _react.useEffect)(() => {
+  var prefersReducedMotion = usePrefersReducedMotion();
+  var isActive = isActiveProp === 'auto' ? !Global.isSsr && !prefersReducedMotion : isActiveProp;
+  var animationManager = useAnimationManager(props.animationId, props.animationManager);
+  var [style, setStyle] = useState(isActive ? from : to);
+  var stopJSAnimation = useRef(null);
+  useEffect(() => {
     if (!isActive) {
       setStyle(to);
     }
   }, [isActive]);
-  (0, _react.useEffect)(() => {
+  useEffect(() => {
     if (!isActive || !canBegin) {
-      return _DataUtils.noop;
+      return noop;
     }
-    var startAnimation = (0, _configUpdate.default)(from, to, (0, _easing.configEasing)(easing), duration, setStyle, animationManager.getTimeoutController());
+    var startAnimation = configUpdate(from, to, configEasing(easing), duration, setStyle, animationManager.getTimeoutController());
     var onAnimationActive = () => {
       stopJSAnimation.current = startAnimation();
     };

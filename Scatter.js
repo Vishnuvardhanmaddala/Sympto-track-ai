@@ -1,48 +1,6 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Scatter = void 0;
-exports.computeScatterPoints = computeScatterPoints;
-exports.defaultScatterProps = void 0;
-var _react = _interopRequireWildcard(require("react"));
-var React = _react;
-var _clsx = require("clsx");
-var _Layer = require("../container/Layer");
-var _LabelList = require("../component/LabelList");
-var _ReactUtils = require("../util/ReactUtils");
-var _Curve = require("../shape/Curve");
-var _Cell = require("../component/Cell");
-var _DataUtils = require("../util/DataUtils");
-var _ChartUtils = require("../util/ChartUtils");
-var _types = require("../util/types");
-var _ScatterUtils = require("../util/ScatterUtils");
-var _tooltipContext = require("../context/tooltipContext");
-var _SetTooltipEntrySettings = require("../state/SetTooltipEntrySettings");
-var _ErrorBarContext = require("../context/ErrorBarContext");
-var _GraphicalItemClipPath = require("./GraphicalItemClipPath");
-var _scatterSelectors = require("../state/selectors/scatterSelectors");
-var _hooks = require("../state/hooks");
-var _axisSelectors = require("../state/selectors/axisSelectors");
-var _PanoramaContext = require("../context/PanoramaContext");
-var _tooltipSelectors = require("../state/selectors/tooltipSelectors");
-var _SetLegendPayload = require("../state/SetLegendPayload");
-var _Constants = require("../util/Constants");
-var _useAnimationId = require("../util/useAnimationId");
-var _resolveDefaultProps2 = require("../util/resolveDefaultProps");
-var _RegisterGraphicalItemId = require("../context/RegisterGraphicalItemId");
-var _SetGraphicalItem = require("../state/SetGraphicalItem");
-var _svgPropertiesNoEvents = require("../util/svgPropertiesNoEvents");
-var _JavascriptAnimate = require("../animation/JavascriptAnimate");
-var _chartLayoutContext = require("../context/chartLayoutContext");
-var _ZIndexLayer = require("../zIndex/ZIndexLayer");
-var _DefaultZIndexes = require("../zIndex/DefaultZIndexes");
-var _propsAreEqual = require("../util/propsAreEqual");
 var _excluded = ["id"],
   _excluded2 = ["onMouseEnter", "onClick", "onMouseLeave"],
   _excluded3 = ["animationBegin", "animationDuration", "animationEasing", "hide", "isAnimationActive", "legendType", "lineJointType", "lineType", "shape", "xAxisId", "yAxisId", "zAxisId"];
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
@@ -51,6 +9,40 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t =
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+import * as React from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { clsx } from 'clsx';
+import { Layer } from '../container/Layer';
+import { CartesianLabelListContextProvider, LabelListFromLabelProp } from '../component/LabelList';
+import { findAllByType } from '../util/ReactUtils';
+import { Curve } from '../shape/Curve';
+import { Cell } from '../component/Cell';
+import { getLinearRegression, interpolate, isNullish } from '../util/DataUtils';
+import { getCateCoordinateOfLine, getTooltipNameProp, getValueByDataKey } from '../util/ChartUtils';
+import { adaptEventsOfChild, isNonEmptyArray } from '../util/types';
+import { ScatterSymbol } from '../util/ScatterUtils';
+import { useMouseClickItemDispatch, useMouseEnterItemDispatch, useMouseLeaveItemDispatch } from '../context/tooltipContext';
+import { SetTooltipEntrySettings } from '../state/SetTooltipEntrySettings';
+import { SetErrorBarContext } from '../context/ErrorBarContext';
+import { GraphicalItemClipPath, useNeedsClip } from './GraphicalItemClipPath';
+import { selectScatterPoints } from '../state/selectors/scatterSelectors';
+import { useAppSelector } from '../state/hooks';
+import { implicitZAxis } from '../state/selectors/axisSelectors';
+import { useIsPanorama } from '../context/PanoramaContext';
+import { selectActiveTooltipIndex } from '../state/selectors/tooltipSelectors';
+import { SetLegendPayload } from '../state/SetLegendPayload';
+import { DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME } from '../util/Constants';
+import { useAnimationId } from '../util/useAnimationId';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { RegisterGraphicalItemId } from '../context/RegisterGraphicalItemId';
+import { SetCartesianGraphicalItem } from '../state/SetGraphicalItem';
+import { svgPropertiesNoEvents, svgPropertiesNoEventsFromUnknown } from '../util/svgPropertiesNoEvents';
+import { JavascriptAnimate } from '../animation/JavascriptAnimate';
+import { useViewBox } from '../context/chartLayoutContext';
+import { ZIndexLayer } from '../zIndex/ZIndexLayer';
+import { DefaultZIndexes } from '../zIndex/DefaultZIndexes';
+import { propsAreEqual } from '../util/propsAreEqual';
+
 /**
  * Scatter coordinates are nullable because sometimes the point value is out of the domain,
  * and we can't compute a valid coordinate for it.
@@ -84,7 +76,7 @@ var computeLegendPayloadFromScatterProps = props => {
     dataKey,
     type: legendType,
     color: fill,
-    value: (0, _ChartUtils.getTooltipNameProp)(name, dataKey),
+    value: getTooltipNameProp(name, dataKey),
     payload: props
   }];
 };
@@ -112,7 +104,7 @@ var SetScatterTooltipEntrySettings = /*#__PURE__*/React.memo(_ref => {
       fill,
       nameKey: undefined,
       dataKey,
-      name: (0, _ChartUtils.getTooltipNameProp)(name, dataKey),
+      name: getTooltipNameProp(name, dataKey),
       hide,
       type: tooltipType,
       color: fill,
@@ -121,7 +113,7 @@ var SetScatterTooltipEntrySettings = /*#__PURE__*/React.memo(_ref => {
       graphicalItemId: id
     }
   };
-  return /*#__PURE__*/React.createElement(_SetTooltipEntrySettings.SetTooltipEntrySettings, {
+  return /*#__PURE__*/React.createElement(SetTooltipEntrySettings, {
     tooltipEntrySettings: tooltipEntrySettings
   });
 });
@@ -138,8 +130,8 @@ function ScatterLine(_ref2) {
   if (!line) {
     return null;
   }
-  var scatterProps = (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(props);
-  var customLineProps = (0, _svgPropertiesNoEvents.svgPropertiesNoEventsFromUnknown)(line);
+  var scatterProps = svgPropertiesNoEvents(props);
+  var customLineProps = svgPropertiesNoEventsFromUnknown(line);
   var linePoints, lineItem;
   if (lineType === 'joint') {
     linePoints = points.map(entry => {
@@ -155,7 +147,7 @@ function ScatterLine(_ref2) {
       xmax,
       a,
       b
-    } = (0, _DataUtils.getLinearRegression)(points);
+    } = getLinearRegression(points);
     var linearExp = x => a * x + b;
     linePoints = [{
       x: xmin,
@@ -179,11 +171,11 @@ function ScatterLine(_ref2) {
   } else if (typeof line === 'function') {
     lineItem = line(lineProps);
   } else {
-    lineItem = /*#__PURE__*/React.createElement(_Curve.Curve, _extends({}, lineProps, {
+    lineItem = /*#__PURE__*/React.createElement(Curve, _extends({}, lineProps, {
       type: lineJointType
     }));
   }
-  return /*#__PURE__*/React.createElement(_Layer.Layer, {
+  return /*#__PURE__*/React.createElement(Layer, {
     className: "recharts-scatter-line",
     key: "recharts-scatter-line"
   }, lineItem);
@@ -194,8 +186,8 @@ function ScatterLabelListProvider(_ref3) {
     points,
     children
   } = _ref3;
-  var chartViewBox = (0, _chartLayoutContext.useViewBox)();
-  var labelListEntries = (0, _react.useMemo)(() => {
+  var chartViewBox = useViewBox();
+  var labelListEntries = useMemo(() => {
     return points === null || points === void 0 ? void 0 : points.map(point => {
       var _point$x, _point$y;
       var viewBox = {
@@ -228,7 +220,7 @@ function ScatterLabelListProvider(_ref3) {
       });
     });
   }, [chartViewBox, points]);
-  return /*#__PURE__*/React.createElement(_LabelList.CartesianLabelListContextProvider, {
+  return /*#__PURE__*/React.createElement(CartesianLabelListContextProvider, {
     value: showLabels ? labelListEntries : undefined
   }, children);
 }
@@ -246,20 +238,20 @@ function ScatterSymbols(props) {
       id
     } = allOtherScatterProps,
     allOtherPropsWithoutId = _objectWithoutProperties(allOtherScatterProps, _excluded);
-  var activeIndex = (0, _hooks.useAppSelector)(_tooltipSelectors.selectActiveTooltipIndex);
+  var activeIndex = useAppSelector(selectActiveTooltipIndex);
   var {
       onMouseEnter: onMouseEnterFromProps,
       onClick: onItemClickFromProps,
       onMouseLeave: onMouseLeaveFromProps
     } = allOtherScatterProps,
     restOfAllOtherProps = _objectWithoutProperties(allOtherScatterProps, _excluded2);
-  var onMouseEnterFromContext = (0, _tooltipContext.useMouseEnterItemDispatch)(onMouseEnterFromProps, dataKey, id);
-  var onMouseLeaveFromContext = (0, _tooltipContext.useMouseLeaveItemDispatch)(onMouseLeaveFromProps);
-  var onClickFromContext = (0, _tooltipContext.useMouseClickItemDispatch)(onItemClickFromProps, dataKey, id);
-  if (!(0, _types.isNonEmptyArray)(points)) {
+  var onMouseEnterFromContext = useMouseEnterItemDispatch(onMouseEnterFromProps, dataKey, id);
+  var onMouseLeaveFromContext = useMouseLeaveItemDispatch(onMouseLeaveFromProps);
+  var onClickFromContext = useMouseClickItemDispatch(onItemClickFromProps, dataKey, id);
+  if (!isNonEmptyArray(points)) {
     return null;
   }
-  var baseProps = (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(allOtherPropsWithoutId);
+  var baseProps = svgPropertiesNoEvents(allOtherPropsWithoutId);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ScatterLine, {
     points: points,
     props: allOtherPropsWithoutId
@@ -269,23 +261,23 @@ function ScatterSymbols(props) {
     var option = hasActiveShape && isActive ? activeShape : shape;
     var symbolProps = _objectSpread(_objectSpread(_objectSpread({}, baseProps), entry), {}, {
       index: i,
-      [_Constants.DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME]: String(id)
+      [DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME]: String(id)
     });
-    return /*#__PURE__*/React.createElement(_ZIndexLayer.ZIndexLayer, {
+    return /*#__PURE__*/React.createElement(ZIndexLayer, {
       key: "symbol-".concat(entry === null || entry === void 0 ? void 0 : entry.cx, "-").concat(entry === null || entry === void 0 ? void 0 : entry.cy, "-").concat(entry === null || entry === void 0 ? void 0 : entry.size, "-").concat(i)
       /*
        * inactive Scatters use the parent zIndex, which is represented by undefined here.
        * ZIndexLayer will render undefined zIndex as-is, as regular children, without portals.
        * Active Scatters use the activeDot zIndex so they render above other elements.
        */,
-      zIndex: isActive ? _DefaultZIndexes.DefaultZIndexes.activeDot : undefined
-    }, /*#__PURE__*/React.createElement(_Layer.Layer, _extends({
+      zIndex: isActive ? DefaultZIndexes.activeDot : undefined
+    }, /*#__PURE__*/React.createElement(Layer, _extends({
       className: "recharts-scatter-symbol"
-    }, (0, _types.adaptEventsOfChild)(restOfAllOtherProps, entry, i), {
+    }, adaptEventsOfChild(restOfAllOtherProps, entry, i), {
       onMouseEnter: onMouseEnterFromContext(entry, i),
       onMouseLeave: onMouseLeaveFromContext(entry, i),
       onClick: onClickFromContext(entry, i)
-    }), /*#__PURE__*/React.createElement(_ScatterUtils.ScatterSymbol, _extends({
+    }), /*#__PURE__*/React.createElement(ScatterSymbol, _extends({
       option: option,
       isActive: isActive
     }, symbolProps))));
@@ -304,16 +296,16 @@ function SymbolsWithAnimation(_ref4) {
     animationEasing
   } = props;
   var prevPoints = previousPointsRef.current;
-  var animationId = (0, _useAnimationId.useAnimationId)(props, 'recharts-scatter-');
-  var [isAnimating, setIsAnimating] = (0, _react.useState)(false);
-  var handleAnimationEnd = (0, _react.useCallback)(() => {
+  var animationId = useAnimationId(props, 'recharts-scatter-');
+  var [isAnimating, setIsAnimating] = useState(false);
+  var handleAnimationEnd = useCallback(() => {
     // Scatter doesn't have onAnimationEnd prop, and if we want to add it we do it here
     // if (typeof onAnimationEnd === 'function') {
     //   onAnimationEnd();
     // }
     setIsAnimating(false);
   }, []);
-  var handleAnimationStart = (0, _react.useCallback)(() => {
+  var handleAnimationStart = useCallback(() => {
     // Scatter doesn't have onAnimationStart prop, and if we want to add it we do it here
     // if (typeof onAnimationStart === 'function') {
     //   onAnimationStart();
@@ -324,7 +316,7 @@ function SymbolsWithAnimation(_ref4) {
   return /*#__PURE__*/React.createElement(ScatterLabelListProvider, {
     showLabels: showLabels,
     points: points
-  }, props.children, /*#__PURE__*/React.createElement(_JavascriptAnimate.JavascriptAnimate, {
+  }, props.children, /*#__PURE__*/React.createElement(JavascriptAnimate, {
     animationId: animationId,
     begin: animationBegin,
     duration: animationDuration,
@@ -338,29 +330,29 @@ function SymbolsWithAnimation(_ref4) {
       var prev = prevPoints && prevPoints[index];
       if (prev) {
         return _objectSpread(_objectSpread({}, entry), {}, {
-          cx: entry.cx == null ? undefined : (0, _DataUtils.interpolate)(prev.cx, entry.cx, t),
-          cy: entry.cy == null ? undefined : (0, _DataUtils.interpolate)(prev.cy, entry.cy, t),
-          size: (0, _DataUtils.interpolate)(prev.size, entry.size, t)
+          cx: entry.cx == null ? undefined : interpolate(prev.cx, entry.cx, t),
+          cy: entry.cy == null ? undefined : interpolate(prev.cy, entry.cy, t),
+          size: interpolate(prev.size, entry.size, t)
         });
       }
       return _objectSpread(_objectSpread({}, entry), {}, {
-        size: (0, _DataUtils.interpolate)(0, entry.size, t)
+        size: interpolate(0, entry.size, t)
       });
     });
     if (t > 0) {
       // eslint-disable-next-line no-param-reassign
       previousPointsRef.current = stepData;
     }
-    return /*#__PURE__*/React.createElement(_Layer.Layer, null, /*#__PURE__*/React.createElement(ScatterSymbols, {
+    return /*#__PURE__*/React.createElement(Layer, null, /*#__PURE__*/React.createElement(ScatterSymbols, {
       points: stepData,
       allOtherScatterProps: props,
       showLabels: showLabels
     }));
-  }), /*#__PURE__*/React.createElement(_LabelList.LabelListFromLabelProp, {
+  }), /*#__PURE__*/React.createElement(LabelListFromLabelProp, {
     label: props.label
   }));
 }
-function computeScatterPoints(_ref5) {
+export function computeScatterPoints(_ref5) {
   var {
     displayedData,
     xAxis,
@@ -371,19 +363,19 @@ function computeScatterPoints(_ref5) {
     yAxisTicks,
     cells
   } = _ref5;
-  var xAxisDataKey = (0, _DataUtils.isNullish)(xAxis.dataKey) ? scatterSettings.dataKey : xAxis.dataKey;
-  var yAxisDataKey = (0, _DataUtils.isNullish)(yAxis.dataKey) ? scatterSettings.dataKey : yAxis.dataKey;
+  var xAxisDataKey = isNullish(xAxis.dataKey) ? scatterSettings.dataKey : xAxis.dataKey;
+  var yAxisDataKey = isNullish(yAxis.dataKey) ? scatterSettings.dataKey : yAxis.dataKey;
   var zAxisDataKey = zAxis && zAxis.dataKey;
-  var defaultRangeZ = zAxis ? zAxis.range : _axisSelectors.implicitZAxis.range;
+  var defaultRangeZ = zAxis ? zAxis.range : implicitZAxis.range;
   var defaultZ = defaultRangeZ && defaultRangeZ[0];
   var xBandSize = xAxis.scale.bandwidth ? xAxis.scale.bandwidth() : 0;
   var yBandSize = yAxis.scale.bandwidth ? yAxis.scale.bandwidth() : 0;
   return displayedData.map((entry, index) => {
-    var x = (0, _ChartUtils.getValueByDataKey)(entry, xAxisDataKey);
-    var y = (0, _ChartUtils.getValueByDataKey)(entry, yAxisDataKey);
-    var z = !(0, _DataUtils.isNullish)(zAxisDataKey) && (0, _ChartUtils.getValueByDataKey)(entry, zAxisDataKey) || '-';
+    var x = getValueByDataKey(entry, xAxisDataKey);
+    var y = getValueByDataKey(entry, yAxisDataKey);
+    var z = !isNullish(zAxisDataKey) && getValueByDataKey(entry, zAxisDataKey) || '-';
     var tooltipPayload = [{
-      name: (0, _DataUtils.isNullish)(xAxis.dataKey) ? scatterSettings.name : xAxis.name || String(xAxis.dataKey),
+      name: isNullish(xAxis.dataKey) ? scatterSettings.name : xAxis.name || String(xAxis.dataKey),
       unit: xAxis.unit || '',
       // @ts-expect-error getValueByDataKey does not validate the output type
       value: x,
@@ -392,7 +384,7 @@ function computeScatterPoints(_ref5) {
       type: scatterSettings.tooltipType,
       graphicalItemId: scatterSettings.id
     }, {
-      name: (0, _DataUtils.isNullish)(yAxis.dataKey) ? scatterSettings.name : yAxis.name || String(yAxis.dataKey),
+      name: isNullish(yAxis.dataKey) ? scatterSettings.name : yAxis.name || String(yAxis.dataKey),
       unit: yAxis.unit || '',
       // @ts-expect-error getValueByDataKey does not validate the output type
       value: y,
@@ -414,7 +406,7 @@ function computeScatterPoints(_ref5) {
         graphicalItemId: scatterSettings.id
       });
     }
-    var cx = (0, _ChartUtils.getCateCoordinateOfLine)({
+    var cx = getCateCoordinateOfLine({
       axis: xAxis,
       ticks: xAxisTicks,
       bandSize: xBandSize,
@@ -422,7 +414,7 @@ function computeScatterPoints(_ref5) {
       index,
       dataKey: xAxisDataKey
     });
-    var cy = (0, _ChartUtils.getCateCoordinateOfLine)({
+    var cy = getCateCoordinateOfLine({
       axis: yAxis,
       ticks: yAxisTicks,
       bandSize: yBandSize,
@@ -460,7 +452,7 @@ var errorBarDataPointFormatter = (dataPoint, dataKey, direction) => {
     y: dataPoint.cy,
     value: direction === 'x' ? Number(dataPoint.node.x) : Number(dataPoint.node.y),
     // @ts-expect-error getValueByDataKey does not validate the output type
-    errorVal: (0, _ChartUtils.getValueByDataKey)(dataPoint, dataKey)
+    errorVal: getValueByDataKey(dataPoint, dataKey)
   };
 };
 function ScatterWithId(props) {
@@ -473,36 +465,36 @@ function ScatterWithId(props) {
     yAxisId,
     id
   } = props;
-  var previousPointsRef = (0, _react.useRef)(null);
+  var previousPointsRef = useRef(null);
   if (hide) {
     return null;
   }
-  var layerClass = (0, _clsx.clsx)('recharts-scatter', className);
+  var layerClass = clsx('recharts-scatter', className);
   var clipPathId = id;
-  return /*#__PURE__*/React.createElement(_ZIndexLayer.ZIndexLayer, {
+  return /*#__PURE__*/React.createElement(ZIndexLayer, {
     zIndex: props.zIndex
-  }, /*#__PURE__*/React.createElement(_Layer.Layer, {
+  }, /*#__PURE__*/React.createElement(Layer, {
     className: layerClass,
     clipPath: needClip ? "url(#clipPath-".concat(clipPathId, ")") : undefined,
     id: id
-  }, needClip && /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement(_GraphicalItemClipPath.GraphicalItemClipPath, {
+  }, needClip && /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement(GraphicalItemClipPath, {
     clipPathId: clipPathId,
     xAxisId: xAxisId,
     yAxisId: yAxisId
-  })), /*#__PURE__*/React.createElement(_ErrorBarContext.SetErrorBarContext, {
+  })), /*#__PURE__*/React.createElement(SetErrorBarContext, {
     xAxisId: xAxisId,
     yAxisId: yAxisId,
     data: points,
     dataPointFormatter: errorBarDataPointFormatter,
     errorBarOffset: 0
-  }, /*#__PURE__*/React.createElement(_Layer.Layer, {
+  }, /*#__PURE__*/React.createElement(Layer, {
     key: "recharts-scatter-symbols"
   }, /*#__PURE__*/React.createElement(SymbolsWithAnimation, {
     props: props,
     previousPointsRef: previousPointsRef
   })))));
 }
-var defaultScatterProps = exports.defaultScatterProps = {
+export var defaultScatterProps = {
   xAxisId: 0,
   yAxisId: 0,
   zAxisId: 0,
@@ -517,10 +509,10 @@ var defaultScatterProps = exports.defaultScatterProps = {
   animationBegin: 0,
   animationDuration: 400,
   animationEasing: 'linear',
-  zIndex: _DefaultZIndexes.DefaultZIndexes.scatter
+  zIndex: DefaultZIndexes.scatter
 };
 function ScatterImpl(props) {
-  var _resolveDefaultProps = (0, _resolveDefaultProps2.resolveDefaultProps)(props, defaultScatterProps),
+  var _resolveDefaultProps = resolveDefaultProps(props, defaultScatterProps),
     {
       animationBegin,
       animationDuration,
@@ -538,11 +530,11 @@ function ScatterImpl(props) {
     everythingElse = _objectWithoutProperties(_resolveDefaultProps, _excluded3);
   var {
     needClip
-  } = (0, _GraphicalItemClipPath.useNeedsClip)(xAxisId, yAxisId);
-  var cells = (0, _react.useMemo)(() => (0, _ReactUtils.findAllByType)(props.children, _Cell.Cell), [props.children]);
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  var points = (0, _hooks.useAppSelector)(state => {
-    return (0, _scatterSelectors.selectScatterPoints)(state, xAxisId, yAxisId, zAxisId, props.id, cells, isPanorama);
+  } = useNeedsClip(xAxisId, yAxisId);
+  var cells = useMemo(() => findAllByType(props.children, Cell), [props.children]);
+  var isPanorama = useIsPanorama();
+  var points = useAppSelector(state => {
+    return selectScatterPoints(state, xAxisId, yAxisId, zAxisId, props.id, cells, isPanorama);
   });
   if (needClip == null) {
     return null;
@@ -578,14 +570,14 @@ function ScatterImpl(props) {
   })));
 }
 function ScatterFn(outsideProps) {
-  var props = (0, _resolveDefaultProps2.resolveDefaultProps)(outsideProps, defaultScatterProps);
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  return /*#__PURE__*/React.createElement(_RegisterGraphicalItemId.RegisterGraphicalItemId, {
+  var props = resolveDefaultProps(outsideProps, defaultScatterProps);
+  var isPanorama = useIsPanorama();
+  return /*#__PURE__*/React.createElement(RegisterGraphicalItemId, {
     id: props.id,
     type: "scatter"
-  }, id => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(_SetLegendPayload.SetLegendPayload, {
+  }, id => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(SetLegendPayload, {
     legendPayload: computeLegendPayloadFromScatterProps(props)
-  }), /*#__PURE__*/React.createElement(_SetGraphicalItem.SetCartesianGraphicalItem, {
+  }), /*#__PURE__*/React.createElement(SetCartesianGraphicalItem, {
     type: "scatter",
     id: id,
     data: props.data,
@@ -608,7 +600,7 @@ function ScatterFn(outsideProps) {
  * @provides CellReader
  * @consumes CartesianChartContext
  */
-var Scatter = exports.Scatter = /*#__PURE__*/React.memo(ScatterFn, _propsAreEqual.propsAreEqual);
+export var Scatter = /*#__PURE__*/React.memo(ScatterFn, propsAreEqual);
 // @ts-expect-error we need to set the displayName for debugging purposes
 
 Scatter.displayName = 'Scatter';

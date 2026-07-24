@@ -1,11 +1,5 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.defaultPolarAngleAxisProps = void 0;
-var _DefaultZIndexes = require("../zIndex/DefaultZIndexes");
-var defaultPolarAngleAxisProps = exports.defaultPolarAngleAxisProps = {
+import { DefaultZIndexes } from '../zIndex/DefaultZIndexes';
+export var defaultPolarAngleAxisProps = {
   allowDecimals: false,
   allowDuplicatedCategory: true,
   // if I set this to false then Tooltip synchronisation stops working in Radar, wtf
@@ -27,5 +21,5 @@ var defaultPolarAngleAxisProps = exports.defaultPolarAngleAxisProps = {
   tickLine: true,
   tickSize: 8,
   type: 'auto',
-  zIndex: _DefaultZIndexes.DefaultZIndexes.axis
+  zIndex: DefaultZIndexes.axis
 };

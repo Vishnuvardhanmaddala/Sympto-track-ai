@@ -1,25 +1,4 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ErrorBar = ErrorBar;
-exports.errorBarDefaultProps = void 0;
-var React = _interopRequireWildcard(require("react"));
-var _Layer = require("../container/Layer");
-var _ErrorBarContext = require("../context/ErrorBarContext");
-var _hooks = require("../hooks");
-var _resolveDefaultProps = require("../util/resolveDefaultProps");
-var _svgPropertiesNoEvents = require("../util/svgPropertiesNoEvents");
-var _chartLayoutContext = require("../context/chartLayoutContext");
-var _CSSTransitionAnimate = require("../animation/CSSTransitionAnimate");
-var _ZIndexLayer = require("../zIndex/ZIndexLayer");
-var _DefaultZIndexes = require("../zIndex/DefaultZIndexes");
 var _excluded = ["direction", "width", "dataKey", "isAnimationActive", "animationBegin", "animationDuration", "animationEasing"];
-/**
- * @fileOverview Render a group of error bar
- */
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
@@ -28,6 +7,20 @@ function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" 
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
+/**
+ * @fileOverview Render a group of error bar
+ */
+import * as React from 'react';
+import { Layer } from '../container/Layer';
+import { ReportErrorBarSettings, useErrorBarContext } from '../context/ErrorBarContext';
+import { useXAxis, useYAxis } from '../hooks';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { svgPropertiesNoEvents } from '../util/svgPropertiesNoEvents';
+import { useChartLayout } from '../context/chartLayoutContext';
+import { CSSTransitionAnimate } from '../animation/CSSTransitionAnimate';
+import { ZIndexLayer } from '../zIndex/ZIndexLayer';
+import { DefaultZIndexes } from '../zIndex/DefaultZIndexes';
+
 /**
  * So usually the direction is decided by the chart layout.
  * Horizontal layout means error bars are vertical means direction=y
@@ -57,16 +50,16 @@ function ErrorBarImpl(props) {
       animationEasing
     } = props,
     others = _objectWithoutProperties(props, _excluded);
-  var svgProps = (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(others);
+  var svgProps = svgPropertiesNoEvents(others);
   var {
     data,
     dataPointFormatter,
     xAxisId,
     yAxisId,
     errorBarOffset: offset
-  } = (0, _ErrorBarContext.useErrorBarContext)();
-  var xAxis = (0, _hooks.useXAxis)(xAxisId);
-  var yAxis = (0, _hooks.useYAxis)(yAxisId);
+  } = useErrorBarContext();
+  var xAxis = useXAxis(xAxisId);
+  var yAxis = useYAxis(yAxisId);
   if ((xAxis === null || xAxis === void 0 ? void 0 : xAxis.scale) == null || (yAxis === null || yAxis === void 0 ? void 0 : yAxis.scale) == null || data == null) {
     return null;
   }
@@ -166,14 +159,14 @@ function ErrorBarImpl(props) {
     }
     var scaleDirection = direction === 'x' ? 'scaleX' : 'scaleY';
     var transformOrigin = "".concat(x + offset, "px ").concat(y + offset, "px");
-    return /*#__PURE__*/React.createElement(_Layer.Layer, _extends({
+    return /*#__PURE__*/React.createElement(Layer, _extends({
       className: "recharts-errorBar",
       key: "bar-".concat(x, "-").concat(y, "-").concat(value, "-").concat(dataIndex)
     }, svgProps), lineCoordinates.map((c, lineIndex) => {
       var lineStyle = isAnimationActive ? {
         transformOrigin
       } : undefined;
-      return /*#__PURE__*/React.createElement(_CSSTransitionAnimate.CSSTransitionAnimate, {
+      return /*#__PURE__*/React.createElement(CSSTransitionAnimate, {
         animationId: "error-bar-".concat(direction, "_").concat(c.x1, "-").concat(c.x2, "-").concat(c.y1, "-").concat(c.y2),
         from: "".concat(scaleDirection, "(0)"),
         to: "".concat(scaleDirection, "(1)"),
@@ -188,12 +181,12 @@ function ErrorBarImpl(props) {
       })));
     }));
   });
-  return /*#__PURE__*/React.createElement(_Layer.Layer, {
+  return /*#__PURE__*/React.createElement(Layer, {
     className: "recharts-errorBars"
   }, errorBars);
 }
 function useErrorBarDirection(directionFromProps) {
-  var layout = (0, _chartLayoutContext.useChartLayout)();
+  var layout = useChartLayout();
   if (directionFromProps != null) {
     return directionFromProps;
   }
@@ -202,7 +195,7 @@ function useErrorBarDirection(directionFromProps) {
   }
   return 'x';
 }
-var errorBarDefaultProps = exports.errorBarDefaultProps = {
+export var errorBarDefaultProps = {
   stroke: 'black',
   strokeWidth: 1.5,
   width: 5,
@@ -211,7 +204,7 @@ var errorBarDefaultProps = exports.errorBarDefaultProps = {
   animationBegin: 0,
   animationDuration: 400,
   animationEasing: 'ease-in-out',
-  zIndex: _DefaultZIndexes.DefaultZIndexes.line
+  zIndex: DefaultZIndexes.line
 };
 
 /**
@@ -236,9 +229,9 @@ var errorBarDefaultProps = exports.errorBarDefaultProps = {
  *
  * @consumes ErrorBarContext
  */
-function ErrorBar(outsideProps) {
+export function ErrorBar(outsideProps) {
   var realDirection = useErrorBarDirection(outsideProps.direction);
-  var props = (0, _resolveDefaultProps.resolveDefaultProps)(outsideProps, errorBarDefaultProps);
+  var props = resolveDefaultProps(outsideProps, errorBarDefaultProps);
   var {
     width,
     isAnimationActive,
@@ -247,10 +240,10 @@ function ErrorBar(outsideProps) {
     animationEasing,
     zIndex
   } = props;
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(_ErrorBarContext.ReportErrorBarSettings, {
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ReportErrorBarSettings, {
     dataKey: props.dataKey,
     direction: realDirection
-  }), /*#__PURE__*/React.createElement(_ZIndexLayer.ZIndexLayer, {
+  }), /*#__PURE__*/React.createElement(ZIndexLayer, {
     zIndex: zIndex
   }, /*#__PURE__*/React.createElement(ErrorBarImpl, _extends({}, props, {
     direction: realDirection,

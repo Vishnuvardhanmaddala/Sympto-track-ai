@@ -1,39 +1,4 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Treemap = Treemap;
-exports.treemapPayloadSearcher = exports.defaultTreeMapProps = exports.computeNode = exports.addToTreemapNodeIndex = void 0;
-var _react = _interopRequireWildcard(require("react"));
-var React = _react;
-var _omit = _interopRequireDefault(require("es-toolkit/compat/omit"));
-var _get = _interopRequireDefault(require("es-toolkit/compat/get"));
-var _Layer = require("../container/Layer");
-var _Surface = require("../container/Surface");
-var _Polygon = require("../shape/Polygon");
-var _Rectangle = require("../shape/Rectangle");
-var _ChartUtils = require("../util/ChartUtils");
-var _Constants = require("../util/Constants");
-var _DataUtils = require("../util/DataUtils");
-var _DOMUtils = require("../util/DOMUtils");
-var _chartLayoutContext = require("../context/chartLayoutContext");
-var _tooltipPortalContext = require("../context/tooltipPortalContext");
-var _RechartsWrapper = require("./RechartsWrapper");
-var _tooltipSlice = require("../state/tooltipSlice");
-var _SetTooltipEntrySettings = require("../state/SetTooltipEntrySettings");
-var _RechartsStoreProvider = require("../state/RechartsStoreProvider");
-var _ReportEventSettings = require("../state/ReportEventSettings");
-var _hooks = require("../state/hooks");
-var _isWellBehavedNumber = require("../util/isWellBehavedNumber");
-var _svgPropertiesNoEvents = require("../util/svgPropertiesNoEvents");
-var _CSSTransitionAnimate = require("../animation/CSSTransitionAnimate");
-var _resolveDefaultProps = require("../util/resolveDefaultProps");
-var _RegisterGraphicalItemId = require("../context/RegisterGraphicalItemId");
-var _eventSettingsSlice = require("../state/eventSettingsSlice");
 var _excluded = ["width", "height", "className", "style", "children", "type"];
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
@@ -42,6 +7,32 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t =
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+import * as React from 'react';
+import { PureComponent, useCallback, useState } from 'react';
+import omit from 'es-toolkit/compat/omit';
+import get from 'es-toolkit/compat/get';
+import { Layer } from '../container/Layer';
+import { Surface } from '../container/Surface';
+import { Polygon } from '../shape/Polygon';
+import { Rectangle } from '../shape/Rectangle';
+import { getValueByDataKey } from '../util/ChartUtils';
+import { COLOR_PANEL } from '../util/Constants';
+import { isNan, noop, uniqueId } from '../util/DataUtils';
+import { getStringSize } from '../util/DOMUtils';
+import { ReportChartMargin, useChartHeight, useChartWidth } from '../context/chartLayoutContext';
+import { TooltipPortalContext } from '../context/tooltipPortalContext';
+import { RechartsWrapper } from './RechartsWrapper';
+import { setActiveClickItemIndex, setActiveMouseOverItemIndex } from '../state/tooltipSlice';
+import { SetTooltipEntrySettings } from '../state/SetTooltipEntrySettings';
+import { RechartsStoreProvider } from '../state/RechartsStoreProvider';
+import { ReportEventSettings } from '../state/ReportEventSettings';
+import { useAppDispatch } from '../state/hooks';
+import { isPositiveNumber } from '../util/isWellBehavedNumber';
+import { svgPropertiesNoEvents } from '../util/svgPropertiesNoEvents';
+import { CSSTransitionAnimate } from '../animation/CSSTransitionAnimate';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { RegisterGraphicalItemId } from '../context/RegisterGraphicalItemId';
+import { initialEventSettingsState } from '../state/eventSettingsSlice';
 var NODE_VALUE_KEY = 'value';
 
 /**
@@ -56,14 +47,13 @@ var NODE_VALUE_KEY = 'value';
 function isTreemapNode(value) {
   return value != null && typeof value === 'object' && 'x' in value && 'y' in value && 'width' in value && 'height' in value && typeof value.x === 'number' && typeof value.y === 'number' && typeof value.width === 'number' && typeof value.height === 'number';
 }
-var treemapPayloadSearcher = (data, activeIndex) => {
+export var treemapPayloadSearcher = (data, activeIndex) => {
   if (!data || !activeIndex) {
     return undefined;
   }
-  return (0, _get.default)(data, activeIndex);
+  return get(data, activeIndex);
 };
-exports.treemapPayloadSearcher = treemapPayloadSearcher;
-var addToTreemapNodeIndex = exports.addToTreemapNodeIndex = function addToTreemapNodeIndex(indexInChildrenArr) {
+export var addToTreemapNodeIndex = function addToTreemapNodeIndex(indexInChildrenArr) {
   var activeTooltipIndexSoFar = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
   return "".concat(activeTooltipIndexSoFar, "children[").concat(indexInChildrenArr, "]");
 };
@@ -74,7 +64,7 @@ var options = {
   tooltipPayloadSearcher: treemapPayloadSearcher,
   eventEmitter: undefined
 };
-var computeNode = _ref => {
+export var computeNode = _ref => {
   var {
     depth,
     node,
@@ -103,19 +93,18 @@ var computeNode = _ref => {
     // TODO need to verify dataKey
     var rawNodeValue = node[dataKey];
     var numericValue = typeof rawNodeValue === 'number' ? rawNodeValue : 0;
-    nodeValue = (0, _DataUtils.isNan)(numericValue) || numericValue <= 0 ? 0 : numericValue;
+    nodeValue = isNan(numericValue) || numericValue <= 0 ? 0 : numericValue;
   }
   return _objectSpread(_objectSpread({}, node), {}, {
     children: computedChildren,
     // @ts-expect-error getValueByDataKey does not validate the output type
-    name: (0, _ChartUtils.getValueByDataKey)(node, nameKey, ''),
+    name: getValueByDataKey(node, nameKey, ''),
     [NODE_VALUE_KEY]: nodeValue,
     depth,
     index,
     tooltipIndex: currentTooltipIndex
   });
 };
-exports.computeNode = computeNode;
 var filterRect = node => ({
   x: node.x,
   y: node.y,
@@ -128,7 +117,7 @@ var getAreaOfChildren = (children, areaValueRatio) => {
   return children.map(child => {
     var area = child[NODE_VALUE_KEY] * ratio;
     return _objectSpread(_objectSpread({}, child), {}, {
-      area: (0, _DataUtils.isNan)(area) || area <= 0 ? 0 : area
+      area: isNan(area) || area <= 0 ? 0 : area
     });
   });
 };
@@ -258,7 +247,7 @@ var squarify = (node, aspectRatio) => {
   }
   return node;
 };
-var defaultTreeMapProps = exports.defaultTreeMapProps = _objectSpread({
+export var defaultTreeMapProps = _objectSpread({
   aspectRatio: 0.5 * (1 + Math.sqrt(5)),
   dataKey: 'value',
   nameKey: 'name',
@@ -268,7 +257,7 @@ var defaultTreeMapProps = exports.defaultTreeMapProps = _objectSpread({
   animationBegin: 0,
   animationDuration: 1500,
   animationEasing: 'linear'
-}, _eventSettingsSlice.initialEventSettingsState);
+}, initialEventSettingsState);
 var defaultState = {
   isAnimationFinished: false,
   formatRoot: null,
@@ -288,14 +277,14 @@ function ContentItem(_ref2) {
     onClick
   } = _ref2;
   if (/*#__PURE__*/React.isValidElement(content)) {
-    return /*#__PURE__*/React.createElement(_Layer.Layer, {
+    return /*#__PURE__*/React.createElement(Layer, {
       onMouseEnter: onMouseEnter,
       onMouseLeave: onMouseLeave,
       onClick: onClick
     }, /*#__PURE__*/React.cloneElement(content, nodeProps));
   }
   if (typeof content === 'function') {
-    return /*#__PURE__*/React.createElement(_Layer.Layer, {
+    return /*#__PURE__*/React.createElement(Layer, {
       onMouseEnter: onMouseEnter,
       onMouseLeave: onMouseLeave,
       onClick: onClick
@@ -311,7 +300,7 @@ function ContentItem(_ref2) {
   } = nodeProps;
   var arrow = null;
   if (width > 10 && height > 10 && nodeProps.children && type === 'nest') {
-    arrow = /*#__PURE__*/React.createElement(_Polygon.Polygon, {
+    arrow = /*#__PURE__*/React.createElement(Polygon, {
       points: [{
         x: x + 2,
         y: y + height / 2
@@ -325,7 +314,7 @@ function ContentItem(_ref2) {
     });
   }
   var text = null;
-  var nameSize = (0, _DOMUtils.getStringSize)(nodeProps.name);
+  var nameSize = getStringSize(nodeProps.name);
   if (width > 20 && height > 20 && nameSize.width < width && nameSize.height < height) {
     text = /*#__PURE__*/React.createElement("text", {
       x: x + 8,
@@ -333,11 +322,11 @@ function ContentItem(_ref2) {
       fontSize: 14
     }, nodeProps.name);
   }
-  var colors = colorPanel || _Constants.COLOR_PANEL;
-  return /*#__PURE__*/React.createElement("g", null, /*#__PURE__*/React.createElement(_Rectangle.Rectangle, _extends({
+  var colors = colorPanel || COLOR_PANEL;
+  return /*#__PURE__*/React.createElement("g", null, /*#__PURE__*/React.createElement(Rectangle, _extends({
     fill: nodeProps.depth < 2 ? colors[index % colors.length] : 'rgba(255,255,255,0)',
     stroke: "#fff"
-  }, (0, _omit.default)(nodeProps, ['children']), {
+  }, omit(nodeProps, ['children']), {
     onMouseEnter: onMouseEnter,
     onMouseLeave: onMouseLeave,
     onClick: onClick,
@@ -345,13 +334,13 @@ function ContentItem(_ref2) {
   })), arrow, text);
 }
 function ContentItemWithEvents(props) {
-  var dispatch = (0, _hooks.useAppDispatch)();
+  var dispatch = useAppDispatch();
   var activeCoordinate = {
     x: props.nodeProps.x + props.nodeProps.width / 2,
     y: props.nodeProps.y + props.nodeProps.height / 2
   };
   var onMouseEnter = () => {
-    dispatch((0, _tooltipSlice.setActiveMouseOverItemIndex)({
+    dispatch(setActiveMouseOverItemIndex({
       activeIndex: props.nodeProps.tooltipIndex,
       activeDataKey: props.dataKey,
       activeCoordinate,
@@ -363,7 +352,7 @@ function ContentItemWithEvents(props) {
     // we don't actually want to do this for TreeMap - we clear state when we leave the entire chart instead
   };
   var onClick = () => {
-    dispatch((0, _tooltipSlice.setActiveClickItemIndex)({
+    dispatch(setActiveClickItemIndex({
       activeIndex: props.nodeProps.tooltipIndex,
       activeDataKey: props.dataKey,
       activeCoordinate,
@@ -387,7 +376,7 @@ var SetTreemapTooltipEntrySettings = /*#__PURE__*/React.memo(_ref3 => {
   } = _ref3;
   var tooltipEntrySettings = {
     dataDefinedOnItem: currentRoot,
-    getPosition: _DataUtils.noop,
+    getPosition: noop,
     // TODO I think Treemap has the capability of computing positions and supporting defaultIndex? Except it doesn't yet
     settings: {
       stroke,
@@ -404,7 +393,7 @@ var SetTreemapTooltipEntrySettings = /*#__PURE__*/React.memo(_ref3 => {
       graphicalItemId: id
     }
   };
-  return /*#__PURE__*/React.createElement(_SetTooltipEntrySettings.SetTooltipEntrySettings, {
+  return /*#__PURE__*/React.createElement(SetTooltipEntrySettings, {
     tooltipEntrySettings: tooltipEntrySettings
   });
 });
@@ -466,17 +455,17 @@ function TreemapItem(_ref4) {
       onItemClickFromProps(nodeProps);
     }
   };
-  var handleAnimationEnd = (0, _react.useCallback)(() => {
+  var handleAnimationEnd = useCallback(() => {
     if (typeof onAnimationEnd === 'function') {
       onAnimationEnd();
     }
   }, [onAnimationEnd]);
-  var handleAnimationStart = (0, _react.useCallback)(() => {
+  var handleAnimationStart = useCallback(() => {
     if (typeof onAnimationStart === 'function') {
       onAnimationStart();
     }
   }, [onAnimationStart]);
-  return /*#__PURE__*/React.createElement(_CSSTransitionAnimate.CSSTransitionAnimate, {
+  return /*#__PURE__*/React.createElement(CSSTransitionAnimate, {
     animationId: "treemap-".concat(nodeProps.tooltipIndex),
     from: "translate(".concat(translateX, "px, ").concat(translateY, "px)"),
     to: "translate(0, 0)",
@@ -487,7 +476,7 @@ function TreemapItem(_ref4) {
     duration: animationDuration,
     onAnimationStart: handleAnimationStart,
     onAnimationEnd: handleAnimationEnd
-  }, style => /*#__PURE__*/React.createElement(_Layer.Layer, {
+  }, style => /*#__PURE__*/React.createElement(Layer, {
     onMouseEnter: onMouseEnter,
     onMouseLeave: onMouseLeave,
     onClick: onClick,
@@ -510,7 +499,7 @@ function TreemapItem(_ref4) {
     colorPanel: colorPanel
   })));
 }
-class TreemapWithState extends _react.PureComponent {
+class TreemapWithState extends PureComponent {
   constructor() {
     super(...arguments);
     _defineProperty(this, "state", _objectSpread({}, defaultState));
@@ -581,7 +570,7 @@ class TreemapWithState extends _react.PureComponent {
 
       // Treemap does not support onTouchMove prop, but it could
       // onTouchMove?.(activeNode, Number(itemIndex), e);
-      dispatch((0, _tooltipSlice.setActiveMouseOverItemIndex)({
+      dispatch(setActiveMouseOverItemIndex({
         activeIndex: itemIndex,
         activeDataKey: dataKey,
         activeCoordinate,
@@ -658,7 +647,7 @@ class TreemapWithState extends _react.PureComponent {
       content,
       type
     } = this.props;
-    var nodeProps = _objectSpread(_objectSpread(_objectSpread({}, (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(this.props)), node), {}, {
+    var nodeProps = _objectSpread(_objectSpread(_objectSpread({}, svgPropertiesNoEvents(this.props)), node), {}, {
       root
     });
     var isLeaf = !node.children || !node.children.length;
@@ -669,7 +658,7 @@ class TreemapWithState extends _react.PureComponent {
     if (!isCurrentRootChild.length && root.depth && type === 'nest') {
       return null;
     }
-    return /*#__PURE__*/React.createElement(_Layer.Layer, {
+    return /*#__PURE__*/React.createElement(Layer, {
       key: "recharts-treemap-node-".concat(nodeProps.x, "-").concat(nodeProps.y, "-").concat(nodeProps.name),
       className: "recharts-treemap-depth-".concat(node.depth)
     }, /*#__PURE__*/React.createElement(TreemapItem, {
@@ -707,7 +696,7 @@ class TreemapWithState extends _react.PureComponent {
       }
     }, nestIndex.map((item, i) => {
       // TODO need to verify nameKey type
-      var rawName = (0, _get.default)(item, nameKey, 'root');
+      var rawName = get(item, nameKey, 'root');
       var name = typeof rawName === 'string' ? rawName : 'root';
       var content;
       if (/*#__PURE__*/React.isValidElement(nestIndexContent)) {
@@ -724,7 +713,7 @@ class TreemapWithState extends _react.PureComponent {
         // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
         React.createElement("div", {
           onClick: this.handleNestIndex.bind(this, item, i),
-          key: "nest-index-".concat((0, _DataUtils.uniqueId)()),
+          key: "nest-index-".concat(uniqueId()),
           className: "recharts-treemap-nest-index-box",
           style: {
             cursor: 'pointer',
@@ -749,7 +738,7 @@ class TreemapWithState extends _react.PureComponent {
         type
       } = _this$props,
       others = _objectWithoutProperties(_this$props, _excluded);
-    var attrs = (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(others);
+    var attrs = svgPropertiesNoEvents(others);
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(SetTreemapTooltipEntrySettings, {
       dataKey: this.props.dataKey,
       nameKey: this.props.nameKey,
@@ -757,7 +746,7 @@ class TreemapWithState extends _react.PureComponent {
       fill: this.props.fill,
       currentRoot: this.state.currentRoot,
       id: this.props.id
-    }), /*#__PURE__*/React.createElement(_Surface.Surface, _extends({}, attrs, {
+    }), /*#__PURE__*/React.createElement(Surface, _extends({}, attrs, {
       width: width,
       height: type === 'nest' ? height - 30 : height,
       onTouchMove: this.handleTouchMove
@@ -766,16 +755,16 @@ class TreemapWithState extends _react.PureComponent {
 }
 _defineProperty(TreemapWithState, "displayName", 'Treemap');
 function TreemapDispatchInject(props) {
-  var dispatch = (0, _hooks.useAppDispatch)();
-  var width = (0, _chartLayoutContext.useChartWidth)();
-  var height = (0, _chartLayoutContext.useChartHeight)();
-  if (!(0, _isWellBehavedNumber.isPositiveNumber)(width) || !(0, _isWellBehavedNumber.isPositiveNumber)(height)) {
+  var dispatch = useAppDispatch();
+  var width = useChartWidth();
+  var height = useChartHeight();
+  if (!isPositiveNumber(width) || !isPositiveNumber(height)) {
     return null;
   }
   var {
     id: externalId
   } = props;
-  return /*#__PURE__*/React.createElement(_RegisterGraphicalItemId.RegisterGraphicalItemId, {
+  return /*#__PURE__*/React.createElement(RegisterGraphicalItemId, {
     id: externalId,
     type: "treemap"
   }, id => /*#__PURE__*/React.createElement(TreemapWithState, _extends({}, props, {
@@ -792,9 +781,9 @@ function TreemapDispatchInject(props) {
  * @consumes ResponsiveContainerContext
  * @provides TooltipEntrySettings
  */
-function Treemap(outsideProps) {
+export function Treemap(outsideProps) {
   var _props$className;
-  var props = (0, _resolveDefaultProps.resolveDefaultProps)(outsideProps, defaultTreeMapProps);
+  var props = resolveDefaultProps(outsideProps, defaultTreeMapProps);
   var {
     className,
     style,
@@ -803,18 +792,18 @@ function Treemap(outsideProps) {
     throttleDelay,
     throttledEvents
   } = props;
-  var [tooltipPortal, setTooltipPortal] = (0, _react.useState)(null);
-  return /*#__PURE__*/React.createElement(_RechartsStoreProvider.RechartsStoreProvider, {
+  var [tooltipPortal, setTooltipPortal] = useState(null);
+  return /*#__PURE__*/React.createElement(RechartsStoreProvider, {
     preloadedState: {
       options
     },
     reduxStoreName: (_props$className = props.className) !== null && _props$className !== void 0 ? _props$className : 'Treemap'
-  }, /*#__PURE__*/React.createElement(_chartLayoutContext.ReportChartMargin, {
+  }, /*#__PURE__*/React.createElement(ReportChartMargin, {
     margin: defaultTreemapMargin
-  }), /*#__PURE__*/React.createElement(_ReportEventSettings.ReportEventSettings, {
+  }), /*#__PURE__*/React.createElement(ReportEventSettings, {
     throttleDelay: throttleDelay,
     throttledEvents: throttledEvents
-  }), /*#__PURE__*/React.createElement(_RechartsWrapper.RechartsWrapper, {
+  }), /*#__PURE__*/React.createElement(RechartsWrapper, {
     dispatchTouchEvents: false,
     className: className,
     style: style,
@@ -842,7 +831,7 @@ function Treemap(outsideProps) {
     onTouchStart: undefined,
     onTouchMove: undefined,
     onTouchEnd: undefined
-  }, /*#__PURE__*/React.createElement(_tooltipPortalContext.TooltipPortalContext.Provider, {
+  }, /*#__PURE__*/React.createElement(TooltipPortalContext.Provider, {
     value: tooltipPortal
   }, /*#__PURE__*/React.createElement(TreemapDispatchInject, props))));
 }

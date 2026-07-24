@@ -1,30 +1,4 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.defaultCartesianAxisProps = exports.CartesianAxis = void 0;
-var _react = _interopRequireWildcard(require("react"));
-var React = _react;
-var _get = _interopRequireDefault(require("es-toolkit/compat/get"));
-var _clsx = require("clsx");
-var _Layer = require("../container/Layer");
-var _Text = require("../component/Text");
-var _Label = require("../component/Label");
-var _DataUtils = require("../util/DataUtils");
-var _types = require("../util/types");
-var _getTicks = require("./getTicks");
-var _svgPropertiesNoEvents = require("../util/svgPropertiesNoEvents");
-var _YAxisUtils = require("../util/YAxisUtils");
-var _resolveDefaultProps = require("../util/resolveDefaultProps");
-var _ZIndexLayer = require("../zIndex/ZIndexLayer");
-var _DefaultZIndexes = require("../zIndex/DefaultZIndexes");
-var _getClassNameFromUnknown = require("../util/getClassNameFromUnknown");
-var _renderedTicksSlice = require("../state/renderedTicksSlice");
-var _hooks = require("../state/hooks");
 var _excluded = ["axisLine", "width", "height", "className", "hide", "ticks", "axisType", "axisId"];
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
@@ -32,16 +6,36 @@ function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbol
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
+function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+/**
  * @fileOverview Cartesian Axis
  */
+import * as React from 'react';
+import { useState, useRef, useCallback, forwardRef, useImperativeHandle, useEffect } from 'react';
+import get from 'es-toolkit/compat/get';
+import { clsx } from 'clsx';
+import { Layer } from '../container/Layer';
+import { Text, isValidTextAnchor } from '../component/Text';
+import { CartesianLabelContextProvider, CartesianLabelFromLabelProp } from '../component/Label';
+import { isNumber, noop } from '../util/DataUtils';
+import { adaptEventsOfChild } from '../util/types';
+import { getTicks } from './getTicks';
+import { svgPropertiesNoEvents, svgPropertiesNoEventsFromUnknown } from '../util/svgPropertiesNoEvents';
+import { getCalculatedYAxisWidth } from '../util/YAxisUtils';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { ZIndexLayer } from '../zIndex/ZIndexLayer';
+import { DefaultZIndexes } from '../zIndex/DefaultZIndexes';
+import { getClassNameFromUnknown } from '../util/getClassNameFromUnknown';
+import { removeRenderedTicks, setRenderedTicks } from '../state/renderedTicksSlice';
+import { useAppDispatch } from '../state/hooks';
+
 /** The orientation of the axis in correspondence to the chart */
 
 /** A unit to be appended to a value */
 
 /** The formatter function of tick */
 
-var defaultCartesianAxisProps = exports.defaultCartesianAxisProps = {
+export var defaultCartesianAxisProps = {
   x: 0,
   y: 0,
   width: 0,
@@ -66,7 +60,7 @@ var defaultCartesianAxisProps = exports.defaultCartesianAxisProps = {
   tickSize: 6,
   tickMargin: 2,
   interval: 'preserveEnd',
-  zIndex: _DefaultZIndexes.DefaultZIndexes.axis
+  zIndex: DefaultZIndexes.axis
 };
 
 /*
@@ -89,7 +83,7 @@ function AxisLine(axisLineProps) {
   if (!axisLine) {
     return null;
   }
-  var props = _objectSpread(_objectSpread(_objectSpread({}, otherSvgProps), (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(axisLine)), {}, {
+  var props = _objectSpread(_objectSpread(_objectSpread({}, otherSvgProps), svgPropertiesNoEvents(axisLine)), {}, {
     fill: 'none'
   });
   if (orientation === 'top' || orientation === 'bottom') {
@@ -110,7 +104,7 @@ function AxisLine(axisLineProps) {
     });
   }
   return /*#__PURE__*/React.createElement("line", _extends({}, props, {
-    className: (0, _clsx.clsx)('recharts-cartesian-axis-line', (0, _get.default)(axisLine, 'className'))
+    className: clsx('recharts-cartesian-axis-line', get(axisLine, 'className'))
   }));
 }
 
@@ -132,7 +126,7 @@ function getTickLineCoord(data, x, y, width, height, orientation, tickSize, mirr
   var x1, x2, y1, y2, tx, ty;
   var sign = mirror ? -1 : 1;
   var finalTickSize = data.tickSize || tickSize;
-  var tickCoord = (0, _DataUtils.isNumber)(data.tickCoord) ? data.tickCoord : data.coordinate;
+  var tickCoord = isNumber(data.tickCoord) ? data.tickCoord : data.coordinate;
   switch (orientation) {
     case 'top':
       x1 = x2 = data.coordinate;
@@ -216,7 +210,7 @@ function TickItem(props) {
     value
   } = props;
   var tickItem;
-  var combinedClassName = (0, _clsx.clsx)(tickProps.className, 'recharts-cartesian-axis-tick-value');
+  var combinedClassName = clsx(tickProps.className, 'recharts-cartesian-axis-tick-value');
   if (/*#__PURE__*/React.isValidElement(option)) {
     // @ts-expect-error element cloning is not typed
     tickItem = /*#__PURE__*/React.cloneElement(option, _objectSpread(_objectSpread({}, tickProps), {}, {
@@ -229,9 +223,9 @@ function TickItem(props) {
   } else {
     var className = 'recharts-cartesian-axis-tick-value';
     if (typeof option !== 'boolean') {
-      className = (0, _clsx.clsx)(className, (0, _getClassNameFromUnknown.getClassNameFromUnknown)(option));
+      className = clsx(className, getClassNameFromUnknown(option));
     }
-    tickItem = /*#__PURE__*/React.createElement(_Text.Text, _extends({}, tickProps, {
+    tickItem = /*#__PURE__*/React.createElement(Text, _extends({}, tickProps, {
       className: className
     }), value);
   }
@@ -243,10 +237,10 @@ function RenderedTicksReporter(_ref) {
     axisType,
     axisId
   } = _ref;
-  var dispatch = (0, _hooks.useAppDispatch)();
-  (0, _react.useEffect)(() => {
+  var dispatch = useAppDispatch();
+  useEffect(() => {
     if (axisId == null || axisType == null) {
-      return _DataUtils.noop;
+      return noop;
     }
     // Filter out irrelevant internal properties before exposing externally
     var tickItems = ticks.map(tick => ({
@@ -255,13 +249,13 @@ function RenderedTicksReporter(_ref) {
       offset: tick.offset,
       index: tick.index
     }));
-    dispatch((0, _renderedTicksSlice.setRenderedTicks)({
+    dispatch(setRenderedTicks({
       ticks: tickItems,
       axisId,
       axisType
     }));
     return () => {
-      dispatch((0, _renderedTicksSlice.removeRenderedTicks)({
+      dispatch(removeRenderedTicks({
         axisId,
         axisType
       }));
@@ -269,7 +263,7 @@ function RenderedTicksReporter(_ref) {
   }, [dispatch, ticks, axisId, axisType]);
   return null;
 }
-var Ticks = /*#__PURE__*/(0, _react.forwardRef)((props, ref) => {
+var Ticks = /*#__PURE__*/forwardRef((props, ref) => {
   var {
     ticks = [],
     tick,
@@ -295,13 +289,13 @@ var Ticks = /*#__PURE__*/(0, _react.forwardRef)((props, ref) => {
     axisId
   } = props;
   // @ts-expect-error some properties are optional in props but required in getTicks
-  var finalTicks = (0, _getTicks.getTicks)(_objectSpread(_objectSpread({}, getTicksConfig), {}, {
+  var finalTicks = getTicks(_objectSpread(_objectSpread({}, getTicksConfig), {}, {
     ticks
   }), fontSize, letterSpacing);
-  var axisProps = (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(getTicksConfig);
-  var customTickProps = (0, _svgPropertiesNoEvents.svgPropertiesNoEventsFromUnknown)(tick);
+  var axisProps = svgPropertiesNoEvents(getTicksConfig);
+  var customTickProps = svgPropertiesNoEventsFromUnknown(tick);
   // Use user-provided textAnchor if available, otherwise calculate from orientation/mirror
-  var textAnchor = (0, _Text.isValidTextAnchor)(axisProps.textAnchor) ? axisProps.textAnchor : getTickTextAnchor(orientation, mirror);
+  var textAnchor = isValidTextAnchor(axisProps.textAnchor) ? axisProps.textAnchor : getTickTextAnchor(orientation, mirror);
   var verticalAnchor = getTickVerticalAnchor(orientation, mirror);
   var tickLinePropsObject = {};
   if (typeof tickLine === 'object') {
@@ -318,11 +312,11 @@ var Ticks = /*#__PURE__*/(0, _react.forwardRef)((props, ref) => {
       entry,
       line: lineCoord
     } = _ref2;
-    return /*#__PURE__*/React.createElement(_Layer.Layer, {
+    return /*#__PURE__*/React.createElement(Layer, {
       className: "recharts-cartesian-axis-tick",
       key: "tick-".concat(entry.value, "-").concat(entry.coordinate, "-").concat(entry.tickCoord)
     }, tickLine && /*#__PURE__*/React.createElement("line", _extends({}, tickLineProps, lineCoord, {
-      className: (0, _clsx.clsx)('recharts-cartesian-axis-tick-line', (0, _get.default)(tickLine, 'className'))
+      className: clsx('recharts-cartesian-axis-tick-line', get(tickLine, 'className'))
     })));
   });
   var tickLabels = tickLineCoords.map((_ref3, i) => {
@@ -350,10 +344,10 @@ var Ticks = /*#__PURE__*/(0, _react.forwardRef)((props, ref) => {
 
     // @ts-expect-error customTickProps is contributing unknown props which we don't type properly
     var finalTickProps = _objectSpread(_objectSpread({}, tickProps), customTickProps);
-    return /*#__PURE__*/React.createElement(_Layer.Layer, _extends({
+    return /*#__PURE__*/React.createElement(Layer, _extends({
       className: "recharts-cartesian-axis-tick-label",
       key: "tick-label-".concat(entry.value, "-").concat(entry.coordinate, "-").concat(entry.tickCoord)
-    }, (0, _types.adaptEventsOfChild)(events, entry, i)), tick && /*#__PURE__*/React.createElement(TickItem, {
+    }, adaptEventsOfChild(events, entry, i)), tick && /*#__PURE__*/React.createElement(TickItem, {
       option: tick,
       tickProps: finalTickProps,
       value: "".concat(typeof tickFormatter === 'function' ? tickFormatter(entry.value, i) : entry.value).concat(unit || '')
@@ -365,8 +359,8 @@ var Ticks = /*#__PURE__*/(0, _react.forwardRef)((props, ref) => {
     ticks: finalTicks,
     axisId: axisId,
     axisType: axisType
-  }), tickLabels.length > 0 && /*#__PURE__*/React.createElement(_ZIndexLayer.ZIndexLayer, {
-    zIndex: _DefaultZIndexes.DefaultZIndexes.label
+  }), tickLabels.length > 0 && /*#__PURE__*/React.createElement(ZIndexLayer, {
+    zIndex: DefaultZIndexes.label
   }, /*#__PURE__*/React.createElement("g", {
     className: "recharts-cartesian-axis-tick-labels recharts-".concat(axisType, "-tick-labels"),
     ref: ref
@@ -374,7 +368,7 @@ var Ticks = /*#__PURE__*/(0, _react.forwardRef)((props, ref) => {
     className: "recharts-cartesian-axis-tick-lines recharts-".concat(axisType, "-tick-lines")
   }, tickLines));
 });
-var CartesianAxisComponent = /*#__PURE__*/(0, _react.forwardRef)((props, ref) => {
+var CartesianAxisComponent = /*#__PURE__*/forwardRef((props, ref) => {
   var {
       axisLine,
       width,
@@ -386,13 +380,13 @@ var CartesianAxisComponent = /*#__PURE__*/(0, _react.forwardRef)((props, ref) =>
       axisId
     } = props,
     rest = _objectWithoutProperties(props, _excluded);
-  var [fontSize, setFontSize] = (0, _react.useState)('');
-  var [letterSpacing, setLetterSpacing] = (0, _react.useState)('');
-  var tickRefs = (0, _react.useRef)(null);
-  (0, _react.useImperativeHandle)(ref, () => ({
+  var [fontSize, setFontSize] = useState('');
+  var [letterSpacing, setLetterSpacing] = useState('');
+  var tickRefs = useRef(null);
+  useImperativeHandle(ref, () => ({
     getCalculatedWidth: () => {
       var _props$labelRef;
-      return (0, _YAxisUtils.getCalculatedYAxisWidth)({
+      return getCalculatedYAxisWidth({
         ticks: tickRefs.current,
         label: (_props$labelRef = props.labelRef) === null || _props$labelRef === void 0 ? void 0 : _props$labelRef.current,
         labelGapWithTick: 5,
@@ -401,7 +395,7 @@ var CartesianAxisComponent = /*#__PURE__*/(0, _react.forwardRef)((props, ref) =>
       });
     }
   }));
-  var layerRef = (0, _react.useCallback)(el => {
+  var layerRef = useCallback(el => {
     if (el) {
       var tickNodes = el.getElementsByClassName('recharts-cartesian-axis-tick-value');
       tickRefs.current = tickNodes;
@@ -428,10 +422,10 @@ var CartesianAxisComponent = /*#__PURE__*/(0, _react.forwardRef)((props, ref) =>
   if (width != null && width <= 0 || height != null && height <= 0) {
     return null;
   }
-  return /*#__PURE__*/React.createElement(_ZIndexLayer.ZIndexLayer, {
+  return /*#__PURE__*/React.createElement(ZIndexLayer, {
     zIndex: props.zIndex
-  }, /*#__PURE__*/React.createElement(_Layer.Layer, {
-    className: (0, _clsx.clsx)('recharts-cartesian-axis', className)
+  }, /*#__PURE__*/React.createElement(Layer, {
+    className: clsx('recharts-cartesian-axis', className)
   }, /*#__PURE__*/React.createElement(AxisLine, {
     x: props.x,
     y: props.y,
@@ -440,7 +434,7 @@ var CartesianAxisComponent = /*#__PURE__*/(0, _react.forwardRef)((props, ref) =>
     orientation: props.orientation,
     mirror: props.mirror,
     axisLine: axisLine,
-    otherSvgProps: (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(props)
+    otherSvgProps: svgPropertiesNoEvents(props)
   }), /*#__PURE__*/React.createElement(Ticks, {
     ref: layerRef,
     axisType: axisType,
@@ -465,14 +459,14 @@ var CartesianAxisComponent = /*#__PURE__*/(0, _react.forwardRef)((props, ref) =>
     x: props.x,
     y: props.y,
     axisId: axisId
-  }), /*#__PURE__*/React.createElement(_Label.CartesianLabelContextProvider, {
+  }), /*#__PURE__*/React.createElement(CartesianLabelContextProvider, {
     x: props.x,
     y: props.y,
     width: props.width,
     height: props.height,
     lowerWidth: props.width,
     upperWidth: props.width
-  }, /*#__PURE__*/React.createElement(_Label.CartesianLabelFromLabelProp, {
+  }, /*#__PURE__*/React.createElement(CartesianLabelFromLabelProp, {
     label: props.label,
     labelRef: props.labelRef
   }), props.children)));
@@ -486,8 +480,8 @@ var CartesianAxisComponent = /*#__PURE__*/(0, _react.forwardRef)((props, ref) =>
  *
  * Starting from Recharts v4.0 we will make this component internal only.
  */
-var CartesianAxis = exports.CartesianAxis = /*#__PURE__*/React.forwardRef((outsideProps, ref) => {
-  var props = (0, _resolveDefaultProps.resolveDefaultProps)(outsideProps, defaultCartesianAxisProps);
+export var CartesianAxis = /*#__PURE__*/React.forwardRef((outsideProps, ref) => {
+  var props = resolveDefaultProps(outsideProps, defaultCartesianAxisProps);
   return /*#__PURE__*/React.createElement(CartesianAxisComponent, _extends({}, props, {
     ref: ref
   }));

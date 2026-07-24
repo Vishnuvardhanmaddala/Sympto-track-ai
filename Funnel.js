@@ -1,40 +1,7 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Funnel = void 0;
-exports.computeFunnelTrapezoids = computeFunnelTrapezoids;
-exports.defaultFunnelProps = void 0;
-var _react = _interopRequireWildcard(require("react"));
-var React = _react;
-var _omit = _interopRequireDefault(require("es-toolkit/compat/omit"));
-var _clsx = require("clsx");
-var _selectors = require("../state/selectors/selectors");
-var _hooks = require("../state/hooks");
-var _Layer = require("../container/Layer");
-var _LabelList = require("../component/LabelList");
-var _DataUtils = require("../util/DataUtils");
-var _ChartUtils = require("../util/ChartUtils");
-var _types = require("../util/types");
-var _FunnelUtils = require("../util/FunnelUtils");
-var _tooltipContext = require("../context/tooltipContext");
-var _SetTooltipEntrySettings = require("../state/SetTooltipEntrySettings");
-var _funnelSelectors = require("../state/selectors/funnelSelectors");
-var _ReactUtils = require("../util/ReactUtils");
-var _Cell = require("../component/Cell");
-var _resolveDefaultProps2 = require("../util/resolveDefaultProps");
-var _hooks2 = require("../hooks");
-var _svgPropertiesNoEvents = require("../util/svgPropertiesNoEvents");
-var _JavascriptAnimate = require("../animation/JavascriptAnimate");
-var _useAnimationId = require("../util/useAnimationId");
-var _RegisterGraphicalItemId = require("../context/RegisterGraphicalItemId");
 var _excluded = ["onMouseEnter", "onClick", "onMouseLeave", "shape", "activeShape"],
   _excluded2 = ["id"],
   _excluded3 = ["stroke", "fill", "legendType", "hide", "isAnimationActive", "animationBegin", "animationDuration", "animationEasing", "nameKey", "lastShapeType", "id"],
   _excluded4 = ["id"];
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
@@ -43,6 +10,30 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t =
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+import * as React from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import omit from 'es-toolkit/compat/omit';
+import { clsx } from 'clsx';
+import { selectActiveIndex } from '../state/selectors/selectors';
+import { useAppSelector } from '../state/hooks';
+import { Layer } from '../container/Layer';
+import { CartesianLabelListContextProvider, LabelListFromLabelProp } from '../component/LabelList';
+import { getPercentValue, interpolate } from '../util/DataUtils';
+import { getValueByDataKey } from '../util/ChartUtils';
+import { adaptEventsOfChild } from '../util/types';
+import { FunnelTrapezoid } from '../util/FunnelUtils';
+import { useMouseClickItemDispatch, useMouseEnterItemDispatch, useMouseLeaveItemDispatch } from '../context/tooltipContext';
+import { SetTooltipEntrySettings } from '../state/SetTooltipEntrySettings';
+import { selectFunnelTrapezoids } from '../state/selectors/funnelSelectors';
+import { findAllByType } from '../util/ReactUtils';
+import { Cell } from '../component/Cell';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { usePlotArea } from '../hooks';
+import { svgPropertiesNoEvents } from '../util/svgPropertiesNoEvents';
+import { JavascriptAnimate } from '../animation/JavascriptAnimate';
+import { useAnimationId } from '../util/useAnimationId';
+import { RegisterGraphicalItemId } from '../context/RegisterGraphicalItemId';
+
 /**
  * Internal props, combination of external props + defaultProps + private Recharts state
  */
@@ -86,7 +77,7 @@ var SetFunnelTooltipEntrySettings = /*#__PURE__*/React.memo(_ref => {
       graphicalItemId: id
     }
   };
-  return /*#__PURE__*/React.createElement(_SetTooltipEntrySettings.SetTooltipEntrySettings, {
+  return /*#__PURE__*/React.createElement(SetTooltipEntrySettings, {
     tooltipEntrySettings: tooltipEntrySettings
   });
 });
@@ -96,7 +87,7 @@ function FunnelLabelListProvider(_ref2) {
     trapezoids,
     children
   } = _ref2;
-  var labelListEntries = (0, _react.useMemo)(() => {
+  var labelListEntries = useMemo(() => {
     if (!showLabels) {
       return undefined;
     }
@@ -111,7 +102,7 @@ function FunnelLabelListProvider(_ref2) {
       });
     });
   }, [showLabels, trapezoids]);
-  return /*#__PURE__*/React.createElement(_LabelList.CartesianLabelListContextProvider, {
+  return /*#__PURE__*/React.createElement(CartesianLabelListContextProvider, {
     value: labelListEntries
   }, children);
 }
@@ -120,7 +111,7 @@ function FunnelTrapezoids(props) {
     trapezoids,
     allOtherFunnelProps
   } = props;
-  var activeItemIndex = (0, _hooks.useAppSelector)(state => (0, _selectors.selectActiveIndex)(state, 'item', state.tooltip.settings.trigger, undefined));
+  var activeItemIndex = useAppSelector(state => selectActiveIndex(state, 'item', state.tooltip.settings.trigger, undefined));
   var {
       onMouseEnter: onMouseEnterFromProps,
       onClick: onItemClickFromProps,
@@ -129,9 +120,9 @@ function FunnelTrapezoids(props) {
       activeShape
     } = allOtherFunnelProps,
     restOfAllOtherProps = _objectWithoutProperties(allOtherFunnelProps, _excluded);
-  var onMouseEnterFromContext = (0, _tooltipContext.useMouseEnterItemDispatch)(onMouseEnterFromProps, allOtherFunnelProps.dataKey, allOtherFunnelProps.id);
-  var onMouseLeaveFromContext = (0, _tooltipContext.useMouseLeaveItemDispatch)(onMouseLeaveFromProps);
-  var onClickFromContext = (0, _tooltipContext.useMouseClickItemDispatch)(onItemClickFromProps, allOtherFunnelProps.dataKey, allOtherFunnelProps.id);
+  var onMouseEnterFromContext = useMouseEnterItemDispatch(onMouseEnterFromProps, allOtherFunnelProps.dataKey, allOtherFunnelProps.id);
+  var onMouseLeaveFromContext = useMouseLeaveItemDispatch(onMouseLeaveFromProps);
+  var onClickFromContext = useMouseClickItemDispatch(onItemClickFromProps, allOtherFunnelProps.dataKey, allOtherFunnelProps.id);
   return /*#__PURE__*/React.createElement(React.Fragment, null, trapezoids.map((entry, i) => {
     var isActiveIndex = Boolean(activeShape) && activeItemIndex === String(i);
     var trapezoidOptions = isActiveIndex ? activeShape : shape;
@@ -144,14 +135,14 @@ function FunnelTrapezoids(props) {
         id
       } = _entry$option$isActiv,
       trapezoidProps = _objectWithoutProperties(_entry$option$isActiv, _excluded2);
-    return /*#__PURE__*/React.createElement(_Layer.Layer, _extends({
+    return /*#__PURE__*/React.createElement(Layer, _extends({
       key: "trapezoid-".concat(entry === null || entry === void 0 ? void 0 : entry.x, "-").concat(entry === null || entry === void 0 ? void 0 : entry.y, "-").concat(entry === null || entry === void 0 ? void 0 : entry.name, "-").concat(entry === null || entry === void 0 ? void 0 : entry.value),
       className: "recharts-funnel-trapezoid"
-    }, (0, _types.adaptEventsOfChild)(restOfAllOtherProps, entry, i), {
+    }, adaptEventsOfChild(restOfAllOtherProps, entry, i), {
       onMouseEnter: onMouseEnterFromContext(entry, i),
       onMouseLeave: onMouseLeaveFromContext(entry, i),
       onClick: onClickFromContext(entry, i)
-    }), /*#__PURE__*/React.createElement(_FunnelUtils.FunnelTrapezoid, trapezoidProps));
+    }), /*#__PURE__*/React.createElement(FunnelTrapezoid, trapezoidProps));
   }));
 }
 function TrapezoidsWithAnimation(_ref3) {
@@ -169,16 +160,16 @@ function TrapezoidsWithAnimation(_ref3) {
     onAnimationStart
   } = props;
   var prevTrapezoids = previousTrapezoidsRef.current;
-  var [isAnimating, setIsAnimating] = (0, _react.useState)(false);
+  var [isAnimating, setIsAnimating] = useState(false);
   var showLabels = !isAnimating;
-  var animationId = (0, _useAnimationId.useAnimationId)(trapezoids, 'recharts-funnel-');
-  var handleAnimationEnd = (0, _react.useCallback)(() => {
+  var animationId = useAnimationId(trapezoids, 'recharts-funnel-');
+  var handleAnimationEnd = useCallback(() => {
     if (typeof onAnimationEnd === 'function') {
       onAnimationEnd();
     }
     setIsAnimating(false);
   }, [onAnimationEnd]);
-  var handleAnimationStart = (0, _react.useCallback)(() => {
+  var handleAnimationStart = useCallback(() => {
     if (typeof onAnimationStart === 'function') {
       onAnimationStart();
     }
@@ -187,7 +178,7 @@ function TrapezoidsWithAnimation(_ref3) {
   return /*#__PURE__*/React.createElement(FunnelLabelListProvider, {
     showLabels: showLabels,
     trapezoids: trapezoids
-  }, /*#__PURE__*/React.createElement(_JavascriptAnimate.JavascriptAnimate, {
+  }, /*#__PURE__*/React.createElement(JavascriptAnimate, {
     animationId: animationId,
     begin: animationBegin,
     duration: animationDuration,
@@ -201,35 +192,35 @@ function TrapezoidsWithAnimation(_ref3) {
       var prev = prevTrapezoids && prevTrapezoids[index];
       if (prev) {
         return _objectSpread(_objectSpread({}, entry), {}, {
-          x: (0, _DataUtils.interpolate)(prev.x, entry.x, t),
-          y: (0, _DataUtils.interpolate)(prev.y, entry.y, t),
-          upperWidth: (0, _DataUtils.interpolate)(prev.upperWidth, entry.upperWidth, t),
-          lowerWidth: (0, _DataUtils.interpolate)(prev.lowerWidth, entry.lowerWidth, t),
-          height: (0, _DataUtils.interpolate)(prev.height, entry.height, t)
+          x: interpolate(prev.x, entry.x, t),
+          y: interpolate(prev.y, entry.y, t),
+          upperWidth: interpolate(prev.upperWidth, entry.upperWidth, t),
+          lowerWidth: interpolate(prev.lowerWidth, entry.lowerWidth, t),
+          height: interpolate(prev.height, entry.height, t)
         });
       }
       return _objectSpread(_objectSpread({}, entry), {}, {
-        x: (0, _DataUtils.interpolate)(entry.x + entry.upperWidth / 2, entry.x, t),
-        y: (0, _DataUtils.interpolate)(entry.y + entry.height / 2, entry.y, t),
-        upperWidth: (0, _DataUtils.interpolate)(0, entry.upperWidth, t),
-        lowerWidth: (0, _DataUtils.interpolate)(0, entry.lowerWidth, t),
-        height: (0, _DataUtils.interpolate)(0, entry.height, t)
+        x: interpolate(entry.x + entry.upperWidth / 2, entry.x, t),
+        y: interpolate(entry.y + entry.height / 2, entry.y, t),
+        upperWidth: interpolate(0, entry.upperWidth, t),
+        lowerWidth: interpolate(0, entry.lowerWidth, t),
+        height: interpolate(0, entry.height, t)
       });
     });
     if (t > 0) {
       // eslint-disable-next-line no-param-reassign
       previousTrapezoidsRef.current = stepData;
     }
-    return /*#__PURE__*/React.createElement(_Layer.Layer, null, /*#__PURE__*/React.createElement(FunnelTrapezoids, {
+    return /*#__PURE__*/React.createElement(Layer, null, /*#__PURE__*/React.createElement(FunnelTrapezoids, {
       trapezoids: stepData,
       allOtherFunnelProps: props
     }));
-  }), /*#__PURE__*/React.createElement(_LabelList.LabelListFromLabelProp, {
+  }), /*#__PURE__*/React.createElement(LabelListFromLabelProp, {
     label: props.label
   }), props.children);
 }
 function RenderTrapezoids(props) {
-  var previousTrapezoidsRef = (0, _react.useRef)(undefined);
+  var previousTrapezoidsRef = useRef(undefined);
   return /*#__PURE__*/React.createElement(TrapezoidsWithAnimation, {
     props: props,
     previousTrapezoidsRef: previousTrapezoidsRef
@@ -242,7 +233,7 @@ var getRealWidthHeight = (customWidth, offset) => {
     left,
     top
   } = offset;
-  var realWidth = (0, _DataUtils.getPercentValue)(customWidth, width, width);
+  var realWidth = getPercentValue(customWidth, width, width);
   return {
     realWidth,
     realHeight: height,
@@ -250,7 +241,7 @@ var getRealWidthHeight = (customWidth, offset) => {
     offsetY: top
   };
 };
-var defaultFunnelProps = exports.defaultFunnelProps = {
+export var defaultFunnelProps = {
   animationBegin: 400,
   animationDuration: 1500,
   animationEasing: 'ease',
@@ -264,7 +255,7 @@ var defaultFunnelProps = exports.defaultFunnelProps = {
   stroke: '#fff'
 };
 function FunnelImpl(props) {
-  var plotArea = (0, _hooks2.usePlotArea)();
+  var plotArea = usePlotArea();
   var {
       stroke,
       fill,
@@ -279,9 +270,9 @@ function FunnelImpl(props) {
       id
     } = props,
     everythingElse = _objectWithoutProperties(props, _excluded3);
-  var presentationProps = (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(props);
-  var cells = (0, _ReactUtils.findAllByType)(props.children, _Cell.Cell);
-  var funnelSettings = (0, _react.useMemo)(() => ({
+  var presentationProps = svgPropertiesNoEvents(props);
+  var cells = findAllByType(props.children, Cell);
+  var funnelSettings = useMemo(() => ({
     dataKey: props.dataKey,
     nameKey,
     data: props.data,
@@ -293,7 +284,7 @@ function FunnelImpl(props) {
     presentationProps,
     id
   }), [props.dataKey, nameKey, props.data, props.tooltipType, lastShapeType, props.reversed, props.width, cells, presentationProps, id]);
-  var trapezoids = (0, _hooks.useAppSelector)(state => (0, _funnelSelectors.selectFunnelTrapezoids)(state, funnelSettings));
+  var trapezoids = useAppSelector(state => selectFunnelTrapezoids(state, funnelSettings));
   if (hide || !trapezoids || !trapezoids.length || !plotArea) {
     return null;
   }
@@ -301,7 +292,7 @@ function FunnelImpl(props) {
     height,
     width
   } = plotArea;
-  var layerClass = (0, _clsx.clsx)('recharts-trapezoids', props.className);
+  var layerClass = clsx('recharts-trapezoids', props.className);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(SetFunnelTooltipEntrySettings, {
     dataKey: props.dataKey,
     nameKey: props.nameKey,
@@ -314,7 +305,7 @@ function FunnelImpl(props) {
     data: props.data,
     trapezoids: trapezoids,
     id: id
-  }), /*#__PURE__*/React.createElement(_Layer.Layer, {
+  }), /*#__PURE__*/React.createElement(Layer, {
     className: layerClass
   }, /*#__PURE__*/React.createElement(RenderTrapezoids, _extends({}, everythingElse, {
     id: id,
@@ -333,7 +324,7 @@ function FunnelImpl(props) {
     trapezoids: trapezoids
   }))));
 }
-function computeFunnelTrapezoids(_ref4) {
+export function computeFunnelTrapezoids(_ref4) {
   var {
     dataKey,
     nameKey,
@@ -352,7 +343,7 @@ function computeFunnelTrapezoids(_ref4) {
     offsetY
   } = getRealWidthHeight(customWidth, offset);
   var values = displayedData.map(entry => {
-    var val = (0, _ChartUtils.getValueByDataKey)(entry, dataKey, 0);
+    var val = getValueByDataKey(entry, dataKey, 0);
     return typeof val === 'number' ? val : 0;
   });
   var maxValue = Math.max.apply(null, values);
@@ -366,12 +357,12 @@ function computeFunnelTrapezoids(_ref4) {
   };
   var trapezoids = displayedData.map((entry, i) => {
     // getValueByDataKey does not validate the output type
-    var rawVal = (0, _ChartUtils.getValueByDataKey)(entry, dataKey, 0);
-    var name = String((0, _ChartUtils.getValueByDataKey)(entry, nameKey, i));
+    var rawVal = getValueByDataKey(entry, dataKey, 0);
+    var name = String(getValueByDataKey(entry, nameKey, i));
     var val = rawVal;
     var nextVal;
     if (i !== len - 1) {
-      var nextDataValue = (0, _ChartUtils.getValueByDataKey)(displayedData[i + 1], dataKey, 0);
+      var nextDataValue = getValueByDataKey(displayedData[i + 1], dataKey, 0);
       if (typeof nextDataValue === 'number') {
         nextVal = nextDataValue;
       } else if (Array.isArray(nextDataValue)) {
@@ -429,7 +420,7 @@ function computeFunnelTrapezoids(_ref4) {
       val,
       tooltipPayload,
       tooltipPosition
-    }, entry != null && typeof entry === 'object' ? (0, _omit.default)(entry, ['width']) : {}), {}, {
+    }, entry != null && typeof entry === 'object' ? omit(entry, ['width']) : {}), {}, {
       payload: entry,
       parentViewBox,
       labelViewBox: trapezoidViewBox
@@ -462,18 +453,18 @@ function computeFunnelTrapezoids(_ref4) {
  * @provides CellReader
  */
 function FunnelFn(outsideProps) {
-  var _resolveDefaultProps = (0, _resolveDefaultProps2.resolveDefaultProps)(outsideProps, defaultFunnelProps),
+  var _resolveDefaultProps = resolveDefaultProps(outsideProps, defaultFunnelProps),
     {
       id: externalId
     } = _resolveDefaultProps,
     props = _objectWithoutProperties(_resolveDefaultProps, _excluded4);
-  return /*#__PURE__*/React.createElement(_RegisterGraphicalItemId.RegisterGraphicalItemId, {
+  return /*#__PURE__*/React.createElement(RegisterGraphicalItemId, {
     id: externalId,
     type: "funnel"
   }, id => /*#__PURE__*/React.createElement(FunnelImpl, _extends({}, props, {
     id: id
   })));
 }
-var Funnel = exports.Funnel = FunnelFn;
+export var Funnel = FunnelFn;
 // @ts-expect-error we need to set the displayName for debugging purposes
 Funnel.displayName = 'Funnel';

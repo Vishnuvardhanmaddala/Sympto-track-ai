@@ -1,9 +1,3 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Cell = void 0;
 /**
  * Cell component used to define colors and styles of chart elements.
  *
@@ -17,6 +11,5 @@ exports.Cell = void 0;
  * @deprecated
  * @consumes CellReader
  */
-var Cell = _props => null;
-exports.Cell = Cell;
+export var Cell = _props => null;
 Cell.displayName = 'Cell';

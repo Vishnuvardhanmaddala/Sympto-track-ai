@@ -1,17 +1,10 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = exports.alpha = void 0;
-var _util = require("./util");
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-var alpha = (begin, end, k) => begin + (end - begin) * k;
-exports.alpha = alpha;
+import { getIntersectionKeys, mapObject } from './util';
+export var alpha = (begin, end, k) => begin + (end - begin) * k;
 var needContinue = _ref => {
   var {
     from,
@@ -24,7 +17,7 @@ var needContinue = _ref => {
  * @return: { [styleProperty]: { from, to, velocity } }
  */
 var calStepperVals = (easing, preVals, steps) => {
-  var nextStepVals = (0, _util.mapObject)((key, val) => {
+  var nextStepVals = mapObject((key, val) => {
     if (needContinue(val)) {
       var [newX, newV] = easing(val.from, val.to, val.velocity);
       return _objectSpread(_objectSpread({}, val), {}, {
@@ -35,7 +28,7 @@ var calStepperVals = (easing, preVals, steps) => {
     return val;
   }, preVals);
   if (steps < 1) {
-    return (0, _util.mapObject)((key, val) => {
+    return mapObject((key, val) => {
       if (needContinue(val) && nextStepVals[key] != null) {
         return _objectSpread(_objectSpread({}, val), {}, {
           velocity: alpha(val.velocity, nextStepVals[key].velocity, steps),
@@ -56,7 +49,7 @@ function createStepperUpdate(from, to, easing, interKeys, render, timeoutControl
       to: to[key]
     }
   }), {});
-  var getCurrStyle = () => (0, _util.mapObject)((key, val) => val.from, stepperStyle);
+  var getCurrStyle = () => mapObject((key, val) => val.from, stepperStyle);
   var shouldStopAnimation = () => !Object.values(stepperStyle).filter(needContinue).length;
   var stopAnimation = null;
   var stepperUpdate = now => {
@@ -103,14 +96,14 @@ function createTimingUpdate(from, to, easing, duration, interKeys, render, timeo
       beginTime = now;
     }
     var t = (now - beginTime) / duration;
-    var currStyle = (0, _util.mapObject)((key, val) => alpha(...val, easing(t)), timingStyle);
+    var currStyle = mapObject((key, val) => alpha(...val, easing(t)), timingStyle);
 
     // get union set and add compatible prefix
     render(_objectSpread(_objectSpread(_objectSpread({}, from), to), currStyle));
     if (t < 1) {
       stopAnimation = timeoutController.setTimeout(timingUpdate);
     } else {
-      var finalStyle = (0, _util.mapObject)((key, val) => alpha(...val, easing(1)), timingStyle);
+      var finalStyle = mapObject((key, val) => alpha(...val, easing(1)), timingStyle);
       render(_objectSpread(_objectSpread(_objectSpread({}, from), to), finalStyle));
     }
   };
@@ -129,8 +122,8 @@ function createTimingUpdate(from, to, easing, duration, interKeys, render, timeo
 
 // configure update function
 // eslint-disable-next-line import/no-default-export
-var _default = (from, to, easing, duration, render, timeoutController) => {
-  var interKeys = (0, _util.getIntersectionKeys)(from, to);
+export default (from, to, easing, duration, render, timeoutController) => {
+  var interKeys = getIntersectionKeys(from, to);
   if (easing == null) {
     // no animation, just set to final state
     return () => {
@@ -140,4 +133,3 @@ var _default = (from, to, easing, duration, render, timeoutController) => {
   }
   return easing.isStepper === true ? createStepperUpdate(from, to, easing, interKeys, render, timeoutController) : createTimingUpdate(from, to, easing, duration, interKeys, render, timeoutController);
 };
-exports.default = _default;

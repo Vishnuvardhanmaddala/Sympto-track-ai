@@ -1,16 +1,10 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.CSSTransitionAnimate = CSSTransitionAnimate;
-var _react = require("react");
-var _DataUtils = require("../util/DataUtils");
-var _resolveDefaultProps = require("../util/resolveDefaultProps");
-var _useAnimationManager = require("./useAnimationManager");
-var _util = require("./util");
-var _Global = require("../util/Global");
-var _usePrefersReducedMotion = require("../util/usePrefersReducedMotion");
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { noop } from '../util/DataUtils';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { useAnimationManager } from './useAnimationManager';
+import { getTransitionVal } from './util';
+import { Global } from '../util/Global';
+import { usePrefersReducedMotion } from '../util/usePrefersReducedMotion';
 var defaultProps = {
   begin: 0,
   duration: 1000,
@@ -20,8 +14,8 @@ var defaultProps = {
   onAnimationEnd: () => {},
   onAnimationStart: () => {}
 };
-function CSSTransitionAnimate(outsideProps) {
-  var props = (0, _resolveDefaultProps.resolveDefaultProps)(outsideProps, defaultProps);
+export function CSSTransitionAnimate(outsideProps) {
+  var props = resolveDefaultProps(outsideProps, defaultProps);
   var {
     animationId,
     from,
@@ -36,23 +30,23 @@ function CSSTransitionAnimate(outsideProps) {
     onAnimationStart: onAnimationStartFromProps,
     children
   } = props;
-  var prefersReducedMotion = (0, _usePrefersReducedMotion.usePrefersReducedMotion)();
-  var isActive = isActiveProp === 'auto' ? !_Global.Global.isSsr && !prefersReducedMotion : isActiveProp;
-  var animationManager = (0, _useAnimationManager.useAnimationManager)(animationId + attributeName, props.animationManager);
-  var [style, setStyle] = (0, _react.useState)(() => {
+  var prefersReducedMotion = usePrefersReducedMotion();
+  var isActive = isActiveProp === 'auto' ? !Global.isSsr && !prefersReducedMotion : isActiveProp;
+  var animationManager = useAnimationManager(animationId + attributeName, props.animationManager);
+  var [style, setStyle] = useState(() => {
     if (!isActive) {
       return to;
     }
     return from;
   });
-  var initialized = (0, _react.useRef)(false);
-  var onAnimationStart = (0, _react.useCallback)(() => {
+  var initialized = useRef(false);
+  var onAnimationStart = useCallback(() => {
     setStyle(from);
     onAnimationStartFromProps();
   }, [from, onAnimationStartFromProps]);
-  (0, _react.useEffect)(() => {
+  useEffect(() => {
     if (!isActive || !canBegin) {
-      return _DataUtils.noop;
+      return noop;
     }
     initialized.current = true;
     var unsubscribe = animationManager.subscribe(setStyle);
@@ -81,7 +75,7 @@ function CSSTransitionAnimate(outsideProps) {
     });
   }
   if (initialized.current) {
-    var transition = (0, _util.getTransitionVal)([attributeName], duration, easing);
+    var transition = getTransitionVal([attributeName], duration, easing);
     return children({
       transition,
       [attributeName]: style

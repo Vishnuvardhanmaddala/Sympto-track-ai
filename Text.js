@@ -1,28 +1,18 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getWordsByLines = exports.Text = void 0;
-exports.isRenderableText = isRenderableText;
-exports.isValidTextAnchor = isValidTextAnchor;
-exports.textDefaultProps = void 0;
-var _react = _interopRequireWildcard(require("react"));
-var React = _react;
-var _clsx = require("clsx");
-var _DataUtils = require("../util/DataUtils");
-var _Global = require("../util/Global");
-var _DOMUtils = require("../util/DOMUtils");
-var _ReduceCSSCalc = require("../util/ReduceCSSCalc");
-var _svgPropertiesAndEvents = require("../util/svgPropertiesAndEvents");
-var _resolveDefaultProps2 = require("../util/resolveDefaultProps");
-var _isWellBehavedNumber = require("../util/isWellBehavedNumber");
 var _excluded = ["x", "y", "lineHeight", "capHeight", "fill", "scaleToFit", "textAnchor", "verticalAnchor"],
   _excluded2 = ["dx", "dy", "angle", "className", "breakAll"];
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
+import * as React from 'react';
+import { useMemo, forwardRef } from 'react';
+import { clsx } from 'clsx';
+import { isNullish, isNumber, isNumOrStr } from '../util/DataUtils';
+import { Global } from '../util/Global';
+import { getStringSize } from '../util/DOMUtils';
+import { reduceCSSCalc } from '../util/ReduceCSSCalc';
+import { svgPropertiesAndEvents } from '../util/svgPropertiesAndEvents';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { isWellBehavedNumber } from '../util/isWellBehavedNumber';
 var BREAKING_SPACES = /[ \f\n\r\t\v\u2028\u2029]+/;
 var calculateWordWidths = _ref => {
   var {
@@ -32,7 +22,7 @@ var calculateWordWidths = _ref => {
   } = _ref;
   try {
     var words = [];
-    if (!(0, _DataUtils.isNullish)(children)) {
+    if (!isNullish(children)) {
       if (breakAll) {
         words = children.toString().split('');
       } else {
@@ -41,9 +31,9 @@ var calculateWordWidths = _ref => {
     }
     var wordsWithComputedWidth = words.map(word => ({
       word,
-      width: (0, _DOMUtils.getStringSize)(word, style).width
+      width: getStringSize(word, style).width
     }));
-    var spaceWidth = breakAll ? 0 : (0, _DOMUtils.getStringSize)('\u00A0', style).width;
+    var spaceWidth = breakAll ? 0 : getStringSize('\u00A0', style).width;
     return {
       wordsWithComputedWidth,
       spaceWidth
@@ -57,7 +47,7 @@ var calculateWordWidths = _ref => {
  * @inline
  */
 
-function isValidTextAnchor(value) {
+export function isValidTextAnchor(value) {
   return value === 'start' || value === 'middle' || value === 'end' || value === 'inherit';
 }
 
@@ -69,8 +59,8 @@ function isValidTextAnchor(value) {
  * @inline
  */
 
-function isRenderableText(val) {
-  return (0, _DataUtils.isNullish)(val) || typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean';
+export function isRenderableText(val) {
+  return isNullish(val) || typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean';
 }
 var calculate = (words, lineWidth, spaceWidth, scaleToFit) => words.reduce((result, _ref2) => {
   var {
@@ -115,7 +105,7 @@ var calculateWordsByLines = (_ref3, initialWordsWithComputedWith, spaceWidth, li
     style,
     breakAll
   } = _ref3;
-  var shouldLimitLines = (0, _DataUtils.isNumber)(maxLines);
+  var shouldLimitLines = isNumber(maxLines);
   var text = String(children);
   var originalResult = calculate(initialWordsWithComputedWith, lineWidth, spaceWidth, scaleToFit);
   if (!shouldLimitLines || scaleToFit) {
@@ -152,13 +142,13 @@ var calculateWordsByLines = (_ref3, initialWordsWithComputedWith, spaceWidth, li
   return trimmedResult || originalResult;
 };
 var getWordsWithoutCalculate = children => {
-  var words = !(0, _DataUtils.isNullish)(children) ? children.toString().split(BREAKING_SPACES) : [];
+  var words = !isNullish(children) ? children.toString().split(BREAKING_SPACES) : [];
   return [{
     words,
     width: undefined
   }];
 };
-var getWordsByLines = _ref4 => {
+export var getWordsByLines = _ref4 => {
   var {
     width,
     scaleToFit,
@@ -168,7 +158,7 @@ var getWordsByLines = _ref4 => {
     maxLines
   } = _ref4;
   // Only perform calculations if using features that require them (multiline, scaleToFit)
-  if ((width || scaleToFit) && !_Global.Global.isSsr) {
+  if ((width || scaleToFit) && !Global.isSsr) {
     var wordsWithComputedWidth, spaceWidth;
     var wordWidths = calculateWordWidths({
       breakAll,
@@ -194,9 +184,8 @@ var getWordsByLines = _ref4 => {
   }
   return getWordsWithoutCalculate(children);
 };
-exports.getWordsByLines = getWordsByLines;
 var DEFAULT_FILL = '#808080';
-var textDefaultProps = exports.textDefaultProps = {
+export var textDefaultProps = {
   angle: 0,
   breakAll: false,
   // Magic number from d3
@@ -210,8 +199,8 @@ var textDefaultProps = exports.textDefaultProps = {
   x: 0,
   y: 0
 };
-var Text = exports.Text = /*#__PURE__*/(0, _react.forwardRef)((outsideProps, ref) => {
-  var _resolveDefaultProps = (0, _resolveDefaultProps2.resolveDefaultProps)(outsideProps, textDefaultProps),
+export var Text = /*#__PURE__*/forwardRef((outsideProps, ref) => {
+  var _resolveDefaultProps = resolveDefaultProps(outsideProps, textDefaultProps),
     {
       x: propsX,
       y: propsY,
@@ -223,7 +212,7 @@ var Text = exports.Text = /*#__PURE__*/(0, _react.forwardRef)((outsideProps, ref
       verticalAnchor
     } = _resolveDefaultProps,
     props = _objectWithoutProperties(_resolveDefaultProps, _excluded);
-  var wordsByLines = (0, _react.useMemo)(() => {
+  var wordsByLines = useMemo(() => {
     return getWordsByLines({
       breakAll: props.breakAll,
       children: props.children,
@@ -241,24 +230,24 @@ var Text = exports.Text = /*#__PURE__*/(0, _react.forwardRef)((outsideProps, ref
       breakAll
     } = props,
     textProps = _objectWithoutProperties(props, _excluded2);
-  if (!(0, _DataUtils.isNumOrStr)(propsX) || !(0, _DataUtils.isNumOrStr)(propsY) || wordsByLines.length === 0) {
+  if (!isNumOrStr(propsX) || !isNumOrStr(propsY) || wordsByLines.length === 0) {
     return null;
   }
-  var x = Number(propsX) + ((0, _DataUtils.isNumber)(dx) ? dx : 0);
-  var y = Number(propsY) + ((0, _DataUtils.isNumber)(dy) ? dy : 0);
-  if (!(0, _isWellBehavedNumber.isWellBehavedNumber)(x) || !(0, _isWellBehavedNumber.isWellBehavedNumber)(y)) {
+  var x = Number(propsX) + (isNumber(dx) ? dx : 0);
+  var y = Number(propsY) + (isNumber(dy) ? dy : 0);
+  if (!isWellBehavedNumber(x) || !isWellBehavedNumber(y)) {
     return null;
   }
   var startDy;
   switch (verticalAnchor) {
     case 'start':
-      startDy = (0, _ReduceCSSCalc.reduceCSSCalc)("calc(".concat(capHeight, ")"));
+      startDy = reduceCSSCalc("calc(".concat(capHeight, ")"));
       break;
     case 'middle':
-      startDy = (0, _ReduceCSSCalc.reduceCSSCalc)("calc(".concat((wordsByLines.length - 1) / 2, " * -").concat(lineHeight, " + (").concat(capHeight, " / 2))"));
+      startDy = reduceCSSCalc("calc(".concat((wordsByLines.length - 1) / 2, " * -").concat(lineHeight, " + (").concat(capHeight, " / 2))"));
       break;
     default:
-      startDy = (0, _ReduceCSSCalc.reduceCSSCalc)("calc(".concat(wordsByLines.length - 1, " * -").concat(lineHeight, ")"));
+      startDy = reduceCSSCalc("calc(".concat(wordsByLines.length - 1, " * -").concat(lineHeight, ")"));
       break;
   }
   var transforms = [];
@@ -268,7 +257,7 @@ var Text = exports.Text = /*#__PURE__*/(0, _react.forwardRef)((outsideProps, ref
     var {
       width
     } = props;
-    transforms.push("scale(".concat((0, _DataUtils.isNumber)(width) && (0, _DataUtils.isNumber)(lineWidth) ? width / lineWidth : 1, ")"));
+    transforms.push("scale(".concat(isNumber(width) && isNumber(lineWidth) ? width / lineWidth : 1, ")"));
   }
   if (angle) {
     transforms.push("rotate(".concat(angle, ", ").concat(x, ", ").concat(y, ")"));
@@ -276,11 +265,11 @@ var Text = exports.Text = /*#__PURE__*/(0, _react.forwardRef)((outsideProps, ref
   if (transforms.length) {
     textProps.transform = transforms.join(' ');
   }
-  return /*#__PURE__*/React.createElement("text", _extends({}, (0, _svgPropertiesAndEvents.svgPropertiesAndEvents)(textProps), {
+  return /*#__PURE__*/React.createElement("text", _extends({}, svgPropertiesAndEvents(textProps), {
     ref: ref,
     x: x,
     y: y,
-    className: (0, _clsx.clsx)('recharts-text', className),
+    className: clsx('recharts-text', className),
     textAnchor: textAnchor,
     fill: fill.includes('url') ? DEFAULT_FILL : fill
   }), wordsByLines.map((line, index) => {

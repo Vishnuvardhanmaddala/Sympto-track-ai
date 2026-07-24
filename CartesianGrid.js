@@ -1,30 +1,7 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.CartesianGrid = CartesianGrid;
-exports.defaultCartesianGridProps = void 0;
-var React = _interopRequireWildcard(require("react"));
-var _LogUtils = require("../util/LogUtils");
-var _DataUtils = require("../util/DataUtils");
-var _ChartUtils = require("../util/ChartUtils");
-var _getTicks = require("./getTicks");
-var _CartesianAxis = require("./CartesianAxis");
-var _chartLayoutContext = require("../context/chartLayoutContext");
-var _axisSelectors = require("../state/selectors/axisSelectors");
-var _hooks = require("../state/hooks");
-var _PanoramaContext = require("../context/PanoramaContext");
-var _resolveDefaultProps = require("../util/resolveDefaultProps");
-var _svgPropertiesNoEvents = require("../util/svgPropertiesNoEvents");
-var _isWellBehavedNumber = require("../util/isWellBehavedNumber");
-var _ZIndexLayer = require("../zIndex/ZIndexLayer");
-var _DefaultZIndexes = require("../zIndex/DefaultZIndexes");
 var _excluded = ["x1", "y1", "x2", "y2", "key"],
   _excluded2 = ["offset"],
   _excluded3 = ["xAxisId", "yAxisId"],
   _excluded4 = ["xAxisId", "yAxisId"];
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
@@ -33,6 +10,22 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
+import * as React from 'react';
+import { warn } from '../util/LogUtils';
+import { isNumber } from '../util/DataUtils';
+import { getCoordinatesOfGrid, getTicksOfAxis } from '../util/ChartUtils';
+import { getTicks } from './getTicks';
+import { defaultCartesianAxisProps } from './CartesianAxis';
+import { useChartHeight, useChartWidth, useOffsetInternal } from '../context/chartLayoutContext';
+import { selectAxisPropsNeededForCartesianGridTicksGenerator } from '../state/selectors/axisSelectors';
+import { useAppSelector } from '../state/hooks';
+import { useIsPanorama } from '../context/PanoramaContext';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { svgPropertiesNoEvents } from '../util/svgPropertiesNoEvents';
+import { isPositiveNumber } from '../util/isWellBehavedNumber';
+import { ZIndexLayer } from '../zIndex/ZIndexLayer';
+import { DefaultZIndexes } from '../zIndex/DefaultZIndexes';
+
 /**
  * The <CartesianGrid horizontal
  */
@@ -85,7 +78,7 @@ function LineItem(_ref) {
         key
       } = lineItemProps,
       others = _objectWithoutProperties(lineItemProps, _excluded);
-    var _ref2 = (_svgPropertiesNoEvent = (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(others)) !== null && _svgPropertiesNoEvent !== void 0 ? _svgPropertiesNoEvent : {},
+    var _ref2 = (_svgPropertiesNoEvent = svgPropertiesNoEvents(others)) !== null && _svgPropertiesNoEvent !== void 0 ? _svgPropertiesNoEvent : {},
       {
         offset: __
       } = _ref2,
@@ -262,8 +255,8 @@ var defaultVerticalCoordinatesGenerator = (_ref3, syncWithTicks) => {
     height,
     offset
   } = _ref3;
-  return (0, _ChartUtils.getCoordinatesOfGrid)((0, _getTicks.getTicks)(_objectSpread(_objectSpread(_objectSpread({}, _CartesianAxis.defaultCartesianAxisProps), xAxis), {}, {
-    ticks: (0, _ChartUtils.getTicksOfAxis)(xAxis, true),
+  return getCoordinatesOfGrid(getTicks(_objectSpread(_objectSpread(_objectSpread({}, defaultCartesianAxisProps), xAxis), {}, {
+    ticks: getTicksOfAxis(xAxis, true),
     viewBox: {
       x: 0,
       y: 0,
@@ -279,8 +272,8 @@ var defaultHorizontalCoordinatesGenerator = (_ref4, syncWithTicks) => {
     height,
     offset
   } = _ref4;
-  return (0, _ChartUtils.getCoordinatesOfGrid)((0, _getTicks.getTicks)(_objectSpread(_objectSpread(_objectSpread({}, _CartesianAxis.defaultCartesianAxisProps), yAxis), {}, {
-    ticks: (0, _ChartUtils.getTicksOfAxis)(yAxis, true),
+  return getCoordinatesOfGrid(getTicks(_objectSpread(_objectSpread(_objectSpread({}, defaultCartesianAxisProps), yAxis), {}, {
+    ticks: getTicksOfAxis(yAxis, true),
     viewBox: {
       x: 0,
       y: 0,
@@ -289,7 +282,7 @@ var defaultHorizontalCoordinatesGenerator = (_ref4, syncWithTicks) => {
     }
   })), offset.top, offset.top + offset.height, syncWithTicks);
 };
-var defaultCartesianGridProps = exports.defaultCartesianGridProps = {
+export var defaultCartesianGridProps = {
   horizontal: true,
   vertical: true,
   // The ordinates of horizontal grid lines
@@ -304,7 +297,7 @@ var defaultCartesianGridProps = exports.defaultCartesianGridProps = {
   xAxisId: 0,
   yAxisId: 0,
   syncWithTicks: false,
-  zIndex: _DefaultZIndexes.DefaultZIndexes.grid
+  zIndex: DefaultZIndexes.grid
 };
 
 /**
@@ -312,15 +305,15 @@ var defaultCartesianGridProps = exports.defaultCartesianGridProps = {
  *
  * @consumes CartesianChartContext
  */
-function CartesianGrid(props) {
-  var chartWidth = (0, _chartLayoutContext.useChartWidth)();
-  var chartHeight = (0, _chartLayoutContext.useChartHeight)();
-  var offset = (0, _chartLayoutContext.useOffsetInternal)();
-  var propsIncludingDefaults = _objectSpread(_objectSpread({}, (0, _resolveDefaultProps.resolveDefaultProps)(props, defaultCartesianGridProps)), {}, {
-    x: (0, _DataUtils.isNumber)(props.x) ? props.x : offset.left,
-    y: (0, _DataUtils.isNumber)(props.y) ? props.y : offset.top,
-    width: (0, _DataUtils.isNumber)(props.width) ? props.width : offset.width,
-    height: (0, _DataUtils.isNumber)(props.height) ? props.height : offset.height
+export function CartesianGrid(props) {
+  var chartWidth = useChartWidth();
+  var chartHeight = useChartHeight();
+  var offset = useOffsetInternal();
+  var propsIncludingDefaults = _objectSpread(_objectSpread({}, resolveDefaultProps(props, defaultCartesianGridProps)), {}, {
+    x: isNumber(props.x) ? props.x : offset.left,
+    y: isNumber(props.y) ? props.y : offset.top,
+    width: isNumber(props.width) ? props.width : offset.width,
+    height: isNumber(props.height) ? props.height : offset.height
   });
   var {
     xAxisId,
@@ -333,10 +326,10 @@ function CartesianGrid(props) {
     horizontalValues,
     verticalValues
   } = propsIncludingDefaults;
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  var xAxis = (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisPropsNeededForCartesianGridTicksGenerator)(state, 'xAxis', xAxisId, isPanorama));
-  var yAxis = (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisPropsNeededForCartesianGridTicksGenerator)(state, 'yAxis', yAxisId, isPanorama));
-  if (!(0, _isWellBehavedNumber.isPositiveNumber)(width) || !(0, _isWellBehavedNumber.isPositiveNumber)(height) || !(0, _DataUtils.isNumber)(x) || !(0, _DataUtils.isNumber)(y)) {
+  var isPanorama = useIsPanorama();
+  var xAxis = useAppSelector(state => selectAxisPropsNeededForCartesianGridTicksGenerator(state, 'xAxis', xAxisId, isPanorama));
+  var yAxis = useAppSelector(state => selectAxisPropsNeededForCartesianGridTicksGenerator(state, 'yAxis', yAxisId, isPanorama));
+  if (!isPositiveNumber(width) || !isPositiveNumber(height) || !isNumber(x) || !isNumber(y)) {
     return null;
   }
 
@@ -365,7 +358,7 @@ function CartesianGrid(props) {
       height: chartHeight !== null && chartHeight !== void 0 ? chartHeight : height,
       offset
     }, isHorizontalValues ? true : syncWithTicks);
-    (0, _LogUtils.warn)(Array.isArray(generatorResult), "horizontalCoordinatesGenerator should return Array but instead it returned [".concat(typeof generatorResult, "]"));
+    warn(Array.isArray(generatorResult), "horizontalCoordinatesGenerator should return Array but instead it returned [".concat(typeof generatorResult, "]"));
     if (Array.isArray(generatorResult)) {
       horizontalPoints = generatorResult;
     }
@@ -382,12 +375,12 @@ function CartesianGrid(props) {
       height: chartHeight !== null && chartHeight !== void 0 ? chartHeight : height,
       offset
     }, isVerticalValues ? true : syncWithTicks);
-    (0, _LogUtils.warn)(Array.isArray(_generatorResult), "verticalCoordinatesGenerator should return Array but instead it returned [".concat(typeof _generatorResult, "]"));
+    warn(Array.isArray(_generatorResult), "verticalCoordinatesGenerator should return Array but instead it returned [".concat(typeof _generatorResult, "]"));
     if (Array.isArray(_generatorResult)) {
       verticalPoints = _generatorResult;
     }
   }
-  return /*#__PURE__*/React.createElement(_ZIndexLayer.ZIndexLayer, {
+  return /*#__PURE__*/React.createElement(ZIndexLayer, {
     zIndex: propsIncludingDefaults.zIndex
   }, /*#__PURE__*/React.createElement("g", {
     className: "recharts-cartesian-grid"

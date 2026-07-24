@@ -1,11 +1,5 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.createDefaultAnimationManager = createDefaultAnimationManager;
-var _AnimationManager = require("./AnimationManager");
-var _timeoutController = require("./timeoutController");
-function createDefaultAnimationManager() {
-  return (0, _AnimationManager.createAnimateManager)(new _timeoutController.RequestAnimationFrameTimeoutController());
+import { createAnimateManager } from './AnimationManager';
+import { RequestAnimationFrameTimeoutController } from './timeoutController';
+export function createDefaultAnimationManager() {
+  return createAnimateManager(new RequestAnimationFrameTimeoutController());
 }

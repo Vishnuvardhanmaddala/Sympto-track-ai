@@ -1,10 +1,4 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.configSpring = exports.configEasing = exports.configBezier = exports.ACCURACY = void 0;
-var ACCURACY = exports.ACCURACY = 1e-4;
+export var ACCURACY = 1e-4;
 var cubicBezierFactor = (c1, c2) => [0, 3 * c1, 3 * c2 - 6 * c1, 3 * c1 - 3 * c2 + 1];
 var evaluatePolynomial = (params, t) => params.map((param, i) => param * t ** i).reduce((pre, curr) => pre + curr);
 var cubicBezier = (c1, c2) => t => {
@@ -93,10 +87,10 @@ var createBezierEasing = (x1, y1, x2, y2) => {
 };
 
 // calculate cubic-bezier using Newton's method
-var configBezier = exports.configBezier = function configBezier() {
+export var configBezier = function configBezier() {
   return createBezierEasing(...getBezierCoordinates(...arguments));
 };
-var configSpring = exports.configSpring = function configSpring() {
+export var configSpring = function configSpring() {
   var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var {
     stiff = 100,
@@ -117,7 +111,7 @@ var configSpring = exports.configSpring = function configSpring() {
   stepper.dt = dt;
   return stepper;
 };
-var configEasing = easing => {
+export var configEasing = easing => {
   if (typeof easing === 'string') {
     switch (easing) {
       case 'ease':
@@ -139,4 +133,3 @@ var configEasing = easing => {
   }
   return null;
 };
-exports.configEasing = configEasing;

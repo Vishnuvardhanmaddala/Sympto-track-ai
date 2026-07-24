@@ -1,9 +1,3 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.createAnimateManager = createAnimateManager;
 /**
  * Represents a single item in the ReactSmoothQueue.
  * The item can be:
@@ -14,7 +8,7 @@ exports.createAnimateManager = createAnimateManager;
  * - An arbitrary function to be executed
  */
 
-function createAnimateManager(timeoutController) {
+export function createAnimateManager(timeoutController) {
   var currStyle;
   var handleChange = () => null;
   var shouldStop = false;

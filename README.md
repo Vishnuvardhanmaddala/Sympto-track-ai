@@ -1,206 +1,157 @@
-# Reselect
+# <a href='https://redux.js.org'><img src='https://camo.githubusercontent.com/f28b5bc7822f1b7bb28a96d8d09e7d79169248fc/687474703a2f2f692e696d6775722e636f6d2f4a65567164514d2e706e67' height='60' alt='Redux Logo' aria-label='redux.js.org' /></a>
 
-[![npm package][npm-badge]][npm][![Coveralls][coveralls-badge]][coveralls][![GitHub Workflow Status][build-badge]][build]![TypeScript][typescript-badge]
+Redux is a predictable state container for JavaScript apps.
 
-A library for creating memoized "selector" functions. Commonly used with Redux, but usable with any plain JS immutable data as well.
+It helps you write applications that behave consistently, run in different environments (client, server, and native), and are easy to test. On top of that, it provides a great developer experience, such as [live code editing combined with a time traveling debugger](https://github.com/reduxjs/redux-devtools).
 
-- Selectors can compute derived data, allowing [Redux] to store the minimal possible state.
-- Selectors are efficient. A selector is not recomputed unless one of its arguments changes.
-- Selectors are composable. They can be used as input to other selectors.
+You can use Redux together with [React](https://react.dev), or with any other view library. The Redux core is tiny (2kB, including dependencies), and has a rich ecosystem of addons.
 
-The **Redux docs usage page on [Deriving Data with Selectors](https://redux.js.org/usage/deriving-data-selectors)** covers the purpose and motivation for selectors, why memoized selectors are useful, typical Reselect usage patterns, and using selectors with [React-Redux].
+[**Redux Toolkit**](https://redux-toolkit.js.org) is our official recommended approach for writing Redux logic. It wraps around the Redux core, and contains packages and functions that we think are essential for building a Redux app. Redux Toolkit builds in our suggested best practices, simplifies most Redux tasks, prevents common mistakes, and makes it easier to write Redux applications.
+
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/reduxjs/redux/test.yaml?branch=master&event=push&style=flat-square)
+[![npm version](https://img.shields.io/npm/v/redux.svg?style=flat-square)](https://www.npmjs.com/package/redux)
+[![npm downloads](https://img.shields.io/npm/dm/redux.svg?style=flat-square)](https://www.npmjs.com/package/redux)
+[![redux channel on discord](https://img.shields.io/badge/discord-%23redux%20%40%20reactiflux-61dafb.svg?style=flat-square)](https://discord.gg/0ZcbPKXt5bZ6au5t)
 
 ## Installation
 
-### Redux Toolkit
+### Create a React Redux App
 
-While Reselect is not exclusive to [Redux], it is already included by default in [the official Redux Toolkit package](https://redux-toolkit.js.org) - no further installation needed.
+The recommended way to start new apps with React and Redux Toolkit is by using [our official Redux Toolkit + TS template for Vite](https://github.com/reduxjs/redux-templates), or by creating a new Next.js project using [Next's `with-redux` template](https://github.com/vercel/next.js/tree/canary/examples/with-redux).
 
-```ts
-import { createSelector } from '@reduxjs/toolkit'
-```
-
-### Standalone
-
-For standalone usage, install the `reselect` package:
+Both of these already have Redux Toolkit and React-Redux configured appropriately for that build tool, and come with a small example app that demonstrates how to use several of Redux Toolkit's features.
 
 ```bash
-# NPM
-npm install reselect
+# Vite with our Redux+TS template
+# (using the `degit` tool to clone and extract the template)
+npx degit reduxjs/redux-templates/packages/vite-template-redux my-app
 
-# Yarn
-yarn add reselect
+# Next.js using the `with-redux` template
+npx create-next-app --example with-redux my-app
 ```
 
----
+We do not currently have official React Native templates, but recommend these templates for standard React Native and for Expo:
+
+- https://github.com/rahsheen/react-native-template-redux-typescript
+- https://github.com/rahsheen/expo-template-redux-typescript
+
+```
+npm install @reduxjs/toolkit react-redux
+```
+
+For the Redux core library by itself:
+
+```
+npm install redux
+```
+
+For more details, see [the Installation docs page](https://redux.js.org/introduction/installation).
 
 ## Documentation
 
-The Reselect docs are available at **https://reselect.js.org**, and include usage guides and API references:
+The Redux core docs are located at **https://redux.js.org**, and include the full Redux tutorials, as well usage guides on general Redux patterns:
 
-- [**Introduction**](#https://reselect.js.org/introduction/getting-started)
-- [**How Does Reselect Work?**](#https://reselect.js.org/introduction/how-does-reselect-work)
-- **API Reference**:
-  - **[`createSelector`]**
-  - **[`createSelectorCreator`]**
-  - **[`createStructuredSelector`]**
-  - [**Development-Only Stability Checks**](#https://reselect.js.org/api/development-only-stability-checks)
-  - **[`lruMemoize`]**
-  - **[`weakMapMemoize`]**
-- [**FAQ**](#https://reselect.js.org/FAQ)
+- [Introduction](https://redux.js.org/introduction/getting-started)
+- [Tutorials](https://redux.js.org/tutorials/index)
+- [Usage Guides](https://redux.js.org/usage/index)
+- [FAQ](https://redux.js.org/faq)
+- [API Reference](https://redux.js.org/api/api-reference)
 
-## Basic Usage
+The Redux Toolkit docs are available at **https://redux-toolkit.js.org**, including API references and usage guides for all of the APIs included in Redux Toolkit.
 
-Reselect exports a [`createSelector`] API, which generates memoized selector functions. [`createSelector`] accepts one or more [input selectors], which extract values from arguments, and a [result function] function that receives the extracted values and should return a derived value. If the generated [output selector] is called multiple times, the output will only be recalculated when the extracted values have changed.
+## Learn Redux
 
-You can play around with the following **example** in [this CodeSandbox](https://codesandbox.io/s/reselect-example-g3k9gf?file=/src/index.js):
+### Redux Essentials Tutorial
 
-```ts
-import { createSelector } from 'reselect'
+The [**Redux Essentials tutorial**](https://redux.js.org/tutorials/essentials/part-1-overview-concepts) is a "top-down" tutorial that teaches "how to use Redux the right way", using our latest recommended APIs and best practices. We recommend starting there.
 
-interface RootState {
-  todos: { id: number; completed: boolean }[]
-  alerts: { id: number; read: boolean }[]
-}
+### Redux Fundamentals Tutorial
 
-const state: RootState = {
-  todos: [
-    { id: 0, completed: false },
-    { id: 1, completed: true }
-  ],
-  alerts: [
-    { id: 0, read: false },
-    { id: 1, read: true }
-  ]
-}
+The [**Redux Fundamentals tutorial**](https://redux.js.org/tutorials/fundamentals/part-1-overview) is a "bottom-up" tutorial that teaches "how Redux works" from first principles and without any abstractions, and why standard Redux usage patterns exist.
 
-const selectCompletedTodos = (state: RootState) => {
-  console.log('selector ran')
-  return state.todos.filter(todo => todo.completed === true)
-}
+### Help and Discussion
 
-selectCompletedTodos(state) // selector ran
-selectCompletedTodos(state) // selector ran
-selectCompletedTodos(state) // selector ran
+The **[#redux channel](https://discord.gg/0ZcbPKXt5bZ6au5t)** of the **[Reactiflux Discord community](https://www.reactiflux.com)** is our official resource for all questions related to learning and using Redux. Reactiflux is a great place to hang out, ask questions, and learn - please come and join us there!
 
-const memoizedSelectCompletedTodos = createSelector(
-  [(state: RootState) => state.todos],
-  todos => {
-    console.log('memoized selector ran')
-    return todos.filter(todo => todo.completed === true)
+## Before Proceeding Further
+
+Redux is a valuable tool for organizing your state, but you should also consider whether it's appropriate for your situation. Please don't use Redux just because someone said you should - instead, please take some time to understand the potential benefits and tradeoffs of using it.
+
+Here are some suggestions on when it makes sense to use Redux:
+
+- You have reasonable amounts of data changing over time
+- You need a single source of truth for your state
+- You find that keeping all your state in a top-level component is no longer sufficient
+
+Yes, these guidelines are subjective and vague, but this is for a good reason. The point at which you should integrate Redux into your application is different for every user and different for every application.
+
+> **For more thoughts on how Redux is meant to be used, please see:**<br>
+>
+> - **[When (and when not) to reach for Redux](https://changelog.com/posts/when-and-when-not-to-reach-for-redux)**
+> - **[You Might Not Need Redux](https://medium.com/@dan_abramov/you-might-not-need-redux-be46360cf367)**<br>
+> - **[The Tao of Redux, Part 1 - Implementation and Intent](https://blog.isquaredsoftware.com/2017/05/idiomatic-redux-tao-of-redux-part-1/)**<br>
+> - **[The Tao of Redux, Part 2 - Practice and Philosophy](https://blog.isquaredsoftware.com/2017/05/idiomatic-redux-tao-of-redux-part-2/)**
+> - **[Redux FAQ](https://redux.js.org/faq)**
+
+## Basic Example
+
+The whole global state of your app is stored in an object tree inside a single _store_.
+The only way to change the state tree is to create an _action_, an object describing what happened, and _dispatch_ it to the store.
+To specify how state gets updated in response to an action, you write pure _reducer_ functions that calculate a new state based on the old state and the action.
+
+Redux Toolkit simplifies the process of writing Redux logic and setting up the store. With Redux Toolkit, the basic app logic looks like:
+
+```js
+import { createSlice, configureStore } from '@reduxjs/toolkit'
+
+const counterSlice = createSlice({
+  name: 'counter',
+  initialState: {
+    value: 0
+  },
+  reducers: {
+    incremented: state => {
+      // Redux Toolkit allows us to write "mutating" logic in reducers. It
+      // doesn't actually mutate the state because it uses the Immer library,
+      // which detects changes to a "draft state" and produces a brand new
+      // immutable state based off those changes
+      state.value += 1
+    },
+    decremented: state => {
+      state.value -= 1
+    }
   }
-)
+})
 
-memoizedSelectCompletedTodos(state) // memoized selector ran
-memoizedSelectCompletedTodos(state)
-memoizedSelectCompletedTodos(state)
+export const { incremented, decremented } = counterSlice.actions
 
-console.log(selectCompletedTodos(state) === selectCompletedTodos(state)) //=> false
+const store = configureStore({
+  reducer: counterSlice.reducer
+})
 
-console.log(
-  memoizedSelectCompletedTodos(state) === memoizedSelectCompletedTodos(state)
-) //=> true
+// Can still subscribe to the store
+store.subscribe(() => console.log(store.getState()))
+
+// Still pass action objects to `dispatch`, but they're created for us
+store.dispatch(incremented())
+// {value: 1}
+store.dispatch(incremented())
+// {value: 2}
+store.dispatch(decremented())
+// {value: 1}
 ```
 
-As you can see from the example above, `memoizedSelectCompletedTodos` does not run the second or third time, but we still get the same return value as last time.
+Redux Toolkit allows us to write shorter logic that's easier to read, while still following the original core Redux behavior and data flow.
 
-In addition to skipping unnecessary recalculations, `memoizedSelectCompletedTodos` returns the existing result reference if there is no recalculation. This is important for libraries like [React-Redux] or [React] that often rely on reference equality checks to optimize UI updates.
+## Logo
 
----
+You can find the official logo [on GitHub](https://github.com/reduxjs/redux/tree/master/logo).
 
-## Terminology
+## Change Log
 
-- <a name="selector-function"></a>[**Selector Function**](#selector-function): A function that accepts one or more JavaScript values as arguments, and derives a result. When used with [Redux], the first argument is typically the entire Redux store state.
-- <a name="input-selectors"></a>[**input selectors**](#input-selectors): Basic selector functions used as building blocks for creating a memoized selector. They are passed as the first argument(s) to [`createSelector`], and are called with all selector arguments. They are responsible for extracting and providing necessary values to the [result function].
-- <a name="output-selector"></a>[**Output Selector**](#output-selector): The actual memoized selectors created by [`createSelector`].
-- <a name="result-function"></a>[**Result Function**](#result-function): The function that comes after the [input selectors]. It takes the [input selectors]' return values as arguments and returns a result.
-- <a name="dependencies"></a>[**`Dependencies`**](#dependencies): Same as [input selectors]. They are what the [output selector] "depends" on.
-
-The below example serves as a visual aid:
-
-```ts
-const outputSelector = createSelector(
-  [inputSelector1, inputSelector2, inputSelector3], // synonymous with `dependencies`.
-  resultFunc // Result function
-)
-```
-
----
-
-## What's New in 5.0.0?
-
-Version 5.0.0 introduces several new features and improvements:
-
-- **Customization Enhancements**:
-
-  - Added the ability to pass an options object to [`createSelectorCreator`], allowing for customized `memoize` and `argsMemoize` functions, alongside their respective options (`memoizeOptions` and `argsMemoizeOptions`).
-  - The [`createSelector`] function now supports direct customization of `memoize` and `argsMemoize` within its options object.
-
-- **Memoization Functions**:
-
-  - Introduced new experimental memoization functions: `weakMapMemoize` and `unstable_autotrackMemoize`.
-  - Incorporated `memoize` and `argsMemoize` into the [output selector fields] for debugging purposes.
-
-- **TypeScript Support and Performance**:
-
-  - Discontinued support for TypeScript versions below 4.7, aligning with modern TypeScript features.
-  - Significantly improved TypeScript performance for nesting [output selectors][output selector]. The nesting limit has increased from approximately 8 to around 30 [output selectors][output selector], greatly reducing the occurrence of the infamous `Type instantiation is excessively deep and possibly infinite` error.
-
-- **Selector API Enhancements**:
-
-  - Removed the second overload of `createStructuredSelector` due to its susceptibility to runtime errors.
-
-- **Additional Functionalities**:
-
-  - Added `dependencyRecomputations` and `resetDependencyRecomputations` to the [output selector fields]. These additions provide greater control and insight over [input selectors], complementing the new `argsMemoize` API.
-  - Introduced `inputStabilityCheck`, a development tool that runs the [input selectors] twice using the same arguments and triggers a warning If they return differing results for the same call.
-  - Introduced `identityFunctionCheck`, a development tool that checks to see if the [result function] returns its own input.
-
-These updates aim to enhance flexibility, performance, and developer experience. For detailed usage and examples, refer to the updated documentation sections for each feature.
-
-- **Breaking Changes**:
-
-  - Removed `ParametricSelector` and `OutputParametricSelector` types. Their functionalities are now integrated into `Selector` and `OutputSelector` respectively, which inherently support additional parameters.
-
-<div align="right">[ <a href="installation">↑ Back to top ↑</a> ]</div>
-
----
+This project adheres to [Semantic Versioning](https://semver.org/).
+Every release, along with the migration instructions, is documented on the GitHub [Releases](https://github.com/reduxjs/redux/releases) page.
 
 ## License
 
-MIT
-
-## References
-
-<details><summary><b>Click to Expand</b></summary>
-
-Originally inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/reduxjs/redux/pull/169) from [speedskater](https://github.com/speedskater).
-
-[typescript-badge]: https://img.shields.io/badge/TypeScript-v4%2E7%2B-007ACC?style=for-the-badge&logo=TypeScript&logoColor=black&labelColor=blue&color=gray
-[build-badge]: https://img.shields.io/github/actions/workflow/status/reduxjs/reselect/build-and-test-types.yml?branch=master&style=for-the-badge
-[build]: https://github.com/reduxjs/reselect/actions/workflows/build-and-test-types.yml
-[npm-badge]: https://img.shields.io/npm/v/reselect.svg?style=for-the-badge
-[npm]: https://www.npmjs.org/package/reselect
-[coveralls-badge]: https://img.shields.io/coveralls/reduxjs/reselect/master.svg?style=for-the-badge
-[coveralls]: https://coveralls.io/github/reduxjs/reselect
-
-<!-- External Links -->
-
-[Redux]: https://redux.js.org 'Redux'
-[React]: https://react.dev 'React'
-[React-Redux]: https://react-redux.js.org 'React-Redux'
-
-<!-- Internal Links -->
-
-[selector]: #selector-function 'Selector Function'
-[input selectors]: #input-selectors 'Input Selectors'
-[output selector]: #output-selector 'Output Selector'
-[result function]: #result-function 'Result Function'
-[output selector fields]: https://reselect.js.org/api/createSelector#output-selector-fields 'Output Selector Fields'
-[`createSelector`]: https://reselect.js.org/api/createSelector 'createSelector'
-[`createSelectorCreator`]: https://reselect.js.org/api/createSelectorCreator 'createSelectorCreator'
-[`lruMemoize`]: https://reselect.js.org/api/lruMemoize 'lruMemoize'
-[`weakMapMemoize`]: https://reselect.js.org/api/weakMapMemoize 'weakMapMemoize'
-[`createStructuredSelector`]: https://reselect.js.org/api/createStructuredSelector 'createStructuredSelector'
-
-</details>
+[MIT](LICENSE.md)

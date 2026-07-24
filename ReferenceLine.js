@@ -1,38 +1,32 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ReferenceLine = ReferenceLine;
-exports.referenceLineDefaultProps = exports.getEndPoints = void 0;
-var _react = _interopRequireWildcard(require("react"));
-var React = _react;
-var _clsx = require("clsx");
-var _Layer = require("../container/Layer");
-var _Label = require("../component/Label");
-var _DataUtils = require("../util/DataUtils");
-var _CartesianUtils = require("../util/CartesianUtils");
-var _chartLayoutContext = require("../context/chartLayoutContext");
-var _referenceElementsSlice = require("../state/referenceElementsSlice");
-var _hooks = require("../state/hooks");
-var _axisSelectors = require("../state/selectors/axisSelectors");
-var _PanoramaContext = require("../context/PanoramaContext");
-var _ClipPathProvider = require("../container/ClipPathProvider");
-var _svgPropertiesAndEvents = require("../util/svgPropertiesAndEvents");
-var _resolveDefaultProps = require("../util/resolveDefaultProps");
-var _ZIndexLayer = require("../zIndex/ZIndexLayer");
-var _DefaultZIndexes = require("../zIndex/DefaultZIndexes");
-var _isWellBehavedNumber = require("../util/isWellBehavedNumber");
-var _CartesianScaleHelper = require("../util/scale/CartesianScaleHelper");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); } /**
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
  * @fileOverview Reference Line
  */
+import * as React from 'react';
+import { useEffect } from 'react';
+import { clsx } from 'clsx';
+import { Layer } from '../container/Layer';
+import { CartesianLabelContextProvider, CartesianLabelFromLabelProp } from '../component/Label';
+import { isNumOrStr } from '../util/DataUtils';
+import { rectWithCoords } from '../util/CartesianUtils';
+import { useViewBox } from '../context/chartLayoutContext';
+import { addLine, removeLine } from '../state/referenceElementsSlice';
+import { useAppDispatch, useAppSelector } from '../state/hooks';
+import { selectAxisScale, selectXAxisSettings, selectYAxisSettings } from '../state/selectors/axisSelectors';
+import { useIsPanorama } from '../context/PanoramaContext';
+import { useClipPathId } from '../container/ClipPathProvider';
+import { svgPropertiesAndEvents } from '../util/svgPropertiesAndEvents';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { ZIndexLayer } from '../zIndex/ZIndexLayer';
+import { DefaultZIndexes } from '../zIndex/DefaultZIndexes';
+import { isWellBehavedNumber } from '../util/isWellBehavedNumber';
+import { CartesianScaleHelperImpl } from '../util/scale/CartesianScaleHelper';
+
 /**
  * Single point that defines one end of a segment.
  * These coordinates are in data space, meaning that you should provide
@@ -61,7 +55,7 @@ var renderLine = (option, props) => {
   } else if (typeof option === 'function') {
     line = option(props);
   } else {
-    if (!(0, _isWellBehavedNumber.isWellBehavedNumber)(props.x1) || !(0, _isWellBehavedNumber.isWellBehavedNumber)(props.y1) || !(0, _isWellBehavedNumber.isWellBehavedNumber)(props.x2) || !(0, _isWellBehavedNumber.isWellBehavedNumber)(props.y2)) {
+    if (!isWellBehavedNumber(props.x1) || !isWellBehavedNumber(props.y1) || !isWellBehavedNumber(props.x2) || !isWellBehavedNumber(props.y2)) {
       return null;
     }
     line = /*#__PURE__*/React.createElement("line", _extends({}, props, {
@@ -79,7 +73,7 @@ var getHorizontalLineEndPoints = (yCoord, ifOverflow, position, yAxisOrientation
     position
   });
   // don't render the line if the scale can't compute a result that makes sense
-  if (!(0, _isWellBehavedNumber.isWellBehavedNumber)(coord)) {
+  if (!isWellBehavedNumber(coord)) {
     return null;
   }
   if (ifOverflow === 'discard' && !yAxisScale.isInRange(coord)) {
@@ -103,7 +97,7 @@ var getVerticalLineEndPoints = (xCoord, ifOverflow, position, xAxisOrientation, 
     position
   });
   // don't render the line if the scale can't compute a result that makes sense
-  if (!(0, _isWellBehavedNumber.isWellBehavedNumber)(coord)) {
+  if (!isWellBehavedNumber(coord)) {
     return null;
   }
   if (ifOverflow === 'discard' && !xAxisScale.isInRange(coord)) {
@@ -131,15 +125,15 @@ var getSegmentLineEndPoints = (segment, ifOverflow, position, scales) => {
   }
   return points;
 };
-var getEndPoints = (xAxisScale, yAxisScale, viewBox, position, xAxisOrientation, yAxisOrientation, props) => {
+export var getEndPoints = (xAxisScale, yAxisScale, viewBox, position, xAxisOrientation, yAxisOrientation, props) => {
   var {
     x: xCoord,
     y: yCoord,
     segment,
     ifOverflow
   } = props;
-  var isFixedX = (0, _DataUtils.isNumOrStr)(xCoord);
-  var isFixedY = (0, _DataUtils.isNumOrStr)(yCoord);
+  var isFixedX = isNumOrStr(xCoord);
+  var isFixedY = isNumOrStr(yCoord);
   if (isFixedY) {
     return getHorizontalLineEndPoints(yCoord, ifOverflow, position, yAxisOrientation, yAxisScale, viewBox);
   }
@@ -147,20 +141,19 @@ var getEndPoints = (xAxisScale, yAxisScale, viewBox, position, xAxisOrientation,
     return getVerticalLineEndPoints(xCoord, ifOverflow, position, xAxisOrientation, xAxisScale, viewBox);
   }
   if (segment != null && segment.length === 2) {
-    return getSegmentLineEndPoints(segment, ifOverflow, position, new _CartesianScaleHelper.CartesianScaleHelperImpl({
+    return getSegmentLineEndPoints(segment, ifOverflow, position, new CartesianScaleHelperImpl({
       x: xAxisScale,
       y: yAxisScale
     }));
   }
   return null;
 };
-exports.getEndPoints = getEndPoints;
 function ReportReferenceLine(props) {
-  var dispatch = (0, _hooks.useAppDispatch)();
-  (0, _react.useEffect)(() => {
-    dispatch((0, _referenceElementsSlice.addLine)(props));
+  var dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(addLine(props));
     return () => {
-      dispatch((0, _referenceElementsSlice.removeLine)(props));
+      dispatch(removeLine(props));
     };
   });
   return null;
@@ -173,13 +166,13 @@ function ReferenceLineImpl(props) {
     className,
     ifOverflow
   } = props;
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  var clipPathId = (0, _ClipPathProvider.useClipPathId)();
-  var xAxis = (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectXAxisSettings)(state, xAxisId));
-  var yAxis = (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectYAxisSettings)(state, yAxisId));
-  var xAxisScale = (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisScale)(state, 'xAxis', xAxisId, isPanorama));
-  var yAxisScale = (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisScale)(state, 'yAxis', yAxisId, isPanorama));
-  var viewBox = (0, _chartLayoutContext.useViewBox)();
+  var isPanorama = useIsPanorama();
+  var clipPathId = useClipPathId();
+  var xAxis = useAppSelector(state => selectXAxisSettings(state, xAxisId));
+  var yAxis = useAppSelector(state => selectYAxisSettings(state, yAxisId));
+  var xAxisScale = useAppSelector(state => selectAxisScale(state, 'xAxis', xAxisId, isPanorama));
+  var yAxisScale = useAppSelector(state => selectAxisScale(state, 'yAxis', yAxisId, isPanorama));
+  var viewBox = useViewBox();
   if (!clipPathId || !viewBox || xAxis == null || yAxis == null || xAxisScale == null || yAxisScale == null) {
     return null;
   }
@@ -203,30 +196,30 @@ function ReferenceLineImpl(props) {
   var clipPath = ifOverflow === 'hidden' ? "url(#".concat(clipPathId, ")") : undefined;
   var lineProps = _objectSpread(_objectSpread({
     clipPath
-  }, (0, _svgPropertiesAndEvents.svgPropertiesAndEvents)(props)), {}, {
+  }, svgPropertiesAndEvents(props)), {}, {
     x1,
     y1,
     x2,
     y2
   });
-  var rect = (0, _CartesianUtils.rectWithCoords)({
+  var rect = rectWithCoords({
     x1,
     y1,
     x2,
     y2
   });
-  return /*#__PURE__*/React.createElement(_ZIndexLayer.ZIndexLayer, {
+  return /*#__PURE__*/React.createElement(ZIndexLayer, {
     zIndex: props.zIndex
-  }, /*#__PURE__*/React.createElement(_Layer.Layer, {
-    className: (0, _clsx.clsx)('recharts-reference-line', className)
-  }, renderLine(shape, lineProps), /*#__PURE__*/React.createElement(_Label.CartesianLabelContextProvider, _extends({}, rect, {
+  }, /*#__PURE__*/React.createElement(Layer, {
+    className: clsx('recharts-reference-line', className)
+  }, renderLine(shape, lineProps), /*#__PURE__*/React.createElement(CartesianLabelContextProvider, _extends({}, rect, {
     lowerWidth: rect.width,
     upperWidth: rect.width
-  }), /*#__PURE__*/React.createElement(_Label.CartesianLabelFromLabelProp, {
+  }), /*#__PURE__*/React.createElement(CartesianLabelFromLabelProp, {
     label: props.label
   }), props.children)));
 }
-var referenceLineDefaultProps = exports.referenceLineDefaultProps = {
+export var referenceLineDefaultProps = {
   ifOverflow: 'discard',
   xAxisId: 0,
   yAxisId: 0,
@@ -236,7 +229,7 @@ var referenceLineDefaultProps = exports.referenceLineDefaultProps = {
   fillOpacity: 1,
   strokeWidth: 1,
   position: 'middle',
-  zIndex: _DefaultZIndexes.DefaultZIndexes.line
+  zIndex: DefaultZIndexes.line
 };
 /**
  * Draws a line on the chart connecting two points.
@@ -252,8 +245,8 @@ var referenceLineDefaultProps = exports.referenceLineDefaultProps = {
  * @provides CartesianLabelContext
  * @consumes CartesianChartContext
  */
-function ReferenceLine(outsideProps) {
-  var props = (0, _resolveDefaultProps.resolveDefaultProps)(outsideProps, referenceLineDefaultProps);
+export function ReferenceLine(outsideProps) {
+  var props = resolveDefaultProps(outsideProps, referenceLineDefaultProps);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ReportReferenceLine, {
     yAxisId: props.yAxisId,
     xAxisId: props.xAxisId,

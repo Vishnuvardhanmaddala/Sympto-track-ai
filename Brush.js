@@ -1,38 +1,30 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Brush = Brush;
-exports.defaultBrushProps = void 0;
-var _react = _interopRequireWildcard(require("react"));
-var React = _react;
-var _clsx = require("clsx");
-var _d3Scale = require("victory-vendor/d3-scale");
-var _range = _interopRequireDefault(require("es-toolkit/compat/range"));
-var _Layer = require("../container/Layer");
-var _Text = require("../component/Text");
-var _ChartUtils = require("../util/ChartUtils");
-var _DataUtils = require("../util/DataUtils");
-var _CssPrefixUtils = require("../util/CssPrefixUtils");
-var _chartDataContext = require("../context/chartDataContext");
-var _brushUpdateContext = require("../context/brushUpdateContext");
-var _hooks = require("../state/hooks");
-var _chartDataSlice = require("../state/chartDataSlice");
-var _brushSlice = require("../state/brushSlice");
-var _PanoramaContext = require("../context/PanoramaContext");
-var _brushSelectors = require("../state/selectors/brushSelectors");
-var _useChartSynchronisation = require("../synchronisation/useChartSynchronisation");
-var _resolveDefaultProps = require("../util/resolveDefaultProps");
-var _svgPropertiesNoEvents = require("../util/svgPropertiesNoEvents");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+import * as React from 'react';
+import { Children, PureComponent, useCallback, useContext, useEffect } from 'react';
+import { clsx } from 'clsx';
+import { scalePoint } from 'victory-vendor/d3-scale';
+import range from 'es-toolkit/compat/range';
+import { Layer } from '../container/Layer';
+import { Text } from '../component/Text';
+import { getValueByDataKey } from '../util/ChartUtils';
+import { isNumber, isNotNil } from '../util/DataUtils';
+import { generatePrefixStyle } from '../util/CssPrefixUtils';
+import { useChartData, useDataIndex } from '../context/chartDataContext';
+import { BrushUpdateDispatchContext } from '../context/brushUpdateContext';
+import { useAppDispatch, useAppSelector } from '../state/hooks';
+import { setDataStartEndIndexes } from '../state/chartDataSlice';
+import { setBrushSettings } from '../state/brushSlice';
+import { PanoramaContextProvider } from '../context/PanoramaContext';
+import { selectBrushDimensions } from '../state/selectors/brushSelectors';
+import { useBrushChartSynchronisation } from '../synchronisation/useChartSynchronisation';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { svgPropertiesNoEvents } from '../util/svgPropertiesNoEvents';
+
 // Why is this tickFormatter different from the other TickFormatters? This one allows to return numbers too for some reason.
 
 function DefaultTraveller(props) {
@@ -82,7 +74,7 @@ function Traveller(props) {
   return /*#__PURE__*/React.createElement(DefaultTraveller, travellerProps);
 }
 function getNameFromUnknown(value) {
-  if ((0, _DataUtils.isNotNil)(value) && typeof value === 'object' && 'name' in value && typeof value.name === 'string') {
+  if (isNotNil(value) && typeof value === 'object' && 'name' in value && typeof value.name === 'string') {
     return value.name;
   }
   return undefined;
@@ -117,14 +109,14 @@ function TravellerLayer(_ref) {
     endIndex
   } = otherProps;
   var x = Math.max(travellerX, xFromProps);
-  var travellerProps = _objectSpread(_objectSpread({}, (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(otherProps)), {}, {
+  var travellerProps = _objectSpread(_objectSpread({}, svgPropertiesNoEvents(otherProps)), {}, {
     x,
     y,
     width: travellerWidth,
     height
   });
   var ariaLabelBrush = ariaLabel || getAriaLabel(data, startIndex, endIndex);
-  return /*#__PURE__*/React.createElement(_Layer.Layer, {
+  return /*#__PURE__*/React.createElement(Layer, {
     tabIndex: 0,
     role: "slider",
     "aria-label": ariaLabelBrush,
@@ -163,7 +155,7 @@ function getTextOfTick(props) {
     tickFormatter,
     dataKey
   } = props;
-  var text = (0, _ChartUtils.getValueByDataKey)(data[index], dataKey, index);
+  var text = getValueByDataKey(data[index], dataKey, index);
   return typeof tickFormatter === 'function' ? tickFormatter(text, index) : text;
 }
 function getIndexInRange(valueRange, x) {
@@ -237,9 +229,9 @@ function BrushText(_ref4) {
     pointerEvents: 'none',
     fill: stroke
   };
-  return /*#__PURE__*/React.createElement(_Layer.Layer, {
+  return /*#__PURE__*/React.createElement(Layer, {
     className: "recharts-brush-texts"
-  }, /*#__PURE__*/React.createElement(_Text.Text, _extends({
+  }, /*#__PURE__*/React.createElement(Text, _extends({
     textAnchor: "end",
     verticalAnchor: "middle",
     x: Math.min(startX, endX) - offset,
@@ -249,7 +241,7 @@ function BrushText(_ref4) {
     tickFormatter,
     dataKey,
     data
-  })), /*#__PURE__*/React.createElement(_Text.Text, _extends({
+  })), /*#__PURE__*/React.createElement(Text, _extends({
     textAnchor: "start",
     verticalAnchor: "middle",
     x: Math.max(startX, endX) + travellerWidth + offset,
@@ -308,7 +300,7 @@ function Panorama(_ref6) {
   if (!isPanoramic) {
     return null;
   }
-  var chartElement = _react.Children.only(children);
+  var chartElement = Children.only(children);
   if (!chartElement) {
     return null;
   }
@@ -335,8 +327,8 @@ var createScale = _ref7 => {
     return {};
   }
   var len = data.length;
-  var scale = (0, _d3Scale.scalePoint)().domain((0, _range.default)(0, len)).range([x, x + width - travellerWidth]);
-  var scaleValues = scale.domain().map(entry => scale(entry)).filter(_DataUtils.isNotNil);
+  var scale = scalePoint().domain(range(0, len)).range([x, x + width - travellerWidth]);
+  var scaleValues = scale.domain().map(entry => scale(entry)).filter(isNotNil);
   return {
     isTextActive: false,
     isSlideMoving: false,
@@ -349,7 +341,7 @@ var createScale = _ref7 => {
   };
 };
 var isTouch = e => e.changedTouches && !!e.changedTouches.length;
-class BrushWithState extends _react.PureComponent {
+class BrushWithState extends PureComponent {
   constructor(props) {
     super(props);
     _defineProperty(this, "handleDrag", e => {
@@ -705,13 +697,13 @@ class BrushWithState extends _react.PureComponent {
       isTravellerMoving,
       isTravellerFocused
     } = this.state;
-    if (!data || !data.length || !(0, _DataUtils.isNumber)(x) || !(0, _DataUtils.isNumber)(y) || !(0, _DataUtils.isNumber)(width) || !(0, _DataUtils.isNumber)(height) || width <= 0 || height <= 0) {
+    if (!data || !data.length || !isNumber(x) || !isNumber(y) || !isNumber(width) || !isNumber(height) || width <= 0 || height <= 0) {
       return null;
     }
-    var layerClass = (0, _clsx.clsx)('recharts-brush', className);
-    var style = (0, _CssPrefixUtils.generatePrefixStyle)('userSelect', 'none');
+    var layerClass = clsx('recharts-brush', className);
+    var style = generatePrefixStyle('userSelect', 'none');
     var calculatedY = y + (dy !== null && dy !== void 0 ? dy : 0);
-    return /*#__PURE__*/React.createElement(_Layer.Layer, {
+    return /*#__PURE__*/React.createElement(Layer, {
       className: layerClass,
       onMouseLeave: this.handleLeaveWrapper,
       onTouchMove: this.handleTouchMove,
@@ -723,7 +715,7 @@ class BrushWithState extends _react.PureComponent {
       height: height,
       fill: fill,
       stroke: stroke
-    }), /*#__PURE__*/React.createElement(_PanoramaContext.PanoramaContextProvider, null, /*#__PURE__*/React.createElement(Panorama, {
+    }), /*#__PURE__*/React.createElement(PanoramaContextProvider, null, /*#__PURE__*/React.createElement(Panorama, {
       x: x,
       y: calculatedY,
       width: width,
@@ -799,24 +791,24 @@ class BrushWithState extends _react.PureComponent {
   }
 }
 function BrushInternal(props) {
-  var dispatch = (0, _hooks.useAppDispatch)();
-  var chartData = (0, _chartDataContext.useChartData)();
-  var dataIndexes = (0, _chartDataContext.useDataIndex)();
-  var onChangeFromContext = (0, _react.useContext)(_brushUpdateContext.BrushUpdateDispatchContext);
+  var dispatch = useAppDispatch();
+  var chartData = useChartData();
+  var dataIndexes = useDataIndex();
+  var onChangeFromContext = useContext(BrushUpdateDispatchContext);
   var onChangeFromProps = props.onChange;
   var {
     startIndex: startIndexFromProps,
     endIndex: endIndexFromProps
   } = props;
-  (0, _react.useEffect)(() => {
+  useEffect(() => {
     // start and end index can be controlled from props, and we need them to stay up-to-date in the Redux state too
-    dispatch((0, _chartDataSlice.setDataStartEndIndexes)({
+    dispatch(setDataStartEndIndexes({
       startIndex: startIndexFromProps,
       endIndex: endIndexFromProps
     }));
   }, [dispatch, endIndexFromProps, startIndexFromProps]);
-  (0, _useChartSynchronisation.useBrushChartSynchronisation)();
-  var onChange = (0, _react.useCallback)(nextState => {
+  useBrushChartSynchronisation();
+  var onChange = useCallback(nextState => {
     if (dataIndexes == null) {
       return;
     }
@@ -827,10 +819,10 @@ function BrushInternal(props) {
     if (nextState.startIndex !== startIndex || nextState.endIndex !== endIndex) {
       onChangeFromContext === null || onChangeFromContext === void 0 || onChangeFromContext(nextState);
       onChangeFromProps === null || onChangeFromProps === void 0 || onChangeFromProps(nextState);
-      dispatch((0, _chartDataSlice.setDataStartEndIndexes)(nextState));
+      dispatch(setDataStartEndIndexes(nextState));
     }
   }, [onChangeFromProps, onChangeFromContext, dispatch, dataIndexes]);
-  var brushDimensions = (0, _hooks.useAppSelector)(_brushSelectors.selectBrushDimensions);
+  var brushDimensions = useAppSelector(selectBrushDimensions);
   if (brushDimensions == null || dataIndexes == null || chartData == null || !chartData.length) {
     return null;
   }
@@ -858,16 +850,16 @@ function BrushInternal(props) {
   }));
 }
 function BrushSettingsDispatcher(props) {
-  var dispatch = (0, _hooks.useAppDispatch)();
-  (0, _react.useEffect)(() => {
-    dispatch((0, _brushSlice.setBrushSettings)(props));
+  var dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(setBrushSettings(props));
     return () => {
-      dispatch((0, _brushSlice.setBrushSettings)(null));
+      dispatch(setBrushSettings(null));
     };
   }, [dispatch, props]);
   return null;
 }
-var defaultBrushProps = exports.defaultBrushProps = {
+export var defaultBrushProps = {
   height: 40,
   travellerWidth: 5,
   gap: 1,
@@ -896,8 +888,8 @@ var defaultBrushProps = exports.defaultBrushProps = {
  *
  * @consumes CartesianChartContext
  */
-function Brush(outsideProps) {
-  var props = (0, _resolveDefaultProps.resolveDefaultProps)(outsideProps, defaultBrushProps);
+export function Brush(outsideProps) {
+  var props = resolveDefaultProps(outsideProps, defaultBrushProps);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(BrushSettingsDispatcher, {
     height: props.height,
     x: props.x,

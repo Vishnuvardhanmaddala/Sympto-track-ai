@@ -1,11 +1,5 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.defaultPolarRadiusAxisProps = void 0;
-var _DefaultZIndexes = require("../zIndex/DefaultZIndexes");
-var defaultPolarRadiusAxisProps = exports.defaultPolarRadiusAxisProps = {
+import { DefaultZIndexes } from '../zIndex/DefaultZIndexes';
+export var defaultPolarRadiusAxisProps = {
   allowDataOverflow: false,
   allowDecimals: false,
   allowDuplicatedCategory: true,
@@ -24,5 +18,5 @@ var defaultPolarRadiusAxisProps = exports.defaultPolarRadiusAxisProps = {
   tickCount: 5,
   tickLine: true,
   type: 'auto',
-  zIndex: _DefaultZIndexes.DefaultZIndexes.axis
+  zIndex: DefaultZIndexes.axis
 };

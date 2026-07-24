@@ -1,38 +1,5 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Sankey = Sankey;
-exports.sankeyPayloadSearcher = exports.sankeyDefaultProps = void 0;
-var _react = _interopRequireWildcard(require("react"));
-var React = _react;
-var _maxBy2 = _interopRequireDefault(require("es-toolkit/compat/maxBy"));
-var _sumBy = _interopRequireDefault(require("es-toolkit/compat/sumBy"));
-var _get = _interopRequireDefault(require("es-toolkit/compat/get"));
-var _Surface = require("../container/Surface");
-var _Layer = require("../container/Layer");
-var _Rectangle = require("../shape/Rectangle");
-var _ChartUtils = require("../util/ChartUtils");
-var _chartLayoutContext = require("../context/chartLayoutContext");
-var _tooltipPortalContext = require("../context/tooltipPortalContext");
-var _RechartsWrapper = require("./RechartsWrapper");
-var _RechartsStoreProvider = require("../state/RechartsStoreProvider");
-var _hooks = require("../state/hooks");
-var _tooltipSlice = require("../state/tooltipSlice");
-var _SetTooltipEntrySettings = require("../state/SetTooltipEntrySettings");
-var _ReportEventSettings = require("../state/ReportEventSettings");
-var _chartDataContext = require("../context/chartDataContext");
-var _svgPropertiesNoEvents = require("../util/svgPropertiesNoEvents");
-var _resolveDefaultProps = require("../util/resolveDefaultProps");
-var _isWellBehavedNumber = require("../util/isWellBehavedNumber");
-var _DataUtils = require("../util/DataUtils");
-var _RegisterGraphicalItemId = require("../context/RegisterGraphicalItemId");
-var _eventSettingsSlice = require("../state/eventSettingsSlice");
 var _excluded = ["sourceX", "sourceY", "sourceControlX", "targetX", "targetY", "targetControlX", "linkWidth"],
   _excluded2 = ["className", "style", "children", "id"];
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
@@ -41,6 +8,30 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t =
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+import * as React from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import maxBy from 'es-toolkit/compat/maxBy';
+import sumBy from 'es-toolkit/compat/sumBy';
+import get from 'es-toolkit/compat/get';
+import { Surface } from '../container/Surface';
+import { Layer } from '../container/Layer';
+import { Rectangle } from '../shape/Rectangle';
+import { getValueByDataKey } from '../util/ChartUtils';
+import { ReportChartMargin, ReportChartSize, useChartHeight, useChartWidth } from '../context/chartLayoutContext';
+import { TooltipPortalContext } from '../context/tooltipPortalContext';
+import { RechartsWrapper } from './RechartsWrapper';
+import { RechartsStoreProvider } from '../state/RechartsStoreProvider';
+import { useAppDispatch } from '../state/hooks';
+import { mouseLeaveItem, setActiveClickItemIndex, setActiveMouseOverItemIndex } from '../state/tooltipSlice';
+import { SetTooltipEntrySettings } from '../state/SetTooltipEntrySettings';
+import { ReportEventSettings } from '../state/ReportEventSettings';
+import { SetComputedData } from '../context/chartDataContext';
+import { svgPropertiesNoEvents, svgPropertiesNoEventsFromUnknown } from '../util/svgPropertiesNoEvents';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { isPositiveNumber } from '../util/isWellBehavedNumber';
+import { isNotNil, noop } from '../util/DataUtils';
+import { RegisterGraphicalItemId } from '../context/RegisterGraphicalItemId';
+import { initialEventSettingsState } from '../state/eventSettingsSlice';
 var interpolationGenerator = (a, b) => {
   var ka = +a;
   var kb = b - ka;
@@ -132,7 +123,7 @@ var getNodesTree = (_ref, width, nodeWidth, align) => {
       updateDepthOfTargets(tree, node);
     }
   }
-  var maxDepth = (_maxBy$depth = (_maxBy = (0, _maxBy2.default)(tree, entry => entry.depth)) === null || _maxBy === void 0 ? void 0 : _maxBy.depth) !== null && _maxBy$depth !== void 0 ? _maxBy$depth : 0;
+  var maxDepth = (_maxBy$depth = (_maxBy = maxBy(tree, entry => entry.depth)) === null || _maxBy === void 0 ? void 0 : _maxBy.depth) !== null && _maxBy$depth !== void 0 ? _maxBy$depth : 0;
   if (maxDepth >= 1) {
     var childWidth = (width - nodeWidth) / maxDepth;
     for (var _i = 0, _len = tree.length; _i < _len; _i++) {
@@ -170,7 +161,7 @@ var getDepthTree = tree => {
   return result;
 };
 var updateYOfTree = (depthTree, height, nodePadding, links, verticalAlign) => {
-  var yRatio = Math.min(...depthTree.map(nodes => (height - (nodes.length - 1) * nodePadding) / (0, _sumBy.default)(nodes, getValue)));
+  var yRatio = Math.min(...depthTree.map(nodes => (height - (nodes.length - 1) * nodePadding) / sumBy(nodes, getValue)));
   for (var d = 0, maxDepth = depthTree.length; d < maxDepth; d++) {
     var nodes = depthTree[d];
     if (nodes == null) {
@@ -402,24 +393,24 @@ var getPayloadOfTooltip = (item, type, nameKey) => {
   if (type === 'node') {
     return {
       payload,
-      name: (0, _ChartUtils.getValueByDataKey)(payload, nameKey, ''),
-      value: (0, _ChartUtils.getValueByDataKey)(payload, 'value')
+      name: getValueByDataKey(payload, nameKey, ''),
+      value: getValueByDataKey(payload, 'value')
     };
   }
   if ('source' in payload && payload.source && payload.target) {
     // @ts-expect-error we're sending number indexes as source and target, but getValueByDataKey expects objects
-    var sourceName = (0, _ChartUtils.getValueByDataKey)(payload.source, nameKey, '');
+    var sourceName = getValueByDataKey(payload.source, nameKey, '');
     // @ts-expect-error we're sending number indexes as source and target, but getValueByDataKey expects objects
-    var targetName = (0, _ChartUtils.getValueByDataKey)(payload.target, nameKey, '');
+    var targetName = getValueByDataKey(payload.target, nameKey, '');
     return {
       payload,
       name: "".concat(sourceName, " - ").concat(targetName),
-      value: (0, _ChartUtils.getValueByDataKey)(payload, 'value')
+      value: getValueByDataKey(payload, 'value')
     };
   }
   return undefined;
 };
-var sankeyPayloadSearcher = (_, activeIndex, computedData, nameKey) => {
+export var sankeyPayloadSearcher = (_, activeIndex, computedData, nameKey) => {
   if (activeIndex == null || typeof activeIndex !== 'string') {
     return undefined;
   }
@@ -428,7 +419,7 @@ var sankeyPayloadSearcher = (_, activeIndex, computedData, nameKey) => {
   }
   var splitIndex = activeIndex.split('-');
   var [targetType, index] = splitIndex;
-  var item = (0, _get.default)(computedData, "".concat(targetType, "s[").concat(index, "]"));
+  var item = get(computedData, "".concat(targetType, "s[").concat(index, "]"));
   if (item) {
     // @ts-expect-error nameKey type does not match SankeyElementType
     var payload = getPayloadOfTooltip(item, targetType, nameKey);
@@ -436,7 +427,6 @@ var sankeyPayloadSearcher = (_, activeIndex, computedData, nameKey) => {
   }
   return undefined;
 };
-exports.sankeyPayloadSearcher = sankeyPayloadSearcher;
 var options = {
   chartName: 'Sankey',
   defaultTooltipEventType: 'item',
@@ -457,7 +447,7 @@ var SetSankeyTooltipEntrySettings = /*#__PURE__*/React.memo(_ref3 => {
   } = _ref3;
   var tooltipEntrySettings = {
     dataDefinedOnItem: data,
-    getPosition: _DataUtils.noop,
+    getPosition: noop,
     settings: {
       stroke,
       strokeWidth,
@@ -472,7 +462,7 @@ var SetSankeyTooltipEntrySettings = /*#__PURE__*/React.memo(_ref3 => {
       graphicalItemId: id
     }
   };
-  return /*#__PURE__*/React.createElement(_SetTooltipEntrySettings.SetTooltipEntrySettings, {
+  return /*#__PURE__*/React.createElement(SetTooltipEntrySettings, {
     tooltipEntrySettings: tooltipEntrySettings
   });
 });
@@ -503,7 +493,7 @@ function renderLinkItem(option, props) {
     stroke: "#333",
     strokeWidth: linkWidth,
     strokeOpacity: "0.2"
-  }, (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(others)));
+  }, svgPropertiesNoEvents(others)));
 }
 var buildLinkProps = _ref4 => {
   var {
@@ -549,7 +539,7 @@ var buildLinkProps = _ref4 => {
       source: sourceNode,
       target: targetNode
     })
-  }, (0, _svgPropertiesNoEvents.svgPropertiesNoEventsFromUnknown)(linkContent));
+  }, svgPropertiesNoEventsFromUnknown(linkContent));
   return linkProps;
 };
 function SankeyLinkElement(_ref5) {
@@ -565,10 +555,10 @@ function SankeyLinkElement(_ref5) {
   } = _ref5;
   var activeCoordinate = getLinkCoordinateOfTooltip(props);
   var activeIndex = "link-".concat(i);
-  var dispatch = (0, _hooks.useAppDispatch)();
+  var dispatch = useAppDispatch();
   var events = {
     onMouseEnter: e => {
-      dispatch((0, _tooltipSlice.setActiveMouseOverItemIndex)({
+      dispatch(setActiveMouseOverItemIndex({
         activeIndex,
         activeDataKey: dataKey,
         activeCoordinate,
@@ -577,11 +567,11 @@ function SankeyLinkElement(_ref5) {
       _onMouseEnter(props, e);
     },
     onMouseLeave: e => {
-      dispatch((0, _tooltipSlice.mouseLeaveItem)());
+      dispatch(mouseLeaveItem());
       _onMouseLeave(props, e);
     },
     onClick: e => {
-      dispatch((0, _tooltipSlice.setActiveClickItemIndex)({
+      dispatch(setActiveClickItemIndex({
         activeIndex,
         activeDataKey: dataKey,
         activeCoordinate,
@@ -590,7 +580,7 @@ function SankeyLinkElement(_ref5) {
       _onClick(props, e);
     }
   };
-  return /*#__PURE__*/React.createElement(_Layer.Layer, events, renderLinkItem(linkContent, props));
+  return /*#__PURE__*/React.createElement(Layer, events, renderLinkItem(linkContent, props));
 }
 function AllSankeyLinkElements(_ref6) {
   var {
@@ -603,7 +593,7 @@ function AllSankeyLinkElements(_ref6) {
     onClick,
     dataKey
   } = _ref6;
-  return /*#__PURE__*/React.createElement(_Layer.Layer, {
+  return /*#__PURE__*/React.createElement(Layer, {
     className: "recharts-sankey-links",
     key: "recharts-sankey-links"
   }, links.map((link, i) => {
@@ -634,11 +624,11 @@ function renderNodeItem(option, props) {
   return (
     /*#__PURE__*/
     // @ts-expect-error recharts radius is not compatible with SVG radius
-    React.createElement(_Rectangle.Rectangle, _extends({
+    React.createElement(Rectangle, _extends({
       className: "recharts-sankey-node",
       fill: "#0088fe",
       fillOpacity: "0.8"
-    }, (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(props)))
+    }, svgPropertiesNoEvents(props)))
   );
 }
 var buildNodeProps = _ref7 => {
@@ -656,7 +646,7 @@ var buildNodeProps = _ref7 => {
     dy
   } = node;
   // @ts-expect-error nodeContent is passing in unknown props
-  var nodeProps = _objectSpread(_objectSpread({}, (0, _svgPropertiesNoEvents.svgPropertiesNoEventsFromUnknown)(nodeContent)), {}, {
+  var nodeProps = _objectSpread(_objectSpread({}, svgPropertiesNoEventsFromUnknown(nodeContent)), {}, {
     x: x + left,
     y: y + top,
     width: dx,
@@ -677,12 +667,12 @@ function NodeElement(_ref8) {
     onClick: _onClick2,
     dataKey
   } = _ref8;
-  var dispatch = (0, _hooks.useAppDispatch)();
+  var dispatch = useAppDispatch();
   var activeCoordinate = getNodeCoordinateOfTooltip(props);
   var activeIndex = "node-".concat(i);
   var events = {
     onMouseEnter: e => {
-      dispatch((0, _tooltipSlice.setActiveMouseOverItemIndex)({
+      dispatch(setActiveMouseOverItemIndex({
         activeIndex,
         activeDataKey: dataKey,
         activeCoordinate,
@@ -691,11 +681,11 @@ function NodeElement(_ref8) {
       _onMouseEnter2(props, e);
     },
     onMouseLeave: e => {
-      dispatch((0, _tooltipSlice.mouseLeaveItem)());
+      dispatch(mouseLeaveItem());
       _onMouseLeave2(props, e);
     },
     onClick: e => {
-      dispatch((0, _tooltipSlice.setActiveClickItemIndex)({
+      dispatch(setActiveClickItemIndex({
         activeIndex,
         activeDataKey: dataKey,
         activeCoordinate,
@@ -704,7 +694,7 @@ function NodeElement(_ref8) {
       _onClick2(props, e);
     }
   };
-  return /*#__PURE__*/React.createElement(_Layer.Layer, events, renderNodeItem(nodeContent, props));
+  return /*#__PURE__*/React.createElement(Layer, events, renderNodeItem(nodeContent, props));
 }
 function AllNodeElements(_ref9) {
   var {
@@ -716,7 +706,7 @@ function AllNodeElements(_ref9) {
     onClick,
     dataKey
   } = _ref9;
-  return /*#__PURE__*/React.createElement(_Layer.Layer, {
+  return /*#__PURE__*/React.createElement(Layer, {
     className: "recharts-sankey-nodes",
     key: "recharts-sankey-nodes"
   }, modifiedNodes.map((modifiedNode, i) => {
@@ -733,7 +723,7 @@ function AllNodeElements(_ref9) {
     });
   }));
 }
-var sankeyDefaultProps = exports.sankeyDefaultProps = _objectSpread({
+export var sankeyDefaultProps = _objectSpread({
   align: 'justify',
   dataKey: 'value',
   iterations: 32,
@@ -749,7 +739,7 @@ var sankeyDefaultProps = exports.sankeyDefaultProps = _objectSpread({
   nodeWidth: 10,
   sort: true,
   verticalAlign: 'justify'
-}, _eventSettingsSlice.initialEventSettingsState);
+}, initialEventSettingsState);
 function SankeyImpl(props) {
   var {
       className,
@@ -775,14 +765,14 @@ function SankeyImpl(props) {
     verticalAlign,
     align
   } = props;
-  var attrs = (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(others);
-  var width = (0, _chartLayoutContext.useChartWidth)();
-  var height = (0, _chartLayoutContext.useChartHeight)();
+  var attrs = svgPropertiesNoEvents(others);
+  var width = useChartWidth();
+  var height = useChartHeight();
   var {
     links,
     modifiedLinks,
     modifiedNodes
-  } = (0, _react.useMemo)(() => {
+  } = useMemo(() => {
     var _margin$left, _margin$right, _margin$top, _margin$bottom;
     if (!data || !width || !height || width <= 0 || height <= 0) {
       return {
@@ -817,7 +807,7 @@ function SankeyImpl(props) {
         linkContent: link,
         linkCurvature
       });
-    }).filter(_DataUtils.isNotNil);
+    }).filter(isNotNil);
     var newModifiedNodes = computed.nodes.map((n, i) => {
       return buildNodeProps({
         node: n,
@@ -834,30 +824,30 @@ function SankeyImpl(props) {
       modifiedNodes: newModifiedNodes
     };
   }, [data, width, height, margin, iterations, nodeWidth, nodePadding, sort, link, node, linkCurvature, align, verticalAlign]);
-  var handleMouseEnter = (0, _react.useCallback)((item, type, e) => {
+  var handleMouseEnter = useCallback((item, type, e) => {
     if (onMouseEnter) {
       onMouseEnter(item, type, e);
     }
   }, [onMouseEnter]);
-  var handleMouseLeave = (0, _react.useCallback)((item, type, e) => {
+  var handleMouseLeave = useCallback((item, type, e) => {
     if (onMouseLeave) {
       onMouseLeave(item, type, e);
     }
   }, [onMouseLeave]);
-  var handleClick = (0, _react.useCallback)((item, type, e) => {
+  var handleClick = useCallback((item, type, e) => {
     if (onClick) {
       onClick(item, type, e);
     }
   }, [onClick]);
-  if (!(0, _isWellBehavedNumber.isPositiveNumber)(width) || !(0, _isWellBehavedNumber.isPositiveNumber)(height) || !data || !data.links || !data.nodes) {
+  if (!isPositiveNumber(width) || !isPositiveNumber(height) || !data || !data.links || !data.nodes) {
     return null;
   }
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(_chartDataContext.SetComputedData, {
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(SetComputedData, {
     computedData: {
       links: modifiedLinks,
       nodes: modifiedNodes
     }
-  }), /*#__PURE__*/React.createElement(_Surface.Surface, _extends({}, attrs, {
+  }), /*#__PURE__*/React.createElement(Surface, _extends({}, attrs, {
     width: width,
     height: height
   }), children, /*#__PURE__*/React.createElement(AllSankeyLinkElements, {
@@ -887,8 +877,8 @@ function SankeyImpl(props) {
  * @consumes ResponsiveContainerContext
  * @provides TooltipEntrySettings
  */
-function Sankey(outsideProps) {
-  var props = (0, _resolveDefaultProps.resolveDefaultProps)(outsideProps, sankeyDefaultProps);
+export function Sankey(outsideProps) {
+  var props = resolveDefaultProps(outsideProps, sankeyDefaultProps);
   var {
     width,
     height,
@@ -898,21 +888,21 @@ function Sankey(outsideProps) {
     throttleDelay,
     throttledEvents
   } = props;
-  var [tooltipPortal, setTooltipPortal] = (0, _react.useState)(null);
-  return /*#__PURE__*/React.createElement(_RechartsStoreProvider.RechartsStoreProvider, {
+  var [tooltipPortal, setTooltipPortal] = useState(null);
+  return /*#__PURE__*/React.createElement(RechartsStoreProvider, {
     preloadedState: {
       options
     },
     reduxStoreName: className !== null && className !== void 0 ? className : 'Sankey'
-  }, /*#__PURE__*/React.createElement(_chartLayoutContext.ReportChartSize, {
+  }, /*#__PURE__*/React.createElement(ReportChartSize, {
     width: width,
     height: height
-  }), /*#__PURE__*/React.createElement(_chartLayoutContext.ReportChartMargin, {
+  }), /*#__PURE__*/React.createElement(ReportChartMargin, {
     margin: props.margin
-  }), /*#__PURE__*/React.createElement(_ReportEventSettings.ReportEventSettings, {
+  }), /*#__PURE__*/React.createElement(ReportEventSettings, {
     throttleDelay: throttleDelay,
     throttledEvents: throttledEvents
-  }), /*#__PURE__*/React.createElement(_RechartsWrapper.RechartsWrapper, {
+  }), /*#__PURE__*/React.createElement(RechartsWrapper, {
     className: className,
     style: style,
     width: width,
@@ -938,9 +928,9 @@ function Sankey(outsideProps) {
     onTouchStart: undefined,
     onTouchMove: undefined,
     onTouchEnd: undefined
-  }, /*#__PURE__*/React.createElement(_tooltipPortalContext.TooltipPortalContext.Provider, {
+  }, /*#__PURE__*/React.createElement(TooltipPortalContext.Provider, {
     value: tooltipPortal
-  }, /*#__PURE__*/React.createElement(_RegisterGraphicalItemId.RegisterGraphicalItemId, {
+  }, /*#__PURE__*/React.createElement(RegisterGraphicalItemId, {
     id: externalId,
     type: "sankey"
   }, id => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(SetSankeyTooltipEntrySettings, {

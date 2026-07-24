@@ -1,46 +1,5 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Area = void 0;
-exports.computeArea = computeArea;
-exports.getBaseValue = exports.defaultAreaProps = void 0;
-var _react = _interopRequireWildcard(require("react"));
-var React = _react;
-var _clsx = require("clsx");
-var _Curve = require("../shape/Curve");
-var _Layer = require("../container/Layer");
-var _LabelList = require("../component/LabelList");
-var _Dots = require("../component/Dots");
-var _DataUtils = require("../util/DataUtils");
-var _ChartUtils = require("../util/ChartUtils");
-var _ReactUtils = require("../util/ReactUtils");
-var _ActivePoints = require("../component/ActivePoints");
-var _SetTooltipEntrySettings = require("../state/SetTooltipEntrySettings");
-var _GraphicalItemClipPath = require("./GraphicalItemClipPath");
-var _areaSelectors = require("../state/selectors/areaSelectors");
-var _PanoramaContext = require("../context/PanoramaContext");
-var _chartLayoutContext = require("../context/chartLayoutContext");
-var _selectors = require("../state/selectors/selectors");
-var _SetLegendPayload = require("../state/SetLegendPayload");
-var _hooks = require("../state/hooks");
-var _useAnimationId = require("../util/useAnimationId");
-var _resolveDefaultProps = require("../util/resolveDefaultProps");
-var _isWellBehavedNumber = require("../util/isWellBehavedNumber");
-var _hooks2 = require("../hooks");
-var _RegisterGraphicalItemId = require("../context/RegisterGraphicalItemId");
-var _SetGraphicalItem = require("../state/SetGraphicalItem");
-var _svgPropertiesNoEvents = require("../util/svgPropertiesNoEvents");
-var _JavascriptAnimate = require("../animation/JavascriptAnimate");
-var _getRadiusAndStrokeWidthFromDot = require("../util/getRadiusAndStrokeWidthFromDot");
-var _svgPropertiesAndEvents = require("../util/svgPropertiesAndEvents");
-var _ZIndexLayer = require("../zIndex/ZIndexLayer");
-var _DefaultZIndexes = require("../zIndex/DefaultZIndexes");
-var _propsAreEqual = require("../util/propsAreEqual");
 var _excluded = ["id"],
   _excluded2 = ["activeDot", "animationBegin", "animationDuration", "animationEasing", "connectNulls", "dot", "fill", "fillOpacity", "hide", "isAnimationActive", "legendType", "stroke", "xAxisId", "yAxisId"];
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
@@ -49,6 +8,39 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t =
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+import * as React from 'react';
+import { PureComponent, useCallback, useMemo, useRef, useState } from 'react';
+import { clsx } from 'clsx';
+import { Curve } from '../shape/Curve';
+import { Layer } from '../container/Layer';
+import { CartesianLabelListContextProvider, LabelListFromLabelProp } from '../component/LabelList';
+import { Dots } from '../component/Dots';
+import { interpolate, isNan, isNullish, isNumber, noop } from '../util/DataUtils';
+import { getCateCoordinateOfLine, getNormalizedStackId, getTooltipNameProp, getValueByDataKey } from '../util/ChartUtils';
+import { isClipDot } from '../util/ReactUtils';
+import { ActivePoints } from '../component/ActivePoints';
+import { SetTooltipEntrySettings } from '../state/SetTooltipEntrySettings';
+import { GraphicalItemClipPath, useNeedsClip } from './GraphicalItemClipPath';
+import { selectArea } from '../state/selectors/areaSelectors';
+import { useIsPanorama } from '../context/PanoramaContext';
+import { useCartesianChartLayout, useChartLayout } from '../context/chartLayoutContext';
+import { useChartName } from '../state/selectors/selectors';
+import { SetLegendPayload } from '../state/SetLegendPayload';
+import { useAppSelector } from '../state/hooks';
+import { useAnimationId } from '../util/useAnimationId';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { isWellBehavedNumber } from '../util/isWellBehavedNumber';
+import { usePlotArea } from '../hooks';
+import { RegisterGraphicalItemId } from '../context/RegisterGraphicalItemId';
+import { SetCartesianGraphicalItem } from '../state/SetGraphicalItem';
+import { svgPropertiesNoEvents } from '../util/svgPropertiesNoEvents';
+import { JavascriptAnimate } from '../animation/JavascriptAnimate';
+import { getRadiusAndStrokeWidthFromDot } from '../util/getRadiusAndStrokeWidthFromDot';
+import { svgPropertiesAndEvents } from '../util/svgPropertiesAndEvents';
+import { ZIndexLayer } from '../zIndex/ZIndexLayer';
+import { DefaultZIndexes } from '../zIndex/DefaultZIndexes';
+import { propsAreEqual } from '../util/propsAreEqual';
+
 /**
  * @inline
  */
@@ -86,7 +78,7 @@ var computeLegendPayloadFromAreaData = props => {
     dataKey,
     type: legendType,
     color: getLegendItemColor(stroke, fill),
-    value: (0, _ChartUtils.getTooltipNameProp)(name, dataKey),
+    value: getTooltipNameProp(name, dataKey),
     payload: props
   }];
 };
@@ -105,14 +97,14 @@ var SetAreaTooltipEntrySettings = /*#__PURE__*/React.memo(_ref => {
   } = _ref;
   var tooltipEntrySettings = {
     dataDefinedOnItem: data,
-    getPosition: _DataUtils.noop,
+    getPosition: noop,
     settings: {
       stroke,
       strokeWidth,
       fill,
       dataKey,
       nameKey: undefined,
-      name: (0, _ChartUtils.getTooltipNameProp)(name, dataKey),
+      name: getTooltipNameProp(name, dataKey),
       hide,
       type: tooltipType,
       color: getLegendItemColor(stroke, fill),
@@ -120,7 +112,7 @@ var SetAreaTooltipEntrySettings = /*#__PURE__*/React.memo(_ref => {
       graphicalItemId: id
     }
   };
-  return /*#__PURE__*/React.createElement(_SetTooltipEntrySettings.SetTooltipEntrySettings, {
+  return /*#__PURE__*/React.createElement(SetTooltipEntrySettings, {
     tooltipEntrySettings: tooltipEntrySettings
   });
 });
@@ -135,8 +127,8 @@ function AreaDotsWrapper(_ref2) {
     dot,
     dataKey
   } = props;
-  var areaProps = (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(props);
-  return /*#__PURE__*/React.createElement(_Dots.Dots, {
+  var areaProps = svgPropertiesNoEvents(props);
+  return /*#__PURE__*/React.createElement(Dots, {
     points: points,
     dot: dot,
     className: "recharts-area-dots",
@@ -171,7 +163,7 @@ function AreaLabelListProvider(_ref3) {
       fill: undefined
     });
   });
-  return /*#__PURE__*/React.createElement(_LabelList.CartesianLabelListContextProvider, {
+  return /*#__PURE__*/React.createElement(CartesianLabelListContextProvider, {
     value: showLabels ? labelListEntries : undefined
   }, children);
 }
@@ -194,11 +186,11 @@ function StaticArea(_ref4) {
       id
     } = props,
     propsWithoutId = _objectWithoutProperties(props, _excluded);
-  var allOtherProps = (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(propsWithoutId);
-  var propsWithEvents = (0, _svgPropertiesAndEvents.svgPropertiesAndEvents)(propsWithoutId);
-  return /*#__PURE__*/React.createElement(React.Fragment, null, (points === null || points === void 0 ? void 0 : points.length) > 1 && /*#__PURE__*/React.createElement(_Layer.Layer, {
+  var allOtherProps = svgPropertiesNoEvents(propsWithoutId);
+  var propsWithEvents = svgPropertiesAndEvents(propsWithoutId);
+  return /*#__PURE__*/React.createElement(React.Fragment, null, (points === null || points === void 0 ? void 0 : points.length) > 1 && /*#__PURE__*/React.createElement(Layer, {
     clipPath: needClip ? "url(#clipPath-".concat(clipPathId, ")") : undefined
-  }, /*#__PURE__*/React.createElement(_Curve.Curve, _extends({}, propsWithEvents, {
+  }, /*#__PURE__*/React.createElement(Curve, _extends({}, propsWithEvents, {
     id: id,
     points: points,
     connectNulls: connectNulls,
@@ -207,14 +199,14 @@ function StaticArea(_ref4) {
     layout: layout,
     stroke: "none",
     className: "recharts-area-area"
-  })), stroke !== 'none' && /*#__PURE__*/React.createElement(_Curve.Curve, _extends({}, allOtherProps, {
+  })), stroke !== 'none' && /*#__PURE__*/React.createElement(Curve, _extends({}, allOtherProps, {
     className: "recharts-area-curve",
     layout: layout,
     type: type,
     connectNulls: connectNulls,
     fill: "none",
     points: points
-  })), stroke !== 'none' && isRange && Array.isArray(baseLine) && /*#__PURE__*/React.createElement(_Curve.Curve, _extends({}, allOtherProps, {
+  })), stroke !== 'none' && isRange && Array.isArray(baseLine) && /*#__PURE__*/React.createElement(Curve, _extends({}, allOtherProps, {
     className: "recharts-area-curve",
     layout: layout,
     type: type,
@@ -237,17 +229,17 @@ function VerticalRect(_ref5) {
   } = _ref5;
   var startY = (_points$ = points[0]) === null || _points$ === void 0 ? void 0 : _points$.y;
   var endY = (_points = points[points.length - 1]) === null || _points === void 0 ? void 0 : _points.y;
-  if (!(0, _isWellBehavedNumber.isWellBehavedNumber)(startY) || !(0, _isWellBehavedNumber.isWellBehavedNumber)(endY)) {
+  if (!isWellBehavedNumber(startY) || !isWellBehavedNumber(endY)) {
     return null;
   }
   var height = alpha * Math.abs(startY - endY);
   var maxX = Math.max(...points.map(entry => entry.x || 0));
-  if ((0, _DataUtils.isNumber)(baseLine)) {
+  if (isNumber(baseLine)) {
     maxX = Math.max(baseLine, maxX);
   } else if (baseLine && Array.isArray(baseLine) && baseLine.length) {
     maxX = Math.max(...baseLine.map(entry => entry.x || 0), maxX);
   }
-  if ((0, _DataUtils.isNumber)(maxX)) {
+  if (isNumber(maxX)) {
     return /*#__PURE__*/React.createElement("rect", {
       x: 0,
       y: startY < endY ? startY : startY - height,
@@ -267,17 +259,17 @@ function HorizontalRect(_ref6) {
   } = _ref6;
   var startX = (_points$2 = points[0]) === null || _points$2 === void 0 ? void 0 : _points$2.x;
   var endX = (_points2 = points[points.length - 1]) === null || _points2 === void 0 ? void 0 : _points2.x;
-  if (!(0, _isWellBehavedNumber.isWellBehavedNumber)(startX) || !(0, _isWellBehavedNumber.isWellBehavedNumber)(endX)) {
+  if (!isWellBehavedNumber(startX) || !isWellBehavedNumber(endX)) {
     return null;
   }
   var width = alpha * Math.abs(startX - endX);
   var maxY = Math.max(...points.map(entry => entry.y || 0));
-  if ((0, _DataUtils.isNumber)(baseLine)) {
+  if (isNumber(baseLine)) {
     maxY = Math.max(baseLine, maxY);
   } else if (baseLine && Array.isArray(baseLine) && baseLine.length) {
     maxY = Math.max(...baseLine.map(entry => entry.y || 0), maxY);
   }
-  if ((0, _DataUtils.isNumber)(maxY)) {
+  if (isNumber(maxY)) {
     return /*#__PURE__*/React.createElement("rect", {
       x: startX < endX ? startX : startX - width,
       y: 0,
@@ -328,21 +320,21 @@ function AreaWithAnimation(_ref8) {
     onAnimationStart,
     onAnimationEnd
   } = props;
-  var animationInput = (0, _react.useMemo)(() => ({
+  var animationInput = useMemo(() => ({
     points,
     baseLine
   }), [points, baseLine]);
-  var animationId = (0, _useAnimationId.useAnimationId)(animationInput, 'recharts-area-');
-  var layout = (0, _chartLayoutContext.useCartesianChartLayout)();
-  var [isAnimating, setIsAnimating] = (0, _react.useState)(false);
+  var animationId = useAnimationId(animationInput, 'recharts-area-');
+  var layout = useCartesianChartLayout();
+  var [isAnimating, setIsAnimating] = useState(false);
   var showLabels = !isAnimating;
-  var handleAnimationEnd = (0, _react.useCallback)(() => {
+  var handleAnimationEnd = useCallback(() => {
     if (typeof onAnimationEnd === 'function') {
       onAnimationEnd();
     }
     setIsAnimating(false);
   }, [onAnimationEnd]);
-  var handleAnimationStart = (0, _react.useCallback)(() => {
+  var handleAnimationStart = useCallback(() => {
     if (typeof onAnimationStart === 'function') {
       onAnimationStart();
     }
@@ -356,7 +348,7 @@ function AreaWithAnimation(_ref8) {
   return /*#__PURE__*/React.createElement(AreaLabelListProvider, {
     showLabels: showLabels,
     points: points
-  }, props.children, /*#__PURE__*/React.createElement(_JavascriptAnimate.JavascriptAnimate, {
+  }, props.children, /*#__PURE__*/React.createElement(JavascriptAnimate, {
     animationId: animationId,
     begin: animationBegin,
     duration: animationDuration,
@@ -381,25 +373,25 @@ function AreaWithAnimation(_ref8) {
         if (prevPoints[prevPointIndex]) {
           var prev = prevPoints[prevPointIndex];
           return _objectSpread(_objectSpread({}, entry), {}, {
-            x: (0, _DataUtils.interpolate)(prev.x, entry.x, t),
-            y: (0, _DataUtils.interpolate)(prev.y, entry.y, t)
+            x: interpolate(prev.x, entry.x, t),
+            y: interpolate(prev.y, entry.y, t)
           });
         }
         return entry;
       });
       var stepBaseLine;
-      if ((0, _DataUtils.isNumber)(baseLine)) {
-        stepBaseLine = (0, _DataUtils.interpolate)(prevBaseLine, baseLine, t);
-      } else if ((0, _DataUtils.isNullish)(baseLine) || (0, _DataUtils.isNan)(baseLine)) {
-        stepBaseLine = (0, _DataUtils.interpolate)(prevBaseLine, 0, t);
+      if (isNumber(baseLine)) {
+        stepBaseLine = interpolate(prevBaseLine, baseLine, t);
+      } else if (isNullish(baseLine) || isNan(baseLine)) {
+        stepBaseLine = interpolate(prevBaseLine, 0, t);
       } else {
         stepBaseLine = baseLine.map((entry, index) => {
           var prevPointIndex = Math.floor(index * prevPointsDiffFactor);
           if (Array.isArray(prevBaseLine) && prevBaseLine[prevPointIndex]) {
             var prev = prevBaseLine[prevPointIndex];
             return _objectSpread(_objectSpread({}, entry), {}, {
-              x: (0, _DataUtils.interpolate)(prev.x, entry.x, t),
-              y: (0, _DataUtils.interpolate)(prev.y, entry.y, t)
+              x: interpolate(prev.x, entry.x, t),
+              y: interpolate(prev.y, entry.y, t)
             });
           }
           return entry;
@@ -432,7 +424,7 @@ function AreaWithAnimation(_ref8) {
       // eslint-disable-next-line no-param-reassign
       previousBaselineRef.current = baseLine;
     }
-    return /*#__PURE__*/React.createElement(_Layer.Layer, null, isAnimationActive && /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("clipPath", {
+    return /*#__PURE__*/React.createElement(Layer, null, isAnimationActive && /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("clipPath", {
       id: "animationClipPath-".concat(clipPathId)
     }, /*#__PURE__*/React.createElement(ClipRect, {
       alpha: t,
@@ -440,7 +432,7 @@ function AreaWithAnimation(_ref8) {
       baseLine: baseLine,
       layout: layout,
       strokeWidth: props.strokeWidth
-    }))), /*#__PURE__*/React.createElement(_Layer.Layer, {
+    }))), /*#__PURE__*/React.createElement(Layer, {
       clipPath: "url(#animationClipPath-".concat(clipPathId, ")")
     }, /*#__PURE__*/React.createElement(StaticArea, {
       points: points,
@@ -449,7 +441,7 @@ function AreaWithAnimation(_ref8) {
       clipPathId: clipPathId,
       props: props
     })));
-  }), /*#__PURE__*/React.createElement(_LabelList.LabelListFromLabelProp, {
+  }), /*#__PURE__*/React.createElement(LabelListFromLabelProp, {
     label: props.label
   }));
 }
@@ -472,8 +464,8 @@ function RenderArea(_ref9) {
    * If this was a useState, then every step in the animation would trigger a re-render.
    * So, useRef it is.
    */
-  var previousPointsRef = (0, _react.useRef)(null);
-  var previousBaselineRef = (0, _react.useRef)();
+  var previousPointsRef = useRef(null);
+  var previousBaselineRef = useRef();
   return /*#__PURE__*/React.createElement(AreaWithAnimation, {
     needClip: needClip,
     clipPathId: clipPathId,
@@ -482,7 +474,7 @@ function RenderArea(_ref9) {
     previousBaselineRef: previousBaselineRef
   });
 }
-class AreaWithState extends _react.PureComponent {
+class AreaWithState extends PureComponent {
   render() {
     var {
       hide,
@@ -503,20 +495,20 @@ class AreaWithState extends _react.PureComponent {
     if (hide) {
       return null;
     }
-    var layerClass = (0, _clsx.clsx)('recharts-area', className);
+    var layerClass = clsx('recharts-area', className);
     var clipPathId = id;
     var {
       r,
       strokeWidth
-    } = (0, _getRadiusAndStrokeWidthFromDot.getRadiusAndStrokeWidthFromDot)(dot);
-    var clipDot = (0, _ReactUtils.isClipDot)(dot);
+    } = getRadiusAndStrokeWidthFromDot(dot);
+    var clipDot = isClipDot(dot);
     var dotSize = r * 2 + strokeWidth;
     var activePointsClipPath = needClip ? "url(#clipPath-".concat(clipDot ? '' : 'dots-').concat(clipPathId, ")") : undefined;
-    return /*#__PURE__*/React.createElement(_ZIndexLayer.ZIndexLayer, {
+    return /*#__PURE__*/React.createElement(ZIndexLayer, {
       zIndex: zIndex
-    }, /*#__PURE__*/React.createElement(_Layer.Layer, {
+    }, /*#__PURE__*/React.createElement(Layer, {
       className: layerClass
-    }, needClip && /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement(_GraphicalItemClipPath.GraphicalItemClipPath, {
+    }, needClip && /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement(GraphicalItemClipPath, {
       clipPathId: clipPathId,
       xAxisId: xAxisId,
       yAxisId: yAxisId
@@ -531,13 +523,13 @@ class AreaWithState extends _react.PureComponent {
       needClip: needClip,
       clipPathId: clipPathId,
       props: this.props
-    })), /*#__PURE__*/React.createElement(_ActivePoints.ActivePoints, {
+    })), /*#__PURE__*/React.createElement(ActivePoints, {
       points: points,
       mainColor: getLegendItemColor(this.props.stroke, this.props.fill),
       itemDataKey: this.props.dataKey,
       activeDot: this.props.activeDot,
       clipPath: activePointsClipPath
-    }), this.props.isRange && Array.isArray(baseLine) && /*#__PURE__*/React.createElement(_ActivePoints.ActivePoints, {
+    }), this.props.isRange && Array.isArray(baseLine) && /*#__PURE__*/React.createElement(ActivePoints, {
       points: baseLine,
       mainColor: getLegendItemColor(this.props.stroke, this.props.fill),
       itemDataKey: this.props.dataKey,
@@ -546,7 +538,7 @@ class AreaWithState extends _react.PureComponent {
     }));
   }
 }
-var defaultAreaProps = exports.defaultAreaProps = {
+export var defaultAreaProps = {
   activeDot: true,
   animationBegin: 0,
   animationDuration: 1500,
@@ -564,7 +556,7 @@ var defaultAreaProps = exports.defaultAreaProps = {
   label: false,
   xAxisId: 0,
   yAxisId: 0,
-  zIndex: _DefaultZIndexes.DefaultZIndexes.area
+  zIndex: DefaultZIndexes.area
 };
 function AreaImpl(props) {
   var _useAppSelector;
@@ -585,18 +577,18 @@ function AreaImpl(props) {
       yAxisId
     } = props,
     everythingElse = _objectWithoutProperties(props, _excluded2);
-  var layout = (0, _chartLayoutContext.useChartLayout)();
-  var chartName = (0, _selectors.useChartName)();
+  var layout = useChartLayout();
+  var chartName = useChartName();
   var {
     needClip
-  } = (0, _GraphicalItemClipPath.useNeedsClip)(xAxisId, yAxisId);
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
+  } = useNeedsClip(xAxisId, yAxisId);
+  var isPanorama = useIsPanorama();
   var {
     points,
     isRange,
     baseLine
-  } = (_useAppSelector = (0, _hooks.useAppSelector)(state => (0, _areaSelectors.selectArea)(state, props.id, isPanorama))) !== null && _useAppSelector !== void 0 ? _useAppSelector : {};
-  var plotArea = (0, _hooks2.usePlotArea)();
+  } = (_useAppSelector = useAppSelector(state => selectArea(state, props.id, isPanorama))) !== null && _useAppSelector !== void 0 ? _useAppSelector : {};
+  var plotArea = usePlotArea();
   if (layout !== 'horizontal' && layout !== 'vertical' || plotArea == null) {
     // Can't render Area in an unsupported layout
     return null;
@@ -640,11 +632,11 @@ function AreaImpl(props) {
     yAxisId: yAxisId
   }));
 }
-var getBaseValue = (layout, chartBaseValue, itemBaseValue, xAxis, yAxis) => {
+export var getBaseValue = (layout, chartBaseValue, itemBaseValue, xAxis, yAxis) => {
   // The baseValue can be defined both on the AreaChart, and on the Area.
   // The value for the item takes precedence.
   var baseValue = itemBaseValue !== null && itemBaseValue !== void 0 ? itemBaseValue : chartBaseValue;
-  if ((0, _DataUtils.isNumber)(baseValue)) {
+  if (isNumber(baseValue)) {
     return baseValue;
   }
   var numericAxis = layout === 'horizontal' ? yAxis : xAxis;
@@ -669,8 +661,7 @@ var getBaseValue = (layout, chartBaseValue, itemBaseValue, xAxis, yAxis) => {
   }
   return domain[0];
 };
-exports.getBaseValue = getBaseValue;
-function computeArea(_ref0) {
+export function computeArea(_ref0) {
   var {
     areaSettings: {
       connectNulls,
@@ -698,7 +689,7 @@ function computeArea(_ref0) {
     if (hasStack) {
       valueAsArray = stackedData[dataStartIndex + index];
     } else {
-      var rawValue = (0, _ChartUtils.getValueByDataKey)(entry, dataKey);
+      var rawValue = getValueByDataKey(entry, dataKey);
       if (!Array.isArray(rawValue)) {
         valueAsArray = [baseValue, rawValue];
       } else {
@@ -707,11 +698,11 @@ function computeArea(_ref0) {
       }
     }
     var value1 = (_valueAsArray$ = (_valueAsArray = valueAsArray) === null || _valueAsArray === void 0 ? void 0 : _valueAsArray[1]) !== null && _valueAsArray$ !== void 0 ? _valueAsArray$ : null;
-    var isBreakPoint = value1 == null || hasStack && !connectNulls && (0, _ChartUtils.getValueByDataKey)(entry, dataKey) == null;
+    var isBreakPoint = value1 == null || hasStack && !connectNulls && getValueByDataKey(entry, dataKey) == null;
     if (isHorizontalLayout) {
       var _yAxis$scale$map;
       return {
-        x: (0, _ChartUtils.getCateCoordinateOfLine)({
+        x: getCateCoordinateOfLine({
           axis: xAxis,
           ticks: xAxisTicks,
           bandSize,
@@ -725,7 +716,7 @@ function computeArea(_ref0) {
     }
     return {
       x: isBreakPoint ? null : (_xAxis$scale$map = xAxis.scale.map(value1)) !== null && _xAxis$scale$map !== void 0 ? _xAxis$scale$map : null,
-      y: (0, _ChartUtils.getCateCoordinateOfLine)({
+      y: getCateCoordinateOfLine({
         axis: yAxis,
         ticks: yAxisTicks,
         bandSize,
@@ -765,13 +756,13 @@ function computeArea(_ref0) {
   };
 }
 function AreaFn(outsideProps) {
-  var props = (0, _resolveDefaultProps.resolveDefaultProps)(outsideProps, defaultAreaProps);
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
+  var props = resolveDefaultProps(outsideProps, defaultAreaProps);
+  var isPanorama = useIsPanorama();
   // Report all props to Redux store first, before calling hooks, to avoid circular dependencies.
-  return /*#__PURE__*/React.createElement(_RegisterGraphicalItemId.RegisterGraphicalItemId, {
+  return /*#__PURE__*/React.createElement(RegisterGraphicalItemId, {
     id: props.id,
     type: "area"
-  }, id => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(_SetLegendPayload.SetLegendPayload, {
+  }, id => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(SetLegendPayload, {
     legendPayload: computeLegendPayloadFromAreaData(props)
   }), /*#__PURE__*/React.createElement(SetAreaTooltipEntrySettings, {
     dataKey: props.dataKey,
@@ -784,7 +775,7 @@ function AreaFn(outsideProps) {
     unit: props.unit,
     tooltipType: props.tooltipType,
     id: id
-  }), /*#__PURE__*/React.createElement(_SetGraphicalItem.SetCartesianGraphicalItem, {
+  }), /*#__PURE__*/React.createElement(SetCartesianGraphicalItem, {
     type: "area",
     id: id,
     data: props.data,
@@ -792,7 +783,7 @@ function AreaFn(outsideProps) {
     xAxisId: props.xAxisId,
     yAxisId: props.yAxisId,
     zAxisId: 0,
-    stackId: (0, _ChartUtils.getNormalizedStackId)(props.stackId),
+    stackId: getNormalizedStackId(props.stackId),
     hide: props.hide,
     barSize: undefined,
     baseValue: props.baseValue,
@@ -807,6 +798,6 @@ function AreaFn(outsideProps) {
  * @provides LabelListContext
  * @consumes CartesianChartContext
  */
-var Area = exports.Area = /*#__PURE__*/React.memo(AreaFn, _propsAreEqual.propsAreEqual);
+export var Area = /*#__PURE__*/React.memo(AreaFn, propsAreEqual);
 // @ts-expect-error we need to set the displayName for debugging purposes
 Area.displayName = 'Area';

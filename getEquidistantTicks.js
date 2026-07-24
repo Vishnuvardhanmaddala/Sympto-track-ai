@@ -1,13 +1,6 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getEquidistantPreserveEndTicks = getEquidistantPreserveEndTicks;
-exports.getEquidistantTicks = getEquidistantTicks;
-var _TickUtils = require("../util/TickUtils");
-var _getEveryNth = require("../util/getEveryNth");
-function getEquidistantTicks(sign, boundaries, getTickSize, ticks, minTickGap) {
+import { isVisible } from '../util/TickUtils';
+import { getEveryNth } from '../util/getEveryNth';
+export function getEquidistantTicks(sign, boundaries, getTickSize, ticks, minTickGap) {
   // If the ticks are readonly, then the slice might not be necessary
   var result = (ticks || []).slice();
   var {
@@ -28,7 +21,7 @@ function getEquidistantTicks(sign, boundaries, getTickSize, ticks, minTickGap) {
       // Break condition - If we have evaluated all the ticks, then we are done.
       if (entry === undefined) {
         return {
-          v: (0, _getEveryNth.getEveryNth)(ticks, stepsize)
+          v: getEveryNth(ticks, stepsize)
         };
       }
 
@@ -43,7 +36,7 @@ function getEquidistantTicks(sign, boundaries, getTickSize, ticks, minTickGap) {
       };
       var tickCoord = entry.coordinate;
       // We will always show the first tick.
-      var isShow = index === 0 || (0, _TickUtils.isVisible)(sign, tickCoord, getSize, start, end);
+      var isShow = index === 0 || isVisible(sign, tickCoord, getSize, start, end);
       if (!isShow) {
         // Start all over with a larger stepsize
         index = 0;
@@ -63,7 +56,7 @@ function getEquidistantTicks(sign, boundaries, getTickSize, ticks, minTickGap) {
   }
   return [];
 }
-function getEquidistantPreserveEndTicks(sign, boundaries, getTickSize, ticks, minTickGap) {
+export function getEquidistantPreserveEndTicks(sign, boundaries, getTickSize, ticks, minTickGap) {
   // If the ticks are readonly, then the slice might not be necessary
   // Reworked logic for getEquidistantPreserveEndTicks
   var result = (ticks || []).slice();
@@ -103,7 +96,7 @@ function getEquidistantPreserveEndTicks(sign, boundaries, getTickSize, ticks, mi
 
         // 3. Apply visibility logic (including the first tick special case)
         // The reviewer says *not* to unconditionally bypass checks for the last tick.
-        var isShow = index === offset || (0, _TickUtils.isVisible)(sign, tickCoord, getSize, start, end);
+        var isShow = index === offset || isVisible(sign, tickCoord, getSize, start, end);
         if (!isShow) {
           // If any tick in this end-anchored sequence fails visibility/collision,
           // reject this stepsize and move to the next iteration (larger stepsize).

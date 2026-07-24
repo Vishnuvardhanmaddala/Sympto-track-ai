@@ -1,15 +1,8 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.useClipPathId = exports.ClipPathProvider = void 0;
-var _react = _interopRequireWildcard(require("react"));
-var React = _react;
-var _DataUtils = require("../util/DataUtils");
-var _hooks = require("../hooks");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
-var ClipPathIdContext = /*#__PURE__*/(0, _react.createContext)(undefined);
+import * as React from 'react';
+import { createContext, useContext, useState } from 'react';
+import { uniqueId } from '../util/DataUtils';
+import { usePlotArea } from '../hooks';
+var ClipPathIdContext = /*#__PURE__*/createContext(undefined);
 
 /**
  * Generates a unique clip path ID for use in SVG elements,
@@ -21,12 +14,12 @@ var ClipPathIdContext = /*#__PURE__*/(0, _react.createContext)(undefined);
  * @param props children - React children to be wrapped by the provider
  * @returns React Context Provider
  */
-var ClipPathProvider = _ref => {
+export var ClipPathProvider = _ref => {
   var {
     children
   } = _ref;
-  var [clipPathId] = (0, _react.useState)("".concat((0, _DataUtils.uniqueId)('recharts'), "-clip"));
-  var plotArea = (0, _hooks.usePlotArea)();
+  var [clipPathId] = useState("".concat(uniqueId('recharts'), "-clip"));
+  var plotArea = usePlotArea();
   if (plotArea == null) {
     return null;
   }
@@ -47,8 +40,6 @@ var ClipPathProvider = _ref => {
     width: width
   }))), children);
 };
-exports.ClipPathProvider = ClipPathProvider;
-var useClipPathId = () => {
-  return (0, _react.useContext)(ClipPathIdContext);
+export var useClipPathId = () => {
+  return useContext(ClipPathIdContext);
 };
-exports.useClipPathId = useClipPathId;

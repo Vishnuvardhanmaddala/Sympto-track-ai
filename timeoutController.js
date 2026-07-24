@@ -1,9 +1,3 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.RequestAnimationFrameTimeoutController = void 0;
 /**
  * Callback type for the timeout function.
  * Receives current time in milliseconds as an argument.
@@ -13,7 +7,7 @@ exports.RequestAnimationFrameTimeoutController = void 0;
  * A function that, when called, cancels the timeout.
  */
 
-class RequestAnimationFrameTimeoutController {
+export class RequestAnimationFrameTimeoutController {
   setTimeout(callback) {
     var delay = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
     var startTime = performance.now();
@@ -35,4 +29,3 @@ class RequestAnimationFrameTimeoutController {
     };
   }
 }
-exports.RequestAnimationFrameTimeoutController = RequestAnimationFrameTimeoutController;

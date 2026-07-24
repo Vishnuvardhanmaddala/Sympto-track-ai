@@ -1,46 +1,6 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Line = void 0;
-exports.computeLinePoints = computeLinePoints;
-exports.defaultLineProps = void 0;
-var _react = _interopRequireWildcard(require("react"));
-var React = _react;
-var _clsx = require("clsx");
-var _Layer = require("../container/Layer");
-var _LabelList = require("../component/LabelList");
-var _Dots = require("../component/Dots");
-var _DataUtils = require("../util/DataUtils");
-var _ReactUtils = require("../util/ReactUtils");
-var _ChartUtils = require("../util/ChartUtils");
-var _ActivePoints = require("../component/ActivePoints");
-var _SetTooltipEntrySettings = require("../state/SetTooltipEntrySettings");
-var _ErrorBarContext = require("../context/ErrorBarContext");
-var _GraphicalItemClipPath = require("./GraphicalItemClipPath");
-var _chartLayoutContext = require("../context/chartLayoutContext");
-var _PanoramaContext = require("../context/PanoramaContext");
-var _lineSelectors = require("../state/selectors/lineSelectors");
-var _hooks = require("../state/hooks");
-var _SetLegendPayload = require("../state/SetLegendPayload");
-var _useAnimationId = require("../util/useAnimationId");
-var _resolveDefaultProps2 = require("../util/resolveDefaultProps");
-var _hooks2 = require("../hooks");
-var _RegisterGraphicalItemId = require("../context/RegisterGraphicalItemId");
-var _SetGraphicalItem = require("../state/SetGraphicalItem");
-var _svgPropertiesNoEvents = require("../util/svgPropertiesNoEvents");
-var _JavascriptAnimate = require("../animation/JavascriptAnimate");
-var _svgPropertiesAndEvents = require("../util/svgPropertiesAndEvents");
-var _getRadiusAndStrokeWidthFromDot = require("../util/getRadiusAndStrokeWidthFromDot");
-var _ActiveShapeUtils = require("../util/ActiveShapeUtils");
-var _ZIndexLayer = require("../zIndex/ZIndexLayer");
-var _DefaultZIndexes = require("../zIndex/DefaultZIndexes");
-var _propsAreEqual = require("../util/propsAreEqual");
 var _excluded = ["id"],
   _excluded2 = ["type", "layout", "connectNulls", "needClip", "shape"],
   _excluded3 = ["activeDot", "animateNewValues", "animationBegin", "animationDuration", "animationEasing", "connectNulls", "dot", "hide", "isAnimationActive", "label", "legendType", "xAxisId", "yAxisId", "id"];
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
@@ -49,6 +9,38 @@ function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" 
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
+import * as React from 'react';
+import { Component, useCallback, useMemo, useRef, useState } from 'react';
+import { clsx } from 'clsx';
+import { Layer } from '../container/Layer';
+import { CartesianLabelListContextProvider, LabelListFromLabelProp } from '../component/LabelList';
+import { Dots } from '../component/Dots';
+import { interpolate, isNullish, noop } from '../util/DataUtils';
+import { isClipDot } from '../util/ReactUtils';
+import { getCateCoordinateOfLine, getTooltipNameProp, getValueByDataKey } from '../util/ChartUtils';
+import { ActivePoints } from '../component/ActivePoints';
+import { SetTooltipEntrySettings } from '../state/SetTooltipEntrySettings';
+import { SetErrorBarContext } from '../context/ErrorBarContext';
+import { GraphicalItemClipPath, useNeedsClip } from './GraphicalItemClipPath';
+import { useChartLayout } from '../context/chartLayoutContext';
+import { useIsPanorama } from '../context/PanoramaContext';
+import { selectLinePoints } from '../state/selectors/lineSelectors';
+import { useAppSelector } from '../state/hooks';
+import { SetLegendPayload } from '../state/SetLegendPayload';
+import { useAnimationId } from '../util/useAnimationId';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { usePlotArea } from '../hooks';
+import { RegisterGraphicalItemId } from '../context/RegisterGraphicalItemId';
+import { SetCartesianGraphicalItem } from '../state/SetGraphicalItem';
+import { svgPropertiesNoEvents } from '../util/svgPropertiesNoEvents';
+import { JavascriptAnimate } from '../animation/JavascriptAnimate';
+import { svgPropertiesAndEvents } from '../util/svgPropertiesAndEvents';
+import { getRadiusAndStrokeWidthFromDot } from '../util/getRadiusAndStrokeWidthFromDot';
+import { Shape } from '../util/ActiveShapeUtils';
+import { ZIndexLayer } from '../zIndex/ZIndexLayer';
+import { DefaultZIndexes } from '../zIndex/DefaultZIndexes';
+import { propsAreEqual } from '../util/propsAreEqual';
+
 /**
  * Internal props, combination of external props + defaultProps + private Recharts state
  */
@@ -74,7 +66,7 @@ var computeLegendPayloadFromAreaData = props => {
     dataKey,
     type: legendType,
     color: stroke,
-    value: (0, _ChartUtils.getTooltipNameProp)(name, dataKey),
+    value: getTooltipNameProp(name, dataKey),
     payload: props
   }];
 };
@@ -93,14 +85,14 @@ var SetLineTooltipEntrySettings = /*#__PURE__*/React.memo(_ref => {
   } = _ref;
   var tooltipEntrySettings = {
     dataDefinedOnItem: data,
-    getPosition: _DataUtils.noop,
+    getPosition: noop,
     settings: {
       stroke,
       strokeWidth,
       fill,
       dataKey,
       nameKey: undefined,
-      name: (0, _ChartUtils.getTooltipNameProp)(name, dataKey),
+      name: getTooltipNameProp(name, dataKey),
       hide,
       type: tooltipType,
       color: stroke,
@@ -108,7 +100,7 @@ var SetLineTooltipEntrySettings = /*#__PURE__*/React.memo(_ref => {
       graphicalItemId: id
     }
   };
-  return /*#__PURE__*/React.createElement(_SetTooltipEntrySettings.SetTooltipEntrySettings, {
+  return /*#__PURE__*/React.createElement(SetTooltipEntrySettings, {
     tooltipEntrySettings: tooltipEntrySettings
   });
 });
@@ -206,8 +198,8 @@ function LineDotsWrapper(_ref2) {
       id
     } = props,
     propsWithoutId = _objectWithoutProperties(props, _excluded);
-  var lineProps = (0, _svgPropertiesNoEvents.svgPropertiesNoEvents)(propsWithoutId);
-  return /*#__PURE__*/React.createElement(_Dots.Dots, {
+  var lineProps = svgPropertiesNoEvents(propsWithoutId);
+  return /*#__PURE__*/React.createElement(Dots, {
     points: points,
     dot: dot,
     className: "recharts-line-dots",
@@ -224,7 +216,7 @@ function LineLabelListProvider(_ref3) {
     children,
     points
   } = _ref3;
-  var labelListEntries = (0, _react.useMemo)(() => {
+  var labelListEntries = useMemo(() => {
     return points === null || points === void 0 ? void 0 : points.map(point => {
       var _point$x, _point$y;
       var viewBox = {
@@ -248,7 +240,7 @@ function LineLabelListProvider(_ref3) {
       });
     });
   }, [points]);
-  return /*#__PURE__*/React.createElement(_LabelList.CartesianLabelListContextProvider, {
+  return /*#__PURE__*/React.createElement(CartesianLabelListContextProvider, {
     value: showLabels ? labelListEntries : undefined
   }, children);
 }
@@ -268,7 +260,7 @@ function StaticCurve(_ref4) {
       shape
     } = props,
     others = _objectWithoutProperties(props, _excluded2);
-  var curveProps = _objectSpread(_objectSpread({}, (0, _svgPropertiesAndEvents.svgPropertiesAndEvents)(others)), {}, {
+  var curveProps = _objectSpread(_objectSpread({}, svgPropertiesAndEvents(others)), {}, {
     fill: 'none',
     className: 'recharts-line-curve',
     clipPath: needClip ? "url(#clipPath-".concat(clipPathId, ")") : undefined,
@@ -278,7 +270,7 @@ function StaticCurve(_ref4) {
     connectNulls,
     strokeDasharray: strokeDasharray !== null && strokeDasharray !== void 0 ? strokeDasharray : props.strokeDasharray
   });
-  return /*#__PURE__*/React.createElement(React.Fragment, null, (points === null || points === void 0 ? void 0 : points.length) > 1 && /*#__PURE__*/React.createElement(_ActiveShapeUtils.Shape, _extends({
+  return /*#__PURE__*/React.createElement(React.Fragment, null, (points === null || points === void 0 ? void 0 : points.length) > 1 && /*#__PURE__*/React.createElement(Shape, _extends({
     shapeType: "curve",
     option: shape
   }, curveProps, {
@@ -318,17 +310,17 @@ function CurveWithAnimation(_ref5) {
     onAnimationStart
   } = props;
   var prevPoints = previousPointsRef.current;
-  var animationId = (0, _useAnimationId.useAnimationId)(points, 'recharts-line-');
-  var animationIdRef = (0, _react.useRef)(animationId);
-  var [isAnimating, setIsAnimating] = (0, _react.useState)(false);
+  var animationId = useAnimationId(points, 'recharts-line-');
+  var animationIdRef = useRef(animationId);
+  var [isAnimating, setIsAnimating] = useState(false);
   var showLabels = !isAnimating;
-  var handleAnimationEnd = (0, _react.useCallback)(() => {
+  var handleAnimationEnd = useCallback(() => {
     if (typeof onAnimationEnd === 'function') {
       onAnimationEnd();
     }
     setIsAnimating(false);
   }, [onAnimationEnd]);
-  var handleAnimationStart = (0, _react.useCallback)(() => {
+  var handleAnimationStart = useCallback(() => {
     if (typeof onAnimationStart === 'function') {
       onAnimationStart();
     }
@@ -359,7 +351,7 @@ function CurveWithAnimation(_ref5) {
    * then the animationId remains the same, and we do not update the starting point.
    * See https://github.com/recharts/recharts/issues/6044
    */
-  var startingPointRef = (0, _react.useRef)(0);
+  var startingPointRef = useRef(0);
   if (animationIdRef.current !== animationId) {
     startingPointRef.current = longestAnimatedLengthRef.current;
     animationIdRef.current = animationId;
@@ -368,7 +360,7 @@ function CurveWithAnimation(_ref5) {
   return /*#__PURE__*/React.createElement(LineLabelListProvider, {
     points: points,
     showLabels: showLabels
-  }, props.children, /*#__PURE__*/React.createElement(_JavascriptAnimate.JavascriptAnimate, {
+  }, props.children, /*#__PURE__*/React.createElement(JavascriptAnimate, {
     animationId: animationId,
     begin: animationBegin,
     duration: animationDuration,
@@ -378,7 +370,7 @@ function CurveWithAnimation(_ref5) {
     onAnimationStart: handleAnimationStart,
     key: animationId
   }, t => {
-    var lengthInterpolated = (0, _DataUtils.interpolate)(startingPoint, totalLength + startingPoint, t);
+    var lengthInterpolated = interpolate(startingPoint, totalLength + startingPoint, t);
     var curLength = Math.min(lengthInterpolated, totalLength);
     var currentStrokeDasharray;
     if (isAnimationActive) {
@@ -435,16 +427,16 @@ function CurveWithAnimation(_ref5) {
         if (prevPoints[prevPointIndex]) {
           var prev = prevPoints[prevPointIndex];
           return _objectSpread(_objectSpread({}, entry), {}, {
-            x: (0, _DataUtils.interpolate)(prev.x, entry.x, t),
-            y: (0, _DataUtils.interpolate)(prev.y, entry.y, t)
+            x: interpolate(prev.x, entry.x, t),
+            y: interpolate(prev.y, entry.y, t)
           });
         }
 
         // magic number of faking previous x and y location
         if (animateNewValues) {
           return _objectSpread(_objectSpread({}, entry), {}, {
-            x: (0, _DataUtils.interpolate)(width * 2, entry.x, t),
-            y: (0, _DataUtils.interpolate)(height / 2, entry.y, t)
+            x: interpolate(width * 2, entry.x, t),
+            y: interpolate(height / 2, entry.y, t)
           });
         }
         return _objectSpread(_objectSpread({}, entry), {}, {
@@ -469,7 +461,7 @@ function CurveWithAnimation(_ref5) {
       pathRef: pathRef,
       strokeDasharray: currentStrokeDasharray
     });
-  }), /*#__PURE__*/React.createElement(_LabelList.LabelListFromLabelProp, {
+  }), /*#__PURE__*/React.createElement(LabelListFromLabelProp, {
     label: props.label
   }));
 }
@@ -478,9 +470,9 @@ function RenderCurve(_ref6) {
     clipPathId,
     props
   } = _ref6;
-  var previousPointsRef = (0, _react.useRef)(null);
-  var longestAnimatedLengthRef = (0, _react.useRef)(0);
-  var pathRef = (0, _react.useRef)(null);
+  var previousPointsRef = useRef(null);
+  var longestAnimatedLengthRef = useRef(0);
+  var pathRef = useRef(null);
   return /*#__PURE__*/React.createElement(CurveWithAnimation, {
     props: props,
     clipPathId: clipPathId,
@@ -496,12 +488,12 @@ var errorBarDataPointFormatter = (dataPoint, dataKey) => {
     y: (_dataPoint$y = dataPoint.y) !== null && _dataPoint$y !== void 0 ? _dataPoint$y : undefined,
     value: dataPoint.value,
     // getValueByDataKey does not validate the output type
-    errorVal: (0, _ChartUtils.getValueByDataKey)(dataPoint.payload, dataKey)
+    errorVal: getValueByDataKey(dataPoint.payload, dataKey)
   };
 };
 
 // eslint-disable-next-line react/prefer-stateless-function
-class LineWithState extends _react.Component {
+class LineWithState extends Component {
   render() {
     var {
       hide,
@@ -521,20 +513,20 @@ class LineWithState extends _react.Component {
     if (hide) {
       return null;
     }
-    var layerClass = (0, _clsx.clsx)('recharts-line', className);
+    var layerClass = clsx('recharts-line', className);
     var clipPathId = id;
     var {
       r,
       strokeWidth
-    } = (0, _getRadiusAndStrokeWidthFromDot.getRadiusAndStrokeWidthFromDot)(dot);
-    var clipDot = (0, _ReactUtils.isClipDot)(dot);
+    } = getRadiusAndStrokeWidthFromDot(dot);
+    var clipDot = isClipDot(dot);
     var dotSize = r * 2 + strokeWidth;
     var activePointsClipPath = needClip ? "url(#clipPath-".concat(clipDot ? '' : 'dots-').concat(clipPathId, ")") : undefined;
-    return /*#__PURE__*/React.createElement(_ZIndexLayer.ZIndexLayer, {
+    return /*#__PURE__*/React.createElement(ZIndexLayer, {
       zIndex: zIndex
-    }, /*#__PURE__*/React.createElement(_Layer.Layer, {
+    }, /*#__PURE__*/React.createElement(Layer, {
       className: layerClass
-    }, needClip && /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement(_GraphicalItemClipPath.GraphicalItemClipPath, {
+    }, needClip && /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement(GraphicalItemClipPath, {
       clipPathId: clipPathId,
       xAxisId: xAxisId,
       yAxisId: yAxisId
@@ -545,7 +537,7 @@ class LineWithState extends _react.Component {
       y: top - dotSize / 2,
       width: width + dotSize,
       height: height + dotSize
-    }))), /*#__PURE__*/React.createElement(_ErrorBarContext.SetErrorBarContext, {
+    }))), /*#__PURE__*/React.createElement(SetErrorBarContext, {
       xAxisId: xAxisId,
       yAxisId: yAxisId,
       data: points,
@@ -554,7 +546,7 @@ class LineWithState extends _react.Component {
     }, /*#__PURE__*/React.createElement(RenderCurve, {
       props: this.props,
       clipPathId: clipPathId
-    }))), /*#__PURE__*/React.createElement(_ActivePoints.ActivePoints, {
+    }))), /*#__PURE__*/React.createElement(ActivePoints, {
       activeDot: this.props.activeDot,
       points: points,
       mainColor: this.props.stroke,
@@ -563,7 +555,7 @@ class LineWithState extends _react.Component {
     }));
   }
 }
-var defaultLineProps = exports.defaultLineProps = {
+export var defaultLineProps = {
   activeDot: true,
   animateNewValues: true,
   animationBegin: 0,
@@ -580,11 +572,11 @@ var defaultLineProps = exports.defaultLineProps = {
   strokeWidth: 1,
   xAxisId: 0,
   yAxisId: 0,
-  zIndex: _DefaultZIndexes.DefaultZIndexes.line,
+  zIndex: DefaultZIndexes.line,
   type: 'linear'
 };
 function LineImpl(props) {
-  var _resolveDefaultProps = (0, _resolveDefaultProps2.resolveDefaultProps)(props, defaultLineProps),
+  var _resolveDefaultProps = resolveDefaultProps(props, defaultLineProps),
     {
       activeDot,
       animateNewValues,
@@ -604,11 +596,11 @@ function LineImpl(props) {
     everythingElse = _objectWithoutProperties(_resolveDefaultProps, _excluded3);
   var {
     needClip
-  } = (0, _GraphicalItemClipPath.useNeedsClip)(xAxisId, yAxisId);
-  var plotArea = (0, _hooks2.usePlotArea)();
-  var layout = (0, _chartLayoutContext.useChartLayout)();
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  var points = (0, _hooks.useAppSelector)(state => (0, _lineSelectors.selectLinePoints)(state, xAxisId, yAxisId, isPanorama, id));
+  } = useNeedsClip(xAxisId, yAxisId);
+  var plotArea = usePlotArea();
+  var layout = useChartLayout();
+  var isPanorama = useIsPanorama();
+  var points = useAppSelector(state => selectLinePoints(state, xAxisId, yAxisId, isPanorama, id));
   if (layout !== 'horizontal' && layout !== 'vertical' || points == null || plotArea == null) {
     // Cannot render Line in an unsupported layout
     return null;
@@ -643,7 +635,7 @@ function LineImpl(props) {
     needClip: needClip
   }));
 }
-function computeLinePoints(_ref7) {
+export function computeLinePoints(_ref7) {
   var {
     layout,
     xAxis,
@@ -656,16 +648,16 @@ function computeLinePoints(_ref7) {
   } = _ref7;
   return displayedData.map((entry, index) => {
     // getValueByDataKey does not validate the output type
-    var value = (0, _ChartUtils.getValueByDataKey)(entry, dataKey);
+    var value = getValueByDataKey(entry, dataKey);
     if (layout === 'horizontal') {
-      var _x = (0, _ChartUtils.getCateCoordinateOfLine)({
+      var _x = getCateCoordinateOfLine({
         axis: xAxis,
         ticks: xAxisTicks,
         bandSize,
         entry,
         index
       });
-      var _y = (0, _DataUtils.isNullish)(value) ? null : yAxis.scale.map(value);
+      var _y = isNullish(value) ? null : yAxis.scale.map(value);
       return {
         x: _x,
         y: _y !== null && _y !== void 0 ? _y : null,
@@ -673,8 +665,8 @@ function computeLinePoints(_ref7) {
         payload: entry
       };
     }
-    var x = (0, _DataUtils.isNullish)(value) ? null : xAxis.scale.map(value);
-    var y = (0, _ChartUtils.getCateCoordinateOfLine)({
+    var x = isNullish(value) ? null : xAxis.scale.map(value);
+    var y = getCateCoordinateOfLine({
       axis: yAxis,
       ticks: yAxisTicks,
       bandSize,
@@ -693,12 +685,12 @@ function computeLinePoints(_ref7) {
   }).filter(Boolean);
 }
 function LineFn(outsideProps) {
-  var props = (0, _resolveDefaultProps2.resolveDefaultProps)(outsideProps, defaultLineProps);
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  return /*#__PURE__*/React.createElement(_RegisterGraphicalItemId.RegisterGraphicalItemId, {
+  var props = resolveDefaultProps(outsideProps, defaultLineProps);
+  var isPanorama = useIsPanorama();
+  return /*#__PURE__*/React.createElement(RegisterGraphicalItemId, {
     id: props.id,
     type: "line"
-  }, id => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(_SetLegendPayload.SetLegendPayload, {
+  }, id => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(SetLegendPayload, {
     legendPayload: computeLegendPayloadFromAreaData(props)
   }), /*#__PURE__*/React.createElement(SetLineTooltipEntrySettings, {
     dataKey: props.dataKey,
@@ -711,7 +703,7 @@ function LineFn(outsideProps) {
     unit: props.unit,
     tooltipType: props.tooltipType,
     id: id
-  }), /*#__PURE__*/React.createElement(_SetGraphicalItem.SetCartesianGraphicalItem, {
+  }), /*#__PURE__*/React.createElement(SetCartesianGraphicalItem, {
     type: "line",
     id: id,
     data: props.data,
@@ -731,6 +723,6 @@ function LineFn(outsideProps) {
  * @provides ErrorBarContext
  * @consumes CartesianChartContext
  */
-var Line = exports.Line = /*#__PURE__*/React.memo(LineFn, _propsAreEqual.propsAreEqual);
+export var Line = /*#__PURE__*/React.memo(LineFn, propsAreEqual);
 // @ts-expect-error we need to set the displayName for debugging purposes
 Line.displayName = 'Line';

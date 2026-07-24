@@ -1,26 +1,6 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.defaultRectangleProps = exports.Rectangle = void 0;
-var _react = _interopRequireWildcard(require("react"));
-var React = _react;
-var _clsx = require("clsx");
-var _resolveDefaultProps = require("../util/resolveDefaultProps");
-var _JavascriptAnimate = require("../animation/JavascriptAnimate");
-var _DataUtils = require("../util/DataUtils");
-var _useAnimationId = require("../util/useAnimationId");
-var _util = require("../animation/util");
-var _svgPropertiesAndEvents = require("../util/svgPropertiesAndEvents");
-var _round = require("../util/round");
 var _excluded = ["radius"],
   _excluded2 = ["radius"];
 var _templateObject, _templateObject2, _templateObject3, _templateObject4, _templateObject5, _templateObject6, _templateObject7, _templateObject8, _templateObject9, _templateObject0;
-/**
- * @fileOverview Rectangle
- */
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
@@ -31,12 +11,26 @@ function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i 
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
 function _taggedTemplateLiteral(e, t) { return t || (t = e.slice(0)), Object.freeze(Object.defineProperties(e, { raw: { value: Object.freeze(t) } })); }
 /**
+ * @fileOverview Rectangle
+ */
+import * as React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { clsx } from 'clsx';
+import { resolveDefaultProps } from '../util/resolveDefaultProps';
+import { JavascriptAnimate } from '../animation/JavascriptAnimate';
+import { interpolate } from '../util/DataUtils';
+import { useAnimationId } from '../util/useAnimationId';
+import { getTransitionVal } from '../animation/util';
+import { svgPropertiesAndEvents } from '../util/svgPropertiesAndEvents';
+import { round, roundTemplateLiteral } from '../util/round';
+
+/**
  * @inline
  */
 
 var getRectanglePath = (x, y, width, height, radius) => {
-  var roundedWidth = (0, _round.round)(width);
-  var roundedHeight = (0, _round.round)(height);
+  var roundedWidth = round(width);
+  var roundedHeight = round(height);
   var maxRadius = Math.min(Math.abs(roundedWidth) / 2, Math.abs(roundedHeight) / 2);
   var ySign = roundedHeight >= 0 ? 1 : -1;
   var xSign = roundedWidth >= 0 ? 1 : -1;
@@ -49,32 +43,32 @@ var getRectanglePath = (x, y, width, height, radius) => {
       var r = (_radius$i = radius[i]) !== null && _radius$i !== void 0 ? _radius$i : 0;
       newRadius[i] = r > maxRadius ? maxRadius : r;
     }
-    path = (0, _round.roundTemplateLiteral)(_templateObject || (_templateObject = _taggedTemplateLiteral(["M", ",", ""])), x, y + ySign * newRadius[0]);
+    path = roundTemplateLiteral(_templateObject || (_templateObject = _taggedTemplateLiteral(["M", ",", ""])), x, y + ySign * newRadius[0]);
     if (newRadius[0] > 0) {
-      path += (0, _round.roundTemplateLiteral)(_templateObject2 || (_templateObject2 = _taggedTemplateLiteral(["A ", ",", ",0,0,", ",", ",", ""])), newRadius[0], newRadius[0], clockWise, x + xSign * newRadius[0], y);
+      path += roundTemplateLiteral(_templateObject2 || (_templateObject2 = _taggedTemplateLiteral(["A ", ",", ",0,0,", ",", ",", ""])), newRadius[0], newRadius[0], clockWise, x + xSign * newRadius[0], y);
     }
-    path += (0, _round.roundTemplateLiteral)(_templateObject3 || (_templateObject3 = _taggedTemplateLiteral(["L ", ",", ""])), x + width - xSign * newRadius[1], y);
+    path += roundTemplateLiteral(_templateObject3 || (_templateObject3 = _taggedTemplateLiteral(["L ", ",", ""])), x + width - xSign * newRadius[1], y);
     if (newRadius[1] > 0) {
-      path += (0, _round.roundTemplateLiteral)(_templateObject4 || (_templateObject4 = _taggedTemplateLiteral(["A ", ",", ",0,0,", ",\n        ", ",", ""])), newRadius[1], newRadius[1], clockWise, x + width, y + ySign * newRadius[1]);
+      path += roundTemplateLiteral(_templateObject4 || (_templateObject4 = _taggedTemplateLiteral(["A ", ",", ",0,0,", ",\n        ", ",", ""])), newRadius[1], newRadius[1], clockWise, x + width, y + ySign * newRadius[1]);
     }
-    path += (0, _round.roundTemplateLiteral)(_templateObject5 || (_templateObject5 = _taggedTemplateLiteral(["L ", ",", ""])), x + width, y + height - ySign * newRadius[2]);
+    path += roundTemplateLiteral(_templateObject5 || (_templateObject5 = _taggedTemplateLiteral(["L ", ",", ""])), x + width, y + height - ySign * newRadius[2]);
     if (newRadius[2] > 0) {
-      path += (0, _round.roundTemplateLiteral)(_templateObject6 || (_templateObject6 = _taggedTemplateLiteral(["A ", ",", ",0,0,", ",\n        ", ",", ""])), newRadius[2], newRadius[2], clockWise, x + width - xSign * newRadius[2], y + height);
+      path += roundTemplateLiteral(_templateObject6 || (_templateObject6 = _taggedTemplateLiteral(["A ", ",", ",0,0,", ",\n        ", ",", ""])), newRadius[2], newRadius[2], clockWise, x + width - xSign * newRadius[2], y + height);
     }
-    path += (0, _round.roundTemplateLiteral)(_templateObject7 || (_templateObject7 = _taggedTemplateLiteral(["L ", ",", ""])), x + xSign * newRadius[3], y + height);
+    path += roundTemplateLiteral(_templateObject7 || (_templateObject7 = _taggedTemplateLiteral(["L ", ",", ""])), x + xSign * newRadius[3], y + height);
     if (newRadius[3] > 0) {
-      path += (0, _round.roundTemplateLiteral)(_templateObject8 || (_templateObject8 = _taggedTemplateLiteral(["A ", ",", ",0,0,", ",\n        ", ",", ""])), newRadius[3], newRadius[3], clockWise, x, y + height - ySign * newRadius[3]);
+      path += roundTemplateLiteral(_templateObject8 || (_templateObject8 = _taggedTemplateLiteral(["A ", ",", ",0,0,", ",\n        ", ",", ""])), newRadius[3], newRadius[3], clockWise, x, y + height - ySign * newRadius[3]);
     }
     path += 'Z';
   } else if (maxRadius > 0 && radius === +radius && radius > 0) {
     var _newRadius = Math.min(maxRadius, radius);
-    path = (0, _round.roundTemplateLiteral)(_templateObject9 || (_templateObject9 = _taggedTemplateLiteral(["M ", ",", "\n            A ", ",", ",0,0,", ",", ",", "\n            L ", ",", "\n            A ", ",", ",0,0,", ",", ",", "\n            L ", ",", "\n            A ", ",", ",0,0,", ",", ",", "\n            L ", ",", "\n            A ", ",", ",0,0,", ",", ",", " Z"])), x, y + ySign * _newRadius, _newRadius, _newRadius, clockWise, x + xSign * _newRadius, y, x + width - xSign * _newRadius, y, _newRadius, _newRadius, clockWise, x + width, y + ySign * _newRadius, x + width, y + height - ySign * _newRadius, _newRadius, _newRadius, clockWise, x + width - xSign * _newRadius, y + height, x + xSign * _newRadius, y + height, _newRadius, _newRadius, clockWise, x, y + height - ySign * _newRadius);
+    path = roundTemplateLiteral(_templateObject9 || (_templateObject9 = _taggedTemplateLiteral(["M ", ",", "\n            A ", ",", ",0,0,", ",", ",", "\n            L ", ",", "\n            A ", ",", ",0,0,", ",", ",", "\n            L ", ",", "\n            A ", ",", ",0,0,", ",", ",", "\n            L ", ",", "\n            A ", ",", ",0,0,", ",", ",", " Z"])), x, y + ySign * _newRadius, _newRadius, _newRadius, clockWise, x + xSign * _newRadius, y, x + width - xSign * _newRadius, y, _newRadius, _newRadius, clockWise, x + width, y + ySign * _newRadius, x + width, y + height - ySign * _newRadius, _newRadius, _newRadius, clockWise, x + width - xSign * _newRadius, y + height, x + xSign * _newRadius, y + height, _newRadius, _newRadius, clockWise, x, y + height - ySign * _newRadius);
   } else {
-    path = (0, _round.roundTemplateLiteral)(_templateObject0 || (_templateObject0 = _taggedTemplateLiteral(["M ", ",", " h ", " v ", " h ", " Z"])), x, y, width, height, -width);
+    path = roundTemplateLiteral(_templateObject0 || (_templateObject0 = _taggedTemplateLiteral(["M ", ",", " h ", " v ", " h ", " Z"])), x, y, width, height, -width);
   }
   return path;
 };
-var defaultRectangleProps = exports.defaultRectangleProps = {
+export var defaultRectangleProps = {
   x: 0,
   y: 0,
   width: 0,
@@ -98,11 +92,11 @@ var defaultRectangleProps = exports.defaultRectangleProps = {
  * @param rectangleProps
  * @constructor
  */
-var Rectangle = rectangleProps => {
-  var props = (0, _resolveDefaultProps.resolveDefaultProps)(rectangleProps, defaultRectangleProps);
-  var pathRef = (0, _react.useRef)(null);
-  var [totalLength, setTotalLength] = (0, _react.useState)(-1);
-  (0, _react.useEffect)(() => {
+export var Rectangle = rectangleProps => {
+  var props = resolveDefaultProps(rectangleProps, defaultRectangleProps);
+  var pathRef = useRef(null);
+  var [totalLength, setTotalLength] = useState(-1);
+  useEffect(() => {
     if (pathRef.current && pathRef.current.getTotalLength) {
       try {
         var pathTotalLength = pathRef.current.getTotalLength();
@@ -129,33 +123,33 @@ var Rectangle = rectangleProps => {
     isAnimationActive,
     isUpdateAnimationActive
   } = props;
-  var prevWidthRef = (0, _react.useRef)(width);
-  var prevHeightRef = (0, _react.useRef)(height);
-  var prevXRef = (0, _react.useRef)(x);
-  var prevYRef = (0, _react.useRef)(y);
-  var animationIdInput = (0, _react.useMemo)(() => ({
+  var prevWidthRef = useRef(width);
+  var prevHeightRef = useRef(height);
+  var prevXRef = useRef(x);
+  var prevYRef = useRef(y);
+  var animationIdInput = useMemo(() => ({
     x,
     y,
     width,
     height,
     radius
   }), [x, y, width, height, radius]);
-  var animationId = (0, _useAnimationId.useAnimationId)(animationIdInput, 'rectangle-');
+  var animationId = useAnimationId(animationIdInput, 'rectangle-');
   if (x !== +x || y !== +y || width !== +width || height !== +height || width === 0 || height === 0) {
     return null;
   }
-  var layerClass = (0, _clsx.clsx)('recharts-rectangle', className);
+  var layerClass = clsx('recharts-rectangle', className);
   if (!isUpdateAnimationActive) {
-    var _svgPropertiesAndEven = (0, _svgPropertiesAndEvents.svgPropertiesAndEvents)(props),
+    var _svgPropertiesAndEven = svgPropertiesAndEvents(props),
       {
         radius: _
       } = _svgPropertiesAndEven,
       otherPathProps = _objectWithoutProperties(_svgPropertiesAndEven, _excluded);
     return /*#__PURE__*/React.createElement("path", _extends({}, otherPathProps, {
-      x: (0, _round.round)(x),
-      y: (0, _round.round)(y),
-      width: (0, _round.round)(width),
-      height: (0, _round.round)(height),
+      x: round(x),
+      y: round(y),
+      width: round(width),
+      height: round(height),
       radius: typeof radius === 'number' ? radius : undefined,
       className: layerClass,
       d: getRectanglePath(x, y, width, height, radius)
@@ -167,8 +161,8 @@ var Rectangle = rectangleProps => {
   var prevY = prevYRef.current;
   var from = "0px ".concat(totalLength === -1 ? 1 : totalLength, "px");
   var to = "".concat(totalLength, "px ").concat(totalLength, "px");
-  var transition = (0, _util.getTransitionVal)(['strokeDasharray'], animationDuration, typeof animationEasing === 'string' ? animationEasing : defaultRectangleProps.animationEasing);
-  return /*#__PURE__*/React.createElement(_JavascriptAnimate.JavascriptAnimate, {
+  var transition = getTransitionVal(['strokeDasharray'], animationDuration, typeof animationEasing === 'string' ? animationEasing : defaultRectangleProps.animationEasing);
+  return /*#__PURE__*/React.createElement(JavascriptAnimate, {
     animationId: animationId,
     key: animationId,
     canBegin: totalLength > 0,
@@ -177,10 +171,10 @@ var Rectangle = rectangleProps => {
     isActive: isUpdateAnimationActive,
     begin: animationBegin
   }, t => {
-    var currWidth = (0, _DataUtils.interpolate)(prevWidth, width, t);
-    var currHeight = (0, _DataUtils.interpolate)(prevHeight, height, t);
-    var currX = (0, _DataUtils.interpolate)(prevX, x, t);
-    var currY = (0, _DataUtils.interpolate)(prevY, y, t);
+    var currWidth = interpolate(prevWidth, width, t);
+    var currHeight = interpolate(prevHeight, height, t);
+    var currX = interpolate(prevX, x, t);
+    var currY = interpolate(prevY, y, t);
     if (pathRef.current) {
       prevWidthRef.current = currWidth;
       prevHeightRef.current = currHeight;
@@ -202,7 +196,7 @@ var Rectangle = rectangleProps => {
         strokeDasharray: from
       };
     }
-    var _svgPropertiesAndEven2 = (0, _svgPropertiesAndEvents.svgPropertiesAndEvents)(props),
+    var _svgPropertiesAndEven2 = svgPropertiesAndEvents(props),
       {
         radius: _
       } = _svgPropertiesAndEven2,
@@ -216,4 +210,3 @@ var Rectangle = rectangleProps => {
     }));
   });
 };
-exports.Rectangle = Rectangle;

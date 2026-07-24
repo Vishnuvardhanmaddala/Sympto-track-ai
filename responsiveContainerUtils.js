@@ -1,13 +1,5 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.defaultResponsiveContainerProps = exports.calculateChartDimensions = void 0;
-exports.getDefaultWidthAndHeight = getDefaultWidthAndHeight;
-exports.getInnerDivStyle = void 0;
-var _DataUtils = require("../util/DataUtils");
-var defaultResponsiveContainerProps = exports.defaultResponsiveContainerProps = {
+import { isPercent } from '../util/DataUtils';
+export var defaultResponsiveContainerProps = {
   width: '100%',
   height: '100%',
   debounce: 0,
@@ -17,7 +9,7 @@ var defaultResponsiveContainerProps = exports.defaultResponsiveContainerProps = 
     height: -1
   }
 };
-var calculateChartDimensions = (containerWidth, containerHeight, props) => {
+export var calculateChartDimensions = (containerWidth, containerHeight, props) => {
   var {
     width = defaultResponsiveContainerProps.width,
     height = defaultResponsiveContainerProps.height,
@@ -29,8 +21,8 @@ var calculateChartDimensions = (containerWidth, containerHeight, props) => {
    * The containerWidth and containerHeight are already percentage based because it's set as that percentage in CSS.
    * Means we don't have to calculate percentages here.
    */
-  var calculatedWidth = (0, _DataUtils.isPercent)(width) ? containerWidth : Number(width);
-  var calculatedHeight = (0, _DataUtils.isPercent)(height) ? containerHeight : Number(height);
+  var calculatedWidth = isPercent(width) ? containerWidth : Number(width);
+  var calculatedHeight = isPercent(height) ? containerHeight : Number(height);
   if (aspect && aspect > 0) {
     // Preserve the desired aspect ratio
     if (calculatedWidth) {
@@ -51,7 +43,6 @@ var calculateChartDimensions = (containerWidth, containerHeight, props) => {
     calculatedHeight
   };
 };
-exports.calculateChartDimensions = calculateChartDimensions;
 var bothOverflow = {
   width: 0,
   height: 0,
@@ -81,13 +72,13 @@ var noStyle = {};
  * because in that case the chart can't shrink in that dimension anyway.
  * This fixes defining the dimensions using aspect ratio: https://github.com/recharts/recharts/issues/6245
  */
-var getInnerDivStyle = props => {
+export var getInnerDivStyle = props => {
   var {
     width,
     height
   } = props;
-  var isWidthPercent = (0, _DataUtils.isPercent)(width);
-  var isHeightPercent = (0, _DataUtils.isPercent)(height);
+  var isWidthPercent = isPercent(width);
+  var isHeightPercent = isPercent(height);
   if (isWidthPercent && isHeightPercent) {
     return bothOverflow;
   }
@@ -99,8 +90,7 @@ var getInnerDivStyle = props => {
   }
   return noStyle;
 };
-exports.getInnerDivStyle = getInnerDivStyle;
-function getDefaultWidthAndHeight(_ref) {
+export function getDefaultWidthAndHeight(_ref) {
   var {
     width,
     height,

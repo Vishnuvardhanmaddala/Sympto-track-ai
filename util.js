@@ -1,9 +1,3 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.mapObject = exports.getTransitionVal = exports.getIntersectionKeys = exports.getDashCase = void 0;
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
@@ -13,9 +7,8 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
  * @description: convert camel case to dash case
  * string => string
  */
-var getDashCase = name => name.replace(/([A-Z])/g, v => "-".concat(v.toLowerCase()));
-exports.getDashCase = getDashCase;
-var getTransitionVal = (props, duration, easing) => props.map(prop => "".concat(getDashCase(prop), " ").concat(duration, "ms ").concat(easing)).join(',');
+export var getDashCase = name => name.replace(/([A-Z])/g, v => "-".concat(v.toLowerCase()));
+export var getTransitionVal = (props, duration, easing) => props.map(prop => "".concat(getDashCase(prop), " ").concat(duration, "ms ").concat(easing)).join(',');
 
 /**
  * Finds the intersection of keys between two objects
@@ -23,8 +16,7 @@ var getTransitionVal = (props, duration, easing) => props.map(prop => "".concat(
  * @param {object} nextObj next object
  * @returns an array of keys that exist in both objects
  */
-exports.getTransitionVal = getTransitionVal;
-var getIntersectionKeys = (preObj, nextObj) => [Object.keys(preObj), Object.keys(nextObj)].reduce((a, b) => a.filter(c => b.includes(c)));
+export var getIntersectionKeys = (preObj, nextObj) => [Object.keys(preObj), Object.keys(nextObj)].reduce((a, b) => a.filter(c => b.includes(c)));
 
 /**
  * Maps an object to another object
@@ -32,8 +24,6 @@ var getIntersectionKeys = (preObj, nextObj) => [Object.keys(preObj), Object.keys
  * @param {object} obj object to map
  * @returns mapped object
  */
-exports.getIntersectionKeys = getIntersectionKeys;
-var mapObject = (fn, obj) => Object.keys(obj).reduce((res, key) => _objectSpread(_objectSpread({}, res), {}, {
+export var mapObject = (fn, obj) => Object.keys(obj).reduce((res, key) => _objectSpread(_objectSpread({}, res), {}, {
   [key]: fn(key, obj[key])
 }), {});
-exports.mapObject = mapObject;
