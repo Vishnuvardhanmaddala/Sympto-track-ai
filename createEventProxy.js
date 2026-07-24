@@ -1,10 +1,4 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.createEventProxy = createEventProxy;
-function createEventProxy(reactEvent) {
+export function createEventProxy(reactEvent) {
   reactEvent.persist();
   var {
     currentTarget

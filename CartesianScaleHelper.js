@@ -1,13 +1,7 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.CartesianScaleHelperImpl = void 0;
 /**
  * Groups X and Y scale functions together and provides helper methods.
  */
-class CartesianScaleHelperImpl {
+export class CartesianScaleHelperImpl {
   constructor(_ref) {
     var {
       x,
@@ -70,4 +64,3 @@ class CartesianScaleHelperImpl {
     return xInRange && yInRange;
   }
 }
-exports.CartesianScaleHelperImpl = CartesianScaleHelperImpl;

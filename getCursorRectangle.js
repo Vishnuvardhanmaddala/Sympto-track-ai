@@ -1,10 +1,4 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getCursorRectangle = getCursorRectangle;
-function getCursorRectangle(layout, activeCoordinate, offset, tooltipAxisBandSize) {
+export function getCursorRectangle(layout, activeCoordinate, offset, tooltipAxisBandSize) {
   var halfSize = tooltipAxisBandSize / 2;
   return {
     stroke: 'none',

@@ -1,24 +1,17 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.useYAxisTicks = exports.useYAxisScale = exports.useYAxisInverseTickSnapScale = exports.useYAxisInverseScale = exports.useYAxisInverseDataSnapScale = exports.useYAxisDomain = exports.useYAxis = exports.useXAxisTicks = exports.useXAxisScale = exports.useXAxisInverseTickSnapScale = exports.useXAxisInverseScale = exports.useXAxisInverseDataSnapScale = exports.useXAxisDomain = exports.useXAxis = exports.usePlotArea = exports.useOffset = exports.useIsTooltipActive = exports.useCartesianScale = exports.useActiveTooltipLabel = exports.useActiveTooltipDataPoints = exports.useActiveTooltipCoordinate = void 0;
-var _cartesianAxisSlice = require("./state/cartesianAxisSlice");
-var _axisSelectors = require("./state/selectors/axisSelectors");
-var _hooks = require("./state/hooks");
-var _PanoramaContext = require("./context/PanoramaContext");
-var _tooltipSelectors = require("./state/selectors/tooltipSelectors");
-var _selectChartOffset = require("./state/selectors/selectChartOffset");
-var _selectPlotArea = require("./state/selectors/selectPlotArea");
-var useXAxis = xAxisId => {
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  return (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisWithScale)(state, 'xAxis', xAxisId, isPanorama));
+import { defaultAxisId } from './state/cartesianAxisSlice';
+import { selectAxisDomain, selectAxisInverseScale, selectAxisInverseDataSnapScale, selectAxisInverseTickSnapScale, selectAxisScale, selectAxisWithScale, selectRenderedTicksOfAxis } from './state/selectors/axisSelectors';
+import { useAppSelector } from './state/hooks';
+import { useIsPanorama } from './context/PanoramaContext';
+import { selectActiveLabel, selectActiveTooltipCoordinate, selectActiveTooltipDataPoints, selectIsTooltipActive } from './state/selectors/tooltipSelectors';
+import { selectChartOffset } from './state/selectors/selectChartOffset';
+import { selectPlotArea } from './state/selectors/selectPlotArea';
+export var useXAxis = xAxisId => {
+  var isPanorama = useIsPanorama();
+  return useAppSelector(state => selectAxisWithScale(state, 'xAxis', xAxisId, isPanorama));
 };
-exports.useXAxis = useXAxis;
-var useYAxis = yAxisId => {
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  return (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisWithScale)(state, 'yAxis', yAxisId, isPanorama));
+export var useYAxis = yAxisId => {
+  var isPanorama = useIsPanorama();
+  return useAppSelector(state => selectAxisWithScale(state, 'yAxis', yAxisId, isPanorama));
 };
 
 /**
@@ -34,7 +27,7 @@ var useYAxis = yAxisId => {
  * @param pixelValue - The pixel coordinate to convert.
  * @returns The closest data value in the domain.
  */
-exports.useYAxis = useYAxis;
+
 /**
  * Returns a function to convert data values to pixel coordinates for an {@link XAxis}.
  *
@@ -56,10 +49,10 @@ exports.useYAxis = useYAxis;
  * @returns A scale function that maps data values to pixel coordinates, or `undefined`.
  * @since 3.8
  */
-var useXAxisScale = exports.useXAxisScale = function useXAxisScale() {
-  var xAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _cartesianAxisSlice.defaultAxisId;
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  var scale = (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisScale)(state, 'xAxis', xAxisId, isPanorama));
+export var useXAxisScale = function useXAxisScale() {
+  var xAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultAxisId;
+  var isPanorama = useIsPanorama();
+  var scale = useAppSelector(state => selectAxisScale(state, 'xAxis', xAxisId, isPanorama));
   return scale === null || scale === void 0 ? void 0 : scale.map;
 };
 
@@ -84,10 +77,10 @@ var useXAxisScale = exports.useXAxisScale = function useXAxisScale() {
  * @returns A scale function that maps data values to pixel coordinates, or `undefined`.
  * @since 3.8
  */
-var useYAxisScale = exports.useYAxisScale = function useYAxisScale() {
-  var yAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _cartesianAxisSlice.defaultAxisId;
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  var scale = (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisScale)(state, 'yAxis', yAxisId, isPanorama));
+export var useYAxisScale = function useYAxisScale() {
+  var yAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultAxisId;
+  var isPanorama = useIsPanorama();
+  var scale = useAppSelector(state => selectAxisScale(state, 'yAxis', yAxisId, isPanorama));
   return scale === null || scale === void 0 ? void 0 : scale.map;
 };
 
@@ -116,10 +109,10 @@ var useYAxisScale = exports.useYAxisScale = function useYAxisScale() {
  * @returns An inverse scale function that maps pixel coordinates to data values, or `undefined`.
  * @since 3.8
  */
-var useXAxisInverseScale = exports.useXAxisInverseScale = function useXAxisInverseScale() {
-  var xAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _cartesianAxisSlice.defaultAxisId;
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  return (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisInverseScale)(state, 'xAxis', xAxisId, isPanorama));
+export var useXAxisInverseScale = function useXAxisInverseScale() {
+  var xAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultAxisId;
+  var isPanorama = useIsPanorama();
+  return useAppSelector(state => selectAxisInverseScale(state, 'xAxis', xAxisId, isPanorama));
 };
 
 /**
@@ -139,10 +132,10 @@ var useXAxisInverseScale = exports.useXAxisInverseScale = function useXAxisInver
  * @returns An inverse scale function that maps pixel coordinates to the closest data value, or `undefined`.
  * @since 3.8
  */
-var useXAxisInverseDataSnapScale = exports.useXAxisInverseDataSnapScale = function useXAxisInverseDataSnapScale() {
-  var xAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _cartesianAxisSlice.defaultAxisId;
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  return (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisInverseDataSnapScale)(state, 'xAxis', xAxisId, isPanorama));
+export var useXAxisInverseDataSnapScale = function useXAxisInverseDataSnapScale() {
+  var xAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultAxisId;
+  var isPanorama = useIsPanorama();
+  return useAppSelector(state => selectAxisInverseDataSnapScale(state, 'xAxis', xAxisId, isPanorama));
 };
 
 /**
@@ -162,9 +155,9 @@ var useXAxisInverseDataSnapScale = exports.useXAxisInverseDataSnapScale = functi
  * @returns An inverse scale function that maps pixel coordinates to the closest tick value, or `undefined`.
  * @since 3.8
  */
-var useXAxisInverseTickSnapScale = exports.useXAxisInverseTickSnapScale = function useXAxisInverseTickSnapScale() {
-  var xAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _cartesianAxisSlice.defaultAxisId;
-  return (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisInverseTickSnapScale)(state, 'xAxis', xAxisId));
+export var useXAxisInverseTickSnapScale = function useXAxisInverseTickSnapScale() {
+  var xAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultAxisId;
+  return useAppSelector(state => selectAxisInverseTickSnapScale(state, 'xAxis', xAxisId));
 };
 
 /**
@@ -192,10 +185,10 @@ var useXAxisInverseTickSnapScale = exports.useXAxisInverseTickSnapScale = functi
  * @returns An inverse scale function that maps pixel coordinates to data values, or `undefined`.
  * @since 3.8
  */
-var useYAxisInverseScale = exports.useYAxisInverseScale = function useYAxisInverseScale() {
-  var yAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _cartesianAxisSlice.defaultAxisId;
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  return (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisInverseScale)(state, 'yAxis', yAxisId, isPanorama));
+export var useYAxisInverseScale = function useYAxisInverseScale() {
+  var yAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultAxisId;
+  var isPanorama = useIsPanorama();
+  return useAppSelector(state => selectAxisInverseScale(state, 'yAxis', yAxisId, isPanorama));
 };
 
 /**
@@ -215,10 +208,10 @@ var useYAxisInverseScale = exports.useYAxisInverseScale = function useYAxisInver
  * @returns An inverse scale function that maps pixel coordinates to the closest data value, or `undefined`.
  * @since 3.8
  */
-var useYAxisInverseDataSnapScale = exports.useYAxisInverseDataSnapScale = function useYAxisInverseDataSnapScale() {
-  var yAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _cartesianAxisSlice.defaultAxisId;
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  return (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisInverseDataSnapScale)(state, 'yAxis', yAxisId, isPanorama));
+export var useYAxisInverseDataSnapScale = function useYAxisInverseDataSnapScale() {
+  var yAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultAxisId;
+  var isPanorama = useIsPanorama();
+  return useAppSelector(state => selectAxisInverseDataSnapScale(state, 'yAxis', yAxisId, isPanorama));
 };
 
 /**
@@ -238,9 +231,9 @@ var useYAxisInverseDataSnapScale = exports.useYAxisInverseDataSnapScale = functi
  * @returns An inverse scale function that maps pixel coordinates to the closest tick value, or `undefined`.
  * @since 3.8
  */
-var useYAxisInverseTickSnapScale = exports.useYAxisInverseTickSnapScale = function useYAxisInverseTickSnapScale() {
-  var yAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _cartesianAxisSlice.defaultAxisId;
-  return (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisInverseTickSnapScale)(state, 'yAxis', yAxisId));
+export var useYAxisInverseTickSnapScale = function useYAxisInverseTickSnapScale() {
+  var yAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultAxisId;
+  return useAppSelector(state => selectAxisInverseTickSnapScale(state, 'yAxis', yAxisId));
 };
 
 /**
@@ -253,9 +246,9 @@ var useYAxisInverseTickSnapScale = exports.useYAxisInverseTickSnapScale = functi
  * @returns An array of ticks, or `undefined` if the axis doesn't exist or hasn't been calculated yet.
  * @since 3.8
  */
-var useXAxisTicks = exports.useXAxisTicks = function useXAxisTicks() {
-  var xAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _cartesianAxisSlice.defaultAxisId;
-  return (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectRenderedTicksOfAxis)(state, 'xAxis', xAxisId));
+export var useXAxisTicks = function useXAxisTicks() {
+  var xAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultAxisId;
+  return useAppSelector(state => selectRenderedTicksOfAxis(state, 'xAxis', xAxisId));
 };
 
 /**
@@ -268,9 +261,9 @@ var useXAxisTicks = exports.useXAxisTicks = function useXAxisTicks() {
  * @returns An array of ticks, or `undefined` if the axis doesn't exist or hasn't been calculated yet.
  * @since 3.8
  */
-var useYAxisTicks = exports.useYAxisTicks = function useYAxisTicks() {
-  var yAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _cartesianAxisSlice.defaultAxisId;
-  return (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectRenderedTicksOfAxis)(state, 'yAxis', yAxisId));
+export var useYAxisTicks = function useYAxisTicks() {
+  var yAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultAxisId;
+  return useAppSelector(state => selectRenderedTicksOfAxis(state, 'yAxis', yAxisId));
 };
 
 /**
@@ -306,9 +299,9 @@ var useYAxisTicks = exports.useYAxisTicks = function useYAxisTicks() {
  * @returns The pixel x,y coordinates, or `undefined` if conversion is not possible.
  * @since 3.8
  */
-var useCartesianScale = exports.useCartesianScale = function useCartesianScale(dataPoint) {
-  var xAxisId = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _cartesianAxisSlice.defaultAxisId;
-  var yAxisId = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _cartesianAxisSlice.defaultAxisId;
+export var useCartesianScale = function useCartesianScale(dataPoint) {
+  var xAxisId = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultAxisId;
+  var yAxisId = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : defaultAxisId;
   var xScale = useXAxisScale(xAxisId);
   var yScale = useYAxisScale(yAxisId);
   if (xScale == null || yScale == null) {
@@ -334,8 +327,8 @@ var useCartesianScale = exports.useCartesianScale = function useCartesianScale(d
  * @returns ActiveLabel
  * @since 3.0
  */
-var useActiveTooltipLabel = () => {
-  return (0, _hooks.useAppSelector)(_tooltipSelectors.selectActiveLabel);
+export var useActiveTooltipLabel = () => {
+  return useAppSelector(selectActiveLabel);
 };
 
 /**
@@ -364,9 +357,8 @@ var useActiveTooltipLabel = () => {
  * @returns Offset of the chart in pixels, or undefined if used outside a chart context.
  * @since 3.1
  */
-exports.useActiveTooltipLabel = useActiveTooltipLabel;
-var useOffset = () => {
-  return (0, _hooks.useAppSelector)(_selectChartOffset.selectChartOffset);
+export var useOffset = () => {
+  return useAppSelector(selectChartOffset);
 };
 
 /**
@@ -387,9 +379,8 @@ var useOffset = () => {
  * @returns Plot area of the chart in pixels, or undefined if used outside a chart context.
  * @since 3.1
  */
-exports.useOffset = useOffset;
-var usePlotArea = () => {
-  return (0, _hooks.useAppSelector)(_selectPlotArea.selectPlotArea);
+export var usePlotArea = () => {
+  return useAppSelector(selectPlotArea);
 };
 
 /**
@@ -408,9 +399,8 @@ var usePlotArea = () => {
  *
  * @returns Data points that are currently visible in a Tooltip
  */
-exports.usePlotArea = usePlotArea;
-var useActiveTooltipDataPoints = () => {
-  return (0, _hooks.useAppSelector)(_tooltipSelectors.selectActiveTooltipDataPoints);
+export var useActiveTooltipDataPoints = () => {
+  return useAppSelector(selectActiveTooltipDataPoints);
 };
 
 /**
@@ -429,11 +419,10 @@ var useActiveTooltipDataPoints = () => {
  * @returns The domain of the X-axis, or `undefined` if it cannot be calculated or if used outside a chart context.
  * @since 3.2
  */
-exports.useActiveTooltipDataPoints = useActiveTooltipDataPoints;
-var useXAxisDomain = exports.useXAxisDomain = function useXAxisDomain() {
-  var xAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _cartesianAxisSlice.defaultAxisId;
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  return (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisDomain)(state, 'xAxis', xAxisId, isPanorama));
+export var useXAxisDomain = function useXAxisDomain() {
+  var xAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultAxisId;
+  var isPanorama = useIsPanorama();
+  return useAppSelector(state => selectAxisDomain(state, 'xAxis', xAxisId, isPanorama));
 };
 
 /**
@@ -451,10 +440,10 @@ var useXAxisDomain = exports.useXAxisDomain = function useXAxisDomain() {
  * @returns The domain of the Y-axis, or `undefined` if it cannot be calculated or if used outside a chart context.
  * @since 3.2
  */
-var useYAxisDomain = exports.useYAxisDomain = function useYAxisDomain() {
-  var yAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _cartesianAxisSlice.defaultAxisId;
-  var isPanorama = (0, _PanoramaContext.useIsPanorama)();
-  return (0, _hooks.useAppSelector)(state => (0, _axisSelectors.selectAxisDomain)(state, 'yAxis', yAxisId, isPanorama));
+export var useYAxisDomain = function useYAxisDomain() {
+  var yAxisId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultAxisId;
+  var isPanorama = useIsPanorama();
+  return useAppSelector(state => selectAxisDomain(state, 'yAxis', yAxisId, isPanorama));
 };
 
 /**
@@ -468,9 +457,9 @@ var useYAxisDomain = exports.useYAxisDomain = function useYAxisDomain() {
  * @returns {boolean} True if the Tooltip is active, false otherwise.
  * @since 3.7
  */
-var useIsTooltipActive = () => {
+export var useIsTooltipActive = () => {
   var _useAppSelector;
-  return (_useAppSelector = (0, _hooks.useAppSelector)(_tooltipSelectors.selectIsTooltipActive)) !== null && _useAppSelector !== void 0 ? _useAppSelector : false;
+  return (_useAppSelector = useAppSelector(selectIsTooltipActive)) !== null && _useAppSelector !== void 0 ? _useAppSelector : false;
 };
 
 /**
@@ -484,9 +473,8 @@ var useIsTooltipActive = () => {
  * @returns {Coordinate | undefined} The coordinate of the active Tooltip, or undefined.
  * @since 3.7
  */
-exports.useIsTooltipActive = useIsTooltipActive;
-var useActiveTooltipCoordinate = () => {
-  var coordinate = (0, _hooks.useAppSelector)(_tooltipSelectors.selectActiveTooltipCoordinate);
+export var useActiveTooltipCoordinate = () => {
+  var coordinate = useAppSelector(selectActiveTooltipCoordinate);
   if (coordinate == null) {
     return undefined;
   }
@@ -495,4 +483,3 @@ var useActiveTooltipCoordinate = () => {
     y: coordinate.y
   };
 };
-exports.useActiveTooltipCoordinate = useActiveTooltipCoordinate;

@@ -1,42 +1,27 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getCateCoordinateOfBar = exports.getBaseValueOfBar = exports.getBandSizeOfAxis = exports.calculatePolarTooltipPos = exports.calculateCartesianTooltipPos = exports.appendOffsetOfLegend = exports.MIN_VALUE_REG = exports.MAX_VALUE_REG = void 0;
-exports.getCateCoordinateOfLine = getCateCoordinateOfLine;
-exports.getDomainOfStackGroups = exports.getCoordinatesOfGrid = void 0;
-exports.getNormalizedStackId = getNormalizedStackId;
-exports.getTicksOfAxis = exports.getStackedData = void 0;
-exports.getTooltipEntry = getTooltipEntry;
-exports.getTooltipNameProp = getTooltipNameProp;
-exports.getValueByDataKey = getValueByDataKey;
-exports.truncateByDomain = exports.offsetSign = exports.offsetPositive = exports.isCategoricalAxis = void 0;
-var _sortBy = _interopRequireDefault(require("es-toolkit/compat/sortBy"));
-var _get = _interopRequireDefault(require("es-toolkit/compat/get"));
-var _d3Shape = require("victory-vendor/d3-shape");
-var _DataUtils = require("./DataUtils");
-var _getSliced = require("./getSliced");
-var _isWellBehavedNumber = require("./isWellBehavedNumber");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function getValueByDataKey(obj, dataKey, defaultValue) {
-  if ((0, _DataUtils.isNullish)(obj) || (0, _DataUtils.isNullish)(dataKey)) {
+import sortBy from 'es-toolkit/compat/sortBy';
+import get from 'es-toolkit/compat/get';
+import { stack as shapeStack, stackOffsetExpand, stackOffsetNone, stackOffsetSilhouette, stackOffsetWiggle, stackOrderNone } from 'victory-vendor/d3-shape';
+import { findEntryInArray, isNan, isNotNil, isNullish, isNumber, isNumOrStr, mathSign } from './DataUtils';
+import { getSliced } from './getSliced';
+import { isWellBehavedNumber } from './isWellBehavedNumber';
+export function getValueByDataKey(obj, dataKey, defaultValue) {
+  if (isNullish(obj) || isNullish(dataKey)) {
     return defaultValue;
   }
-  if ((0, _DataUtils.isNumOrStr)(dataKey)) {
-    return (0, _get.default)(obj, dataKey, defaultValue);
+  if (isNumOrStr(dataKey)) {
+    return get(obj, dataKey, defaultValue);
   }
   if (typeof dataKey === 'function') {
     return dataKey(obj);
   }
   return defaultValue;
 }
-var appendOffsetOfLegend = (offset, legendSettings, legendSize) => {
+export var appendOffsetOfLegend = (offset, legendSettings, legendSize) => {
   if (legendSettings && legendSize) {
     var {
       width: boxWidth,
@@ -47,12 +32,12 @@ var appendOffsetOfLegend = (offset, legendSettings, legendSize) => {
       verticalAlign,
       layout
     } = legendSettings;
-    if ((layout === 'vertical' || layout === 'horizontal' && verticalAlign === 'middle') && align !== 'center' && (0, _DataUtils.isNumber)(offset[align])) {
+    if ((layout === 'vertical' || layout === 'horizontal' && verticalAlign === 'middle') && align !== 'center' && isNumber(offset[align])) {
       return _objectSpread(_objectSpread({}, offset), {}, {
         [align]: offset[align] + (boxWidth || 0)
       });
     }
-    if ((layout === 'horizontal' || layout === 'vertical' && align === 'center') && verticalAlign !== 'middle' && (0, _DataUtils.isNumber)(offset[verticalAlign])) {
+    if ((layout === 'horizontal' || layout === 'vertical' && align === 'center') && verticalAlign !== 'middle' && isNumber(offset[verticalAlign])) {
       return _objectSpread(_objectSpread({}, offset), {}, {
         [verticalAlign]: offset[verticalAlign] + (boxHeight || 0)
       });
@@ -60,8 +45,7 @@ var appendOffsetOfLegend = (offset, legendSettings, legendSize) => {
   }
   return offset;
 };
-exports.appendOffsetOfLegend = appendOffsetOfLegend;
-var isCategoricalAxis = (layout, axisType) => layout === 'horizontal' && axisType === 'xAxis' || layout === 'vertical' && axisType === 'yAxis' || layout === 'centric' && axisType === 'angleAxis' || layout === 'radial' && axisType === 'radiusAxis';
+export var isCategoricalAxis = (layout, axisType) => layout === 'horizontal' && axisType === 'xAxis' || layout === 'vertical' && axisType === 'yAxis' || layout === 'centric' && axisType === 'angleAxis' || layout === 'radial' && axisType === 'radiusAxis';
 
 /**
  * Calculate the Coordinates of grid
@@ -71,8 +55,7 @@ var isCategoricalAxis = (layout, axisType) => layout === 'horizontal' && axisTyp
  * @param {boolean} syncWithTicks  Synchronize grid lines with ticks or not
  * @return {Array}                 Coordinates
  */
-exports.isCategoricalAxis = isCategoricalAxis;
-var getCoordinatesOfGrid = (ticks, minValue, maxValue, syncWithTicks) => {
+export var getCoordinatesOfGrid = (ticks, minValue, maxValue, syncWithTicks) => {
   if (syncWithTicks) {
     return ticks.map(entry => entry.coordinate);
   }
@@ -94,7 +77,6 @@ var getCoordinatesOfGrid = (ticks, minValue, maxValue, syncWithTicks) => {
   }
   return values;
 };
-exports.getCoordinatesOfGrid = getCoordinatesOfGrid;
 /**
  * Of on four almost identical implementations of tick generation.
  * The four horsemen of tick generation are:
@@ -103,7 +85,7 @@ exports.getCoordinatesOfGrid = getCoordinatesOfGrid;
  * - {@link getTicksOfAxis}.
  * - {@link combineGraphicalItemTicks}
  */
-var getTicksOfAxis = (axis, isGrid, isAll) => {
+export var getTicksOfAxis = (axis, isGrid, isAll) => {
   if (!axis) {
     return null;
   }
@@ -125,14 +107,14 @@ var getTicksOfAxis = (axis, isGrid, isAll) => {
   }
   var offsetForBand = realScaleType === 'scaleBand' && scale.bandwidth ? scale.bandwidth() / 2 : 2;
   var offset = (isGrid || isAll) && type === 'category' && scale.bandwidth ? scale.bandwidth() / offsetForBand : 0;
-  offset = axisType === 'angleAxis' && range && range.length >= 2 ? (0, _DataUtils.mathSign)(range[0] - range[1]) * 2 * offset : offset;
+  offset = axisType === 'angleAxis' && range && range.length >= 2 ? mathSign(range[0] - range[1]) * 2 * offset : offset;
 
   // The ticks set by user should only affect the ticks adjacent to axis line
   if (isGrid && (ticks || niceTicks)) {
     var result = (ticks || niceTicks || []).map((entry, index) => {
       var scaleContent = duplicateDomain ? duplicateDomain.indexOf(entry) : entry;
       var scaled = scale.map(scaleContent);
-      if (!(0, _isWellBehavedNumber.isWellBehavedNumber)(scaled)) {
+      if (!isWellBehavedNumber(scaled)) {
         return null;
       }
       return {
@@ -143,7 +125,7 @@ var getTicksOfAxis = (axis, isGrid, isAll) => {
         offset,
         index
       };
-    }).filter(_DataUtils.isNotNil);
+    }).filter(isNotNil);
     return result;
   }
 
@@ -151,7 +133,7 @@ var getTicksOfAxis = (axis, isGrid, isAll) => {
   if (isCategorical && categoricalDomain) {
     return categoricalDomain.map((entry, index) => {
       var scaled = scale.map(entry);
-      if (!(0, _isWellBehavedNumber.isWellBehavedNumber)(scaled)) {
+      if (!isWellBehavedNumber(scaled)) {
         return null;
       }
       return {
@@ -160,12 +142,12 @@ var getTicksOfAxis = (axis, isGrid, isAll) => {
         index,
         offset
       };
-    }).filter(_DataUtils.isNotNil);
+    }).filter(isNotNil);
   }
   if (scale.ticks && !isAll && tickCount != null) {
     return scale.ticks(tickCount).map((entry, index) => {
       var scaled = scale.map(entry);
-      if (!(0, _isWellBehavedNumber.isWellBehavedNumber)(scaled)) {
+      if (!isWellBehavedNumber(scaled)) {
         return null;
       }
       return {
@@ -174,13 +156,13 @@ var getTicksOfAxis = (axis, isGrid, isAll) => {
         index,
         offset
       };
-    }).filter(_DataUtils.isNotNil);
+    }).filter(isNotNil);
   }
 
   // When axis has duplicated text, serial numbers are used to generate scale
   return scale.domain().map((entry, index) => {
     var scaled = scale.map(entry);
-    if (!(0, _isWellBehavedNumber.isWellBehavedNumber)(scaled)) {
+    if (!isWellBehavedNumber(scaled)) {
       return null;
     }
     return {
@@ -190,7 +172,7 @@ var getTicksOfAxis = (axis, isGrid, isAll) => {
       index,
       offset
     };
-  }).filter(_DataUtils.isNotNil);
+  }).filter(isNotNil);
 };
 
 /**
@@ -200,18 +182,17 @@ var getTicksOfAxis = (axis, isGrid, isAll) => {
  * @param domain boundaries
  * @returns tuple of two numbers
  */
-exports.getTicksOfAxis = getTicksOfAxis;
-var truncateByDomain = (value, domain) => {
-  if (!domain || domain.length !== 2 || !(0, _DataUtils.isNumber)(domain[0]) || !(0, _DataUtils.isNumber)(domain[1])) {
+export var truncateByDomain = (value, domain) => {
+  if (!domain || domain.length !== 2 || !isNumber(domain[0]) || !isNumber(domain[1])) {
     return value;
   }
   var minValue = Math.min(domain[0], domain[1]);
   var maxValue = Math.max(domain[0], domain[1]);
   var result = [value[0], value[1]];
-  if (!(0, _DataUtils.isNumber)(value[0]) || value[0] < minValue) {
+  if (!isNumber(value[0]) || value[0] < minValue) {
     result[0] = minValue;
   }
-  if (!(0, _DataUtils.isNumber)(value[1]) || value[1] > maxValue) {
+  if (!isNumber(value[1]) || value[1] > maxValue) {
     result[1] = maxValue;
   }
   if (result[0] > maxValue) {
@@ -231,8 +212,7 @@ var truncateByDomain = (value, domain) => {
  * @param {Array} series from d3-shape Stack
  * @return {Array} series with applied offset
  */
-exports.truncateByDomain = truncateByDomain;
-var offsetSign = series => {
+export var offsetSign = series => {
   var _series$;
   var n = series.length;
   if (n <= 0) {
@@ -253,7 +233,7 @@ var offsetSign = series => {
       }
       var series1 = col[1];
       var series0 = col[0];
-      var value = (0, _DataUtils.isNan)(series1) ? series0 : series1;
+      var value = isNan(series1) ? series0 : series1;
       if (value >= 0) {
         col[0] = positive;
         positive += value;
@@ -275,8 +255,7 @@ var offsetSign = series => {
  * @param {Array} series from d3-shape Stack
  * @return {Array} series with applied offset
  */
-exports.offsetSign = offsetSign;
-var offsetPositive = series => {
+export var offsetPositive = series => {
   var _series$2;
   var n = series.length;
   if (n <= 0) {
@@ -294,7 +273,7 @@ var offsetPositive = series => {
       if (col == null) {
         continue;
       }
-      var value = (0, _DataUtils.isNan)(col[1]) ? col[0] : col[1];
+      var value = isNan(col[1]) ? col[0] : col[1];
       if (value >= 0) {
         col[0] = positive;
         positive += value;
@@ -321,23 +300,23 @@ var offsetPositive = series => {
  * There's open discussion on this topic without much attention:
  * https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/66042
  */
-exports.offsetPositive = offsetPositive;
+
 var STACK_OFFSET_MAP = {
   sign: offsetSign,
   // @ts-expect-error definitelytyped types are incorrect
-  expand: _d3Shape.stackOffsetExpand,
+  expand: stackOffsetExpand,
   // @ts-expect-error definitelytyped types are incorrect
-  none: _d3Shape.stackOffsetNone,
+  none: stackOffsetNone,
   // @ts-expect-error definitelytyped types are incorrect
-  silhouette: _d3Shape.stackOffsetSilhouette,
+  silhouette: stackOffsetSilhouette,
   // @ts-expect-error definitelytyped types are incorrect
-  wiggle: _d3Shape.stackOffsetWiggle,
+  wiggle: stackOffsetWiggle,
   positive: offsetPositive
 };
-var getStackedData = (data, dataKeys, offsetType) => {
+export var getStackedData = (data, dataKeys, offsetType) => {
   var _STACK_OFFSET_MAP$off;
-  var offsetAccessor = (_STACK_OFFSET_MAP$off = STACK_OFFSET_MAP[offsetType]) !== null && _STACK_OFFSET_MAP$off !== void 0 ? _STACK_OFFSET_MAP$off : _d3Shape.stackOffsetNone;
-  var stack = (0, _d3Shape.stack)().keys(dataKeys).value((d, key) => Number(getValueByDataKey(d, key, 0))).order(_d3Shape.stackOrderNone)
+  var offsetAccessor = (_STACK_OFFSET_MAP$off = STACK_OFFSET_MAP[offsetType]) !== null && _STACK_OFFSET_MAP$off !== void 0 ? _STACK_OFFSET_MAP$off : stackOffsetNone;
+  var stack = shapeStack().keys(dataKeys).value((d, key) => Number(getValueByDataKey(d, key, 0))).order(stackOrderNone)
   // @ts-expect-error definitelytyped types are incorrect
   .offset(offsetAccessor);
   var result = stack(data);
@@ -346,7 +325,7 @@ var getStackedData = (data, dataKeys, offsetType) => {
   result.forEach((series, seriesIndex) => {
     series.forEach((point, pointIndex) => {
       var value = getValueByDataKey(data[pointIndex], dataKeys[seriesIndex], 0);
-      if (Array.isArray(value) && value.length === 2 && (0, _DataUtils.isNumber)(value[0]) && (0, _DataUtils.isNumber)(value[1])) {
+      if (Array.isArray(value) && value.length === 2 && isNumber(value[0]) && isNumber(value[1])) {
         // eslint-disable-next-line prefer-destructuring,no-param-reassign
         point[0] = value[0];
         // eslint-disable-next-line prefer-destructuring,no-param-reassign
@@ -367,11 +346,11 @@ var getStackedData = (data, dataKeys, offsetType) => {
  * and object keys are always strings. Also, it would be kinda confusing if stackId=8 and stackId='8' were different stacks
  * so let's just force a string.
  */
-exports.getStackedData = getStackedData;
-function getNormalizedStackId(publicStackId) {
+
+export function getNormalizedStackId(publicStackId) {
   return publicStackId == null ? undefined : String(publicStackId);
 }
-function getCateCoordinateOfLine(_ref) {
+export function getCateCoordinateOfLine(_ref) {
   var {
     axis,
     ticks,
@@ -383,23 +362,23 @@ function getCateCoordinateOfLine(_ref) {
   if (axis.type === 'category') {
     // find coordinate of category axis by the value of category
     // @ts-expect-error why does this use direct object access instead of getValueByDataKey?
-    if (!axis.allowDuplicatedCategory && axis.dataKey && !(0, _DataUtils.isNullish)(entry[axis.dataKey])) {
+    if (!axis.allowDuplicatedCategory && axis.dataKey && !isNullish(entry[axis.dataKey])) {
       // @ts-expect-error why does this use direct object access instead of getValueByDataKey?
-      var matchedTick = (0, _DataUtils.findEntryInArray)(ticks, 'value', entry[axis.dataKey]);
+      var matchedTick = findEntryInArray(ticks, 'value', entry[axis.dataKey]);
       if (matchedTick) {
         return matchedTick.coordinate + bandSize / 2;
       }
     }
     return ticks !== null && ticks !== void 0 && ticks[index] ? ticks[index].coordinate + bandSize / 2 : null;
   }
-  var value = getValueByDataKey(entry, !(0, _DataUtils.isNullish)(dataKey) ? dataKey : axis.dataKey);
+  var value = getValueByDataKey(entry, !isNullish(dataKey) ? dataKey : axis.dataKey);
   var scaled = axis.scale.map(value);
-  if (!(0, _DataUtils.isNumber)(scaled)) {
+  if (!isNumber(scaled)) {
     return null;
   }
   return scaled;
 }
-var getCateCoordinateOfBar = _ref2 => {
+export var getCateCoordinateOfBar = _ref2 => {
   var {
     axis,
     ticks,
@@ -413,17 +392,16 @@ var getCateCoordinateOfBar = _ref2 => {
   }
   // getValueByDataKey does not validate the output type
   var value = getValueByDataKey(entry, axis.dataKey, axis.scale.domain()[index]);
-  if ((0, _DataUtils.isNullish)(value)) {
+  if (isNullish(value)) {
     return null;
   }
   var scaled = axis.scale.map(value);
-  if (!(0, _DataUtils.isNumber)(scaled)) {
+  if (!isNumber(scaled)) {
     return null;
   }
   return scaled - bandSize / 2 + offset;
 };
-exports.getCateCoordinateOfBar = getCateCoordinateOfBar;
-var getBaseValueOfBar = _ref3 => {
+export var getBaseValueOfBar = _ref3 => {
   var {
     numericAxis
   } = _ref3;
@@ -443,15 +421,14 @@ var getBaseValueOfBar = _ref3 => {
   }
   return domain[0];
 };
-exports.getBaseValueOfBar = getBaseValueOfBar;
 var getDomainOfSingle = data => {
-  var flat = data.flat(2).filter(_DataUtils.isNumber);
+  var flat = data.flat(2).filter(isNumber);
   return [Math.min(...flat), Math.max(...flat)];
 };
 var makeDomainFinite = domain => {
   return [domain[0] === Infinity ? 0 : domain[0], domain[1] === -Infinity ? 0 : domain[1]];
 };
-var getDomainOfStackGroups = (stackGroups, startIndex, endIndex) => {
+export var getDomainOfStackGroups = (stackGroups, startIndex, endIndex) => {
   if (stackGroups == null) {
     return undefined;
   }
@@ -464,9 +441,9 @@ var getDomainOfStackGroups = (stackGroups, startIndex, endIndex) => {
       stackedData
     } = group;
     var domain = stackedData.reduce((res, entry) => {
-      var sliced = (0, _getSliced.getSliced)(entry, startIndex, endIndex);
+      var sliced = getSliced(entry, startIndex, endIndex);
       var s = getDomainOfSingle(sliced);
-      if (!(0, _isWellBehavedNumber.isWellBehavedNumber)(s[0]) || !(0, _isWellBehavedNumber.isWellBehavedNumber)(s[1])) {
+      if (!isWellBehavedNumber(s[0]) || !isWellBehavedNumber(s[1])) {
         return res;
       }
       return [Math.min(res[0], s[0]), Math.max(res[1], s[1])];
@@ -474,9 +451,8 @@ var getDomainOfStackGroups = (stackGroups, startIndex, endIndex) => {
     return [Math.min(domain[0], result[0]), Math.max(domain[1], result[1])];
   }, [Infinity, -Infinity]));
 };
-exports.getDomainOfStackGroups = getDomainOfStackGroups;
-var MIN_VALUE_REG = exports.MIN_VALUE_REG = /^dataMin[\s]*-[\s]*([0-9]+([.]{1}[0-9]+){0,1})$/;
-var MAX_VALUE_REG = exports.MAX_VALUE_REG = /^dataMax[\s]*\+[\s]*([0-9]+([.]{1}[0-9]+){0,1})$/;
+export var MIN_VALUE_REG = /^dataMin[\s]*-[\s]*([0-9]+([.]{1}[0-9]+){0,1})$/;
+export var MAX_VALUE_REG = /^dataMax[\s]*\+[\s]*([0-9]+([.]{1}[0-9]+){0,1})$/;
 
 /**
  * Calculate the size between two category
@@ -485,7 +461,7 @@ var MAX_VALUE_REG = exports.MAX_VALUE_REG = /^dataMax[\s]*\+[\s]*([0-9]+([.]{1}[
  * @param  {Boolean} isBar if items in axis are bars
  * @return {Number} Size
  */
-var getBandSizeOfAxis = (axis, ticks, isBar) => {
+export var getBandSizeOfAxis = (axis, ticks, isBar) => {
   if (axis && axis.scale && axis.scale.bandwidth) {
     var bandWidth = axis.scale.bandwidth();
     if (!isBar || bandWidth > 0) {
@@ -493,7 +469,7 @@ var getBandSizeOfAxis = (axis, ticks, isBar) => {
     }
   }
   if (axis && ticks && ticks.length >= 2) {
-    var orderedTicks = (0, _sortBy.default)(ticks, o => o.coordinate);
+    var orderedTicks = sortBy(ticks, o => o.coordinate);
     var bandSize = Infinity;
     for (var i = 1, len = orderedTicks.length; i < len; i++) {
       var cur = orderedTicks[i];
@@ -504,8 +480,7 @@ var getBandSizeOfAxis = (axis, ticks, isBar) => {
   }
   return isBar ? undefined : 0;
 };
-exports.getBandSizeOfAxis = getBandSizeOfAxis;
-function getTooltipEntry(_ref4) {
+export function getTooltipEntry(_ref4) {
   var {
     tooltipEntrySettings,
     dataKey,
@@ -520,7 +495,7 @@ function getTooltipEntry(_ref4) {
     name
   });
 }
-function getTooltipNameProp(nameFromItem, dataKey) {
+export function getTooltipNameProp(nameFromItem, dataKey) {
   if (nameFromItem) {
     return String(nameFromItem);
   }
@@ -529,7 +504,7 @@ function getTooltipNameProp(nameFromItem, dataKey) {
   }
   return undefined;
 }
-var calculateCartesianTooltipPos = (coordinate, layout) => {
+export var calculateCartesianTooltipPos = (coordinate, layout) => {
   if (layout === 'horizontal') {
     return coordinate.relativeX;
   }
@@ -538,11 +513,9 @@ var calculateCartesianTooltipPos = (coordinate, layout) => {
   }
   return undefined;
 };
-exports.calculateCartesianTooltipPos = calculateCartesianTooltipPos;
-var calculatePolarTooltipPos = (rangeObj, layout) => {
+export var calculatePolarTooltipPos = (rangeObj, layout) => {
   if (layout === 'centric') {
     return rangeObj.angle;
   }
   return rangeObj.radius;
 };
-exports.calculatePolarTooltipPos = calculatePolarTooltipPos;

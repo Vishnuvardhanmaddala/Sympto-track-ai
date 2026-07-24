@@ -1,20 +1,6 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.findEntryInArray = findEntryInArray;
-exports.hasDuplicate = exports.getPercentValue = exports.getLinearRegression = void 0;
-exports.interpolate = interpolate;
-exports.isNan = void 0;
-exports.isNotNil = isNotNil;
-exports.mathSign = exports.isPercent = exports.isNumber = exports.isNumOrStr = exports.isNullish = void 0;
-exports.noop = noop;
-exports.upperFirst = exports.uniqueId = void 0;
-var _get = _interopRequireDefault(require("es-toolkit/compat/get"));
-var _round = require("./round");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-var mathSign = value => {
+import get from 'es-toolkit/compat/get';
+import { round } from './round';
+export var mathSign = value => {
   if (value === 0) {
     return 0;
   }
@@ -23,20 +9,15 @@ var mathSign = value => {
   }
   return -1;
 };
-exports.mathSign = mathSign;
-var isNan = value => {
+export var isNan = value => {
   // eslint-disable-next-line eqeqeq
   return typeof value == 'number' && value != +value;
 };
-exports.isNan = isNan;
-var isPercent = value => typeof value === 'string' && value.indexOf('%') === value.length - 1;
-exports.isPercent = isPercent;
-var isNumber = value => (typeof value === 'number' || value instanceof Number) && !isNan(value);
-exports.isNumber = isNumber;
-var isNumOrStr = value => isNumber(value) || typeof value === 'string';
-exports.isNumOrStr = isNumOrStr;
+export var isPercent = value => typeof value === 'string' && value.indexOf('%') === value.length - 1;
+export var isNumber = value => (typeof value === 'number' || value instanceof Number) && !isNan(value);
+export var isNumOrStr = value => isNumber(value) || typeof value === 'string';
 var idCounter = 0;
-var uniqueId = prefix => {
+export var uniqueId = prefix => {
   var id = ++idCounter;
   return "".concat(prefix || '').concat(id);
 };
@@ -56,8 +37,7 @@ var uniqueId = prefix => {
  * @param validate - If true, ensures the result does not exceed `totalValue` (when provided).
  * @returns The calculated value, or `defaultValue` for invalid input.
  */
-exports.uniqueId = uniqueId;
-var getPercentValue = exports.getPercentValue = function getPercentValue(percent, totalValue) {
+export var getPercentValue = function getPercentValue(percent, totalValue) {
   var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
   var validate = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
   if (!isNumber(percent) && typeof percent !== 'string') {
@@ -81,7 +61,7 @@ var getPercentValue = exports.getPercentValue = function getPercentValue(percent
   }
   return value;
 };
-var hasDuplicate = ary => {
+export var hasDuplicate = ary => {
   if (!Array.isArray(ary)) {
     return false;
   }
@@ -96,25 +76,24 @@ var hasDuplicate = ary => {
   }
   return false;
 };
-exports.hasDuplicate = hasDuplicate;
-function interpolate(start, end, t) {
+export function interpolate(start, end, t) {
   if (isNumber(start) && isNumber(end)) {
-    return (0, _round.round)(start + t * (end - start));
+    return round(start + t * (end - start));
   }
   return end;
 }
-function findEntryInArray(ary, specifiedKey, specifiedValue) {
+export function findEntryInArray(ary, specifiedKey, specifiedValue) {
   if (!ary || !ary.length) {
     return undefined;
   }
-  return ary.find(entry => entry && (typeof specifiedKey === 'function' ? specifiedKey(entry) : (0, _get.default)(entry, specifiedKey)) === specifiedValue);
+  return ary.find(entry => entry && (typeof specifiedKey === 'function' ? specifiedKey(entry) : get(entry, specifiedKey)) === specifiedValue);
 }
 /**
  * The least square linear regression
  * @param {Array} data The array of points
  * @returns {Object} The domain of x, and the parameter of linear function
  */
-var getLinearRegression = data => {
+export var getLinearRegression = data => {
   var len = data.length;
   var xsum = 0;
   var ysum = 0;
@@ -143,13 +122,12 @@ var getLinearRegression = data => {
     b: (ysum - a * xsum) / len
   };
 };
-exports.getLinearRegression = getLinearRegression;
 /**
  * Checks if the value is null or undefined
  * @param value The value to check
  * @returns true if the value is null or undefined
  */
-var isNullish = value => {
+export var isNullish = value => {
   return value === null || typeof value === 'undefined';
 };
 
@@ -158,8 +136,7 @@ var isNullish = value => {
  * @param {string} value The string to uppercase
  * @returns {string} The uppercased string
  */
-exports.isNullish = isNullish;
-var upperFirst = value => {
+export var upperFirst = value => {
   if (isNullish(value)) {
     return value;
   }
@@ -171,8 +148,7 @@ var upperFirst = value => {
  * @param value The value to check
  * @returns true if the value is not null nor undefined
  */
-exports.upperFirst = upperFirst;
-function isNotNil(value) {
+export function isNotNil(value) {
   return value != null;
 }
 
@@ -180,4 +156,4 @@ function isNotNil(value) {
  * No-operation function that does nothing.
  * Useful as a placeholder or default callback function.
  */
-function noop() {}
+export function noop() {}

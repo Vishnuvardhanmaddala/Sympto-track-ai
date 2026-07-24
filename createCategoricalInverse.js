@@ -1,10 +1,3 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.bisect = bisect;
-exports.createCategoricalInverse = createCategoricalInverse;
 /**
  * Binary search to find the index where x would fit in array a.
  * Works for arrays that are sorted both ascending and descending.
@@ -15,7 +8,7 @@ exports.createCategoricalInverse = createCategoricalInverse;
  * @param needle Number to find the insertion index for
  * @returns Index where x would fit in array a
  */
-function bisect(haystack, needle) {
+export function bisect(haystack, needle) {
   var lo = 0;
   var hi = haystack.length;
   var ascending = haystack[0] < haystack[haystack.length - 1];
@@ -34,7 +27,7 @@ function bisect(haystack, needle) {
  * Computes an inverse scale function for categorical/ordinal scales.
  * Uses bisect to find the closest domain value for a given pixel coordinate.
  */
-function createCategoricalInverse(scale, allDataPointsOnAxis) {
+export function createCategoricalInverse(scale, allDataPointsOnAxis) {
   if (!scale) {
     return undefined;
   }

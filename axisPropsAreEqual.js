@@ -1,14 +1,8 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.axisPropsAreEqual = axisPropsAreEqual;
-var _propsAreEqual = require("./propsAreEqual");
 var _excluded = ["domain", "range"],
   _excluded2 = ["domain", "range"];
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
+import { propsAreEqual } from './propsAreEqual';
 function shortArraysAreEqual(arr1, arr2) {
   if (arr1 === arr2) {
     return true;
@@ -27,7 +21,7 @@ function shortArraysAreEqual(arr1, arr2) {
  * @param prevProps
  * @param nextProps
  */
-function axisPropsAreEqual(prevProps, nextProps) {
+export function axisPropsAreEqual(prevProps, nextProps) {
   if (prevProps === nextProps) {
     return true;
   }
@@ -47,5 +41,5 @@ function axisPropsAreEqual(prevProps, nextProps) {
   if (!shortArraysAreEqual(prevRange, nextRange)) {
     return false;
   }
-  return (0, _propsAreEqual.propsAreEqual)(prevRest, nextRest);
+  return propsAreEqual(prevRest, nextRest);
 }

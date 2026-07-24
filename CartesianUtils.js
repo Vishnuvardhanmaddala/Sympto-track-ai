@@ -1,12 +1,4 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getAngledRectangleWidth = void 0;
-exports.normalizeAngle = normalizeAngle;
-exports.rectWithPoints = exports.rectWithCoords = void 0;
-var rectWithPoints = (_ref, _ref2) => {
+export var rectWithPoints = (_ref, _ref2) => {
   var {
     x: x1,
     y: y1
@@ -28,8 +20,7 @@ var rectWithPoints = (_ref, _ref2) => {
  * @param  {Object} coords     x1, x2, y1, and y2
  * @return {Object} object
  */
-exports.rectWithPoints = rectWithPoints;
-var rectWithCoords = _ref3 => {
+export var rectWithCoords = _ref3 => {
   var {
     x1,
     y1,
@@ -48,8 +39,7 @@ var rectWithCoords = _ref3 => {
 /** Normalizes the angle so that 0 <= angle < 180.
  * @param {number} angle Angle in degrees.
  * @return {number} the normalized angle with a value of at least 0 and never greater or equal to 180. */
-exports.rectWithCoords = rectWithCoords;
-function normalizeAngle(angle) {
+export function normalizeAngle(angle) {
   return (angle % 180 + 180) % 180;
 }
 
@@ -58,7 +48,7 @@ function normalizeAngle(angle) {
  * @param {number} angle Angle in degrees in which the text is displayed.
  * @return {number} The width of the largest horizontal line that fits inside a rectangle that is displayed at an angle.
  */
-var getAngledRectangleWidth = exports.getAngledRectangleWidth = function getAngledRectangleWidth(_ref4) {
+export var getAngledRectangleWidth = function getAngledRectangleWidth(_ref4) {
   var {
     width,
     height

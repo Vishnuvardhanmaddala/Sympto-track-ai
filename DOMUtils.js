@@ -1,22 +1,16 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getTextMeasurementConfig = exports.getStringSize = exports.getStringCacheStats = exports.configureTextMeasurement = exports.clearStringCache = void 0;
-var _Global = require("./Global");
-var _LRUCache = require("./LRUCache");
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+import { Global } from './Global';
+import { LRUCache } from './LRUCache';
 var defaultConfig = {
   cacheSize: 2000,
   enableCache: true
 };
 var currentConfig = _objectSpread({}, defaultConfig);
-var stringCache = new _LRUCache.LRUCache(currentConfig.cacheSize);
+var stringCache = new LRUCache(currentConfig.cacheSize);
 var SPAN_STYLE = {
   position: 'absolute',
   top: '-20000px',
@@ -69,9 +63,9 @@ var measureTextWithDOM = (text, style) => {
     };
   }
 };
-var getStringSize = exports.getStringSize = function getStringSize(text) {
+export var getStringSize = function getStringSize(text) {
   var style = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  if (text === undefined || text === null || _Global.Global.isSsr) {
+  if (text === undefined || text === null || Global.isSsr) {
     return {
       width: 0,
       height: 0
@@ -101,10 +95,10 @@ var getStringSize = exports.getStringSize = function getStringSize(text) {
  * @param config - Partial configuration to apply
  * @returns void
  */
-var configureTextMeasurement = config => {
+export var configureTextMeasurement = config => {
   var newConfig = _objectSpread(_objectSpread({}, currentConfig), config);
   if (newConfig.cacheSize !== currentConfig.cacheSize) {
-    stringCache = new _LRUCache.LRUCache(newConfig.cacheSize);
+    stringCache = new LRUCache(newConfig.cacheSize);
   }
   currentConfig = newConfig;
 };
@@ -113,15 +107,13 @@ var configureTextMeasurement = config => {
  * Get current text measurement configuration
  * @returns Current configuration
  */
-exports.configureTextMeasurement = configureTextMeasurement;
-var getTextMeasurementConfig = () => _objectSpread({}, currentConfig);
+export var getTextMeasurementConfig = () => _objectSpread({}, currentConfig);
 
 /**
  * Clear the string size cache. Useful for testing or memory management.
  * @returns void
  */
-exports.getTextMeasurementConfig = getTextMeasurementConfig;
-var clearStringCache = () => {
+export var clearStringCache = () => {
   stringCache.clear();
 };
 
@@ -129,9 +121,7 @@ var clearStringCache = () => {
  * Get cache statistics for debugging purposes.
  * @returns Cache statistics including size and max size
  */
-exports.clearStringCache = clearStringCache;
-var getStringCacheStats = () => ({
+export var getStringCacheStats = () => ({
   size: stringCache.size(),
   maxSize: currentConfig.cacheSize
 });
-exports.getStringCacheStats = getStringCacheStats;
