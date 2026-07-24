@@ -1,54 +1,20 @@
-# which
+# Vite ⚡
 
-Like the unix `which` utility.
+> Next Generation Frontend Tooling
 
-Finds the first instance of a specified executable in the PATH
-environment variable.  Does not cache the results, so `hash -r` is not
-needed when the PATH changes.
+- 💡 Instant Server Start
+- ⚡️ Lightning Fast HMR
+- 🛠️ Rich Features
+- 📦 Optimized Build
+- 🔩 Universal Plugin Interface
+- 🔑 Fully Typed APIs
 
-## USAGE
+Vite (French word for "fast", pronounced `/vit/`) is a new breed of frontend build tool that significantly improves the frontend development experience. It consists of two major parts:
 
-```javascript
-var which = require('which')
+- A dev server that serves your source files over [native ES modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules), with [rich built-in features](https://vite.dev/guide/features.html) and astonishingly fast [Hot Module Replacement (HMR)](https://vite.dev/guide/features.html#hot-module-replacement).
 
-// async usage
-which('node', function (er, resolvedPath) {
-  // er is returned if no "node" is found on the PATH
-  // if it is found, then the absolute path to the exec is returned
-})
+- A [build command](https://vite.dev/guide/build.html) that bundles your code with [Rollup](https://rollupjs.org), pre-configured to output highly optimized static assets for production.
 
-// or promise
-which('node').then(resolvedPath => { ... }).catch(er => { ... not found ... })
+In addition, Vite is highly extensible via its [Plugin API](https://vite.dev/guide/api-plugin.html) and [JavaScript API](https://vite.dev/guide/api-javascript.html) with full typing support.
 
-// sync usage
-// throws if not found
-var resolved = which.sync('node')
-
-// if nothrow option is used, returns null if not found
-resolved = which.sync('node', {nothrow: true})
-
-// Pass options to override the PATH and PATHEXT environment vars.
-which('node', { path: someOtherPath }, function (er, resolved) {
-  if (er)
-    throw er
-  console.log('found at %j', resolved)
-})
-```
-
-## CLI USAGE
-
-Same as the BSD `which(1)` binary.
-
-```
-usage: which [-as] program ...
-```
-
-## OPTIONS
-
-You may pass an options object as the second argument.
-
-- `path`: Use instead of the `PATH` environment variable.
-- `pathExt`: Use instead of the `PATHEXT` environment variable.
-- `all`: Return all matches, instead of just the first one.  Note that
-  this means the function returns an array of strings instead of a
-  single string.
+[Read the Docs to Learn More](https://vite.dev).
